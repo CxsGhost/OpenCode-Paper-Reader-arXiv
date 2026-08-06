@@ -1,0 +1,260 @@
+\subsection{Talker: Instruction-Controllable Expressive Speech Generation}
+The Talker converts the textual response produced by the Thinker into
+speaker-consistent, expressive, and streaming speech. It follows the
+end-to-end Transformer--DiT architecture introduced in
+JoyVoice~\cite{joyvoice}. An autoregressive Transformer predicts supervised
+speech tokens, while its hidden representations directly condition a causal
+Diffusion Transformer for acoustic generation. This architecture preserves the
+stable linguistic modeling provided by discrete speech tokens while allowing
+high-level textual and instructional information to propagate directly into
+acoustic realization.
+
+Beyond linguistic content, the Talker accepts natural-language speaking
+instructions that specify how a response should be delivered. This design
+separates response planning from speech realization: the Thinker determines
+what to say and, when appropriate, produces a speaking instruction based on
+its understanding of the user and dialogue context; the Talker realizes the
+response in a fixed assistant voice with the intended emotion, prosody, vocal
+effort, and localized paralinguistic behavior.
+
+The Talker is obtained through instruction-aware foundation training followed
+by speaker-specific supervised fine-tuning. Foundation training establishes
+general speech generation, open-ended instruction following, paralinguistic
+modeling, and streaming capabilities. Speaker-specific SFT then adapts these
+capabilities to the target assistant voice. Consequently, speaker identity is
+fixed in the deployed Talker, whereas utterance-level expressive attributes
+remain dynamically controllable through local instructions.
+
+
+\subsubsection{Training Data}
+
+Following the large-scale speech data construction recipe of
+JoyVoice~\cite{joyvoice}, the Talker is trained on a multilingual corpus
+containing both read and in-the-wild speech. The corpus covers diverse
+speakers, languages, recording conditions, speaking styles, and conversational
+scenarios, providing broad support for robust pronunciation, natural prosody,
+and generalizable speech generation.
+
+To construct instruction-aware training data, we further collect expressive
+speech from movies, television programs, and other conversational media.
+Compared with conventional read speech, these sources contain richer variations
+in emotion, speaking rate, vocal effort, conversational rhythm, phonation, and
+paralinguistic behavior. Multimodal contextual cues from audio and video are
+used to derive natural-language descriptions of speaker characteristics and
+utterance-level acoustic realization.
+
+The expressive corpus is combined with general speech data during foundation
+training. General speech preserves linguistic coverage, pronunciation accuracy,
+and default synthesis quality, while expressive speech expands the controllable
+distribution of speaking styles and paralinguistic behaviors.
+
+\subsubsection{Hierarchical Global and Local Instructions}
+
+The instruction-controllable foundation model uses a hierarchical representation
+consisting of global and local instructions. The global instruction describes
+relatively stable speaker-level characteristics, such as role description,
+gender, age, accent, and underlying timbre. The local instruction specifies
+the acoustic realization of the current utterance, including its scene,
+temporary timbre variation, primary emotion, speaking rate and rhythm,
+breathiness, and spatial impression.
+
+This separation distinguishes persistent speaker characteristics from
+utterance-dependent expression. During speaker-specific SFT, the global
+characteristics are absorbed into the fixed target-speaker model, while the
+local instruction remains available as the dynamic control interface. Therefore,
+the deployed Talker does not require a global instruction at inference time.
+
+\subsubsection{Sequence Formulation}
+
+Following the unified autoregressive formulation of
+JoyVoice~\cite{joyvoice}, we extend the input sequence with hierarchical
+instruction conditions:
+\begin{equation}
+\mathcal{I}
+=
+\left[
+P;\,T;\,S
+\right],
+\end{equation}
+where
+\begin{equation}
+\begin{split}
+P &=
+\left[
+P_{\mathrm{sys}};\,
+I^{g}
+\right],\\
+T &=
+\left[
+\mathrm{spk};\,
+I^{l};\,
+t_{1},t_{2},\ldots,t_{N}
+\right],\\
+S &=
+\left[
+s_{1},s_{2},\ldots,s_{M}
+\right].
+\end{split}
+\end{equation}
+
+Here, $P_{\mathrm{sys}}$ defines the speech generation task, $I^{g}$
+provides persistent speaker-level conditioning, $\mathrm{spk}$ denotes the
+speaker embedding, and $I^{l}$ specifies the local expressive characteristics
+of the current utterance. The sequences $\{t_n\}_{n=1}^{N}$ and
+$\{s_m\}_{m=1}^{M}$ denote the input text tokens and target speech tokens,
+respectively.
+
+Placing $I^{l}$ immediately before the corresponding text establishes an
+explicit association among speaker identity, utterance-level expression, and
+linguistic content. Both $I^{g}$ and $I^{l}$ are represented as
+natural-language token sequences, enabling open-ended and compositional control
+through the existing language-modeling interface. As in JoyVoice, the
+autoregressive hidden representations associated with $S$ are further used
+to condition the acoustic generation module.
+
+\subsubsection{Paralinguistic Speech Modeling}
+
+Paralinguistic behavior is an important component of natural speech interaction. Vocal events can communicate emotion, attitude, hesitation, physical state, and conversational intent beyond the lexical meaning of the text.
+
+We represent ten types of paralinguistic units using explicit special tokens:
+
+\begin{equation}
+\begin{split}
+\mathcal{P} = \{&
+\texttt{[Laughter]},
+\texttt{[Sigh]},
+\texttt{[Cough]},
+\texttt{[Uhm]},
+\texttt{[Confirmation\mbox{-}en]},
+\texttt{[Question\mbox{-}en]},\\
+&
+\texttt{[Surprise\mbox{-}ah]},
+\texttt{[Question\mbox{-}ah]},
+\texttt{[Question\mbox{-}ei]},
+\texttt{[Dissatisfaction\mbox{-}hnn]}
+\}.
+\end{split}
+\end{equation}
+
+These symbols are added to the model vocabulary and treated as special tokens rather than ordinary textual descriptions. They can be inserted directly into the input text at the desired positions, enabling the model to jointly learn their semantic context, temporal placement, and acoustic realization.
+
+For example:
+
+\begin{verbatim}
+[Sigh]I understand. Let us try another solution.
+
+I did not expect that at all.[Laughter]That was actually quite funny.
+\end{verbatim}
+
+This representation provides an explicit interface for controlling localized non-lexical vocal events while preserving the surrounding linguistic content. Local instructions govern the overall expressive realization of an utterance,
+whereas paralinguistic tokens provide position-specific control over localized
+non-lexical vocal events. These two interfaces are complementary.
+
+
+\subsubsection{Low-Cost Target-Voice Adaptation through Style Borrowing}
+
+Collecting expressive target-speaker recordings at scale is expensive. Studio recordings usually provide clean and consistent timbre, but cover only a limited range of emotional states, prosodic patterns, speaking rates, and paralinguistic behaviors. Exhaustively recording all combinations of these attributes is impractical.
+
+We address this problem through a voice-conversion-based SFT data construction strategy. The central idea is to borrow performances rather than voices.
+
+Movies and conversational media provide a large collection of naturally occurring performances, including excitement, hesitation, anger, relief, whispering, shouting, rapid speech, restrained emotion, and various paralinguistic behaviors. We use voice conversion to transfer these expressive performances into the target assistant voice.
+
+Given an expressive source utterance $x^{s}$, its speaking instruction $I$, and a target-speaker reference $r^{t}$, the converted speech can be represented as
+
+\begin{equation}
+\widetilde{x}^{t}
+=
+\mathrm{VC}
+\left(
+x^{s},
+r^{t}
+\right),
+\end{equation}
+
+where $\widetilde{x}^{t}$ is expected to retain the major expressive characteristics of the source utterance while transferring its speaker identity toward the target voice.
+
+The resulting training sample is formulated as
+
+\begin{equation}
+\left(
+I^{l},
+T,
+\widetilde{x}^{t}
+\right),
+\end{equation}
+
+where $I^{l}$ describes the expressive realization of the converted utterance and $T$ denotes its linguistic content. In this way, diverse performances from different speakers are reinterpreted through a single, consistent assistant voice.
+
+The converted samples constitute the instruction-aware SFT corpus for the
+target assistant voice. Quality control is applied to preserve transcription
+consistency, target-speaker similarity, expressive relevance, and general audio
+quality. In this way, diverse performances produced by different source
+speakers are reinterpreted through a consistent assistant identity.
+
+This strategy enables low-cost expressive adaptation without requiring the
+target speaker to record every combination of emotion, speaking rate, vocal
+effort, phonation, and paralinguistic behavior. The resulting speaker-specific
+SFT model serves as the Talker in JoyAI-Talker, preserving a fixed and
+recognizable assistant identity while retaining the local instruction-following
+capabilities acquired during foundation training.
+
+\subsubsection{Open-Ended Instruction Control}
+
+The current Talker uses open-ended natural-language instructions rather than a closed set of mandatory categorical labels. The instructions may describe one or multiple acoustic attributes with different levels of detail.
+
+The supported instruction dimensions mainly include:
+
+\begin{itemize}
+    \item \textbf{Emotion and Affective Expression:}
+    Descriptions of primary emotion, emotional intensity, emotional nuance, attitude, and communicative intention, such as happy, sad, angry, excited, surprised, fearful, and so on.
+
+    \item \textbf{Speaking Rate and Rhythm:}
+    Descriptions of speaking rate and rhythmic characteristics, such as
+extremely fast, fast, normal, slow, extremely slow, and so on.
+    
+    \item \textbf{Loudness and Vocal Effort:}
+    Descriptions of loudness and vocal effort, such as shouting, loud,
+normal, soft, whispering, and so on.
+
+    \item \textbf{Timbre and Phonation:}
+    Descriptions of temporary timbre characteristics and phonation styles, such as clear, bright, breathy, hoarse, tense, relaxed, and so on.
+
+    \item \textbf{Paralinguistic Behavior:}
+    Control of the ten types of paralinguistic units introduced above.
+
+    \item \textbf{Compositional Expression:}
+    Natural-language descriptions combining multiple acoustic attributes, such as emotion, speaking rate, loudness, timbre, scene, paralinguistic behavior, and so on.
+\end{itemize}
+
+Representing instructions in natural language provides a more flexible control interface than fixed categorical labels. It allows expressive attributes to be described with varied wording and enables multiple control dimensions to be combined within a single instruction.
+
+
+\subsubsection{Streaming Speech Generation}
+
+The Talker supports streaming text input and streaming speech output. As the Thinker incrementally produces a textual response, the Talker can begin synthesizing the available content without waiting for the complete response.
+
+During streaming inference, the local instruction is provided before its associated text and is preserved as a complete conditioning unit. This is particularly important for natural-language instructions and paralinguistic special tokens, whose meanings may be weakened if they are separated from the corresponding text span.
+
+The streaming interface dynamically organizes incoming text into generation units while maintaining the association among local instructions, paralinguistic events, and response content. This enables low-latency speech generation while preserving the expressive intention of the response.
+
+\subsubsection{Thinker--Talker Interface}
+
+Because the deployed Talker uses a fixed target-speaker voice, no global
+speaker instruction is required during inference. The Thinker produces the
+textual response together with an optional local speaking instruction derived
+from its empathetic understanding of the user, dialogue context, and intended
+communicative behavior. The instruction is enclosed by
+\texttt{<instruct>} and \texttt{</instruct>} and is placed before the
+corresponding response text.
+
+When an explicit instruction is provided, the Talker uses it to control the
+utterance-level acoustic realization while preserving the target assistant
+identity. When no instruction is provided, the Talker infers an appropriate
+speaking style from the linguistic and semantic context. Position-specific
+paralinguistic tokens may additionally be inserted into the response text to
+control localized vocal events.
+
+This interface separates empathetic reasoning from acoustic realization. The
+Thinker determines response content and communicative intent, while the Talker
+specializes in speaker-consistent, expressive, and low-latency speech
+generation.

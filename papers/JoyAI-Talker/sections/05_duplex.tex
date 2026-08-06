@@ -1,0 +1,41 @@
+
+\subsection{Duplex: State-Driven Semantic-Gated Full-Duplex Interaction}
+To enable natural, real-time full-duplex speech interaction without compromising the capabilities of the backbone half-duplex large speech dialogue model (SDM), we depart from the computationally heavy end-to-end parallel dual-stream architectures~\cite{defossez2024moshi, thinkingmachines2026interactionmodels} and propose \textbf{Joy-Duplex}, a decoupled, state-driven modular duplex framework. As illustrated in Fig.~\ref{fig:joy_duplex_framework}, this plug-and-play design equips pre-existing half-duplex systems with robust full-duplex capabilities without modifying their core backbone parameters, facilitating flexible deployment and scaling~\cite{25easyturn,yan2026soulx,26fastturn}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=1.0\linewidth]{pic/joyduplex-asr.pdf}
+\caption{\textbf{Unified token-interleaved streaming mechanism and state transitions of the Joy-Duplex Decoder.} The streaming Audio Encoder processes continuous user audio waveforms within a sliding window. The Joy-Duplex Decoder receives continuous Audio Embeddings and autoregressively decodes interleaved Text Tokens, boundary tokens (\texttt{<|asr\_eos|>}), and State Tokens within a single unified sequence. 
+% The fine-grained state vocabulary ($\texttt{<|partial|>}$, $\texttt{<|complete|>}$, $\texttt{<|backchannel|>}$, $\texttt{<|accept|>}$, and $\texttt{<|reject|>}$) dynamically monitors turn boundaries and manages conversational intent, acting as a semantic gating decision before triggering the downstream half-duplex SDM.
+}
+\label{fig:joy_duplex_framework}
+\end{figure}
+
+\subsubsection{Joy-Duplex Architecture}
+The Joy-Duplex framework isolates real-time turn-taking control from core response generation, deploying a lightweight external duplex predictor to govern the downstream half-duplex SDM. As illustrated in Fig.~\ref{fig:joy_duplex_framework}, the architecture consists of a streaming Audio Encoder and an interleaved Joy-Duplex Decoder:
+
+\begin{itemize}
+    \item \textbf{Streaming Audio Encoder}: 
+    To process continuous user speech with low algorithmic latency, we employ a streaming speech encoder that slices the input waveform into non-overlapping 160 ms chunks during inference. To enhance the model's robustness and generalization across various latency requirements, the encoder is trained using a dynamic chunk-based attention strategy~\cite{zhang2020unified}, where the chunk size is dynamically randomized during the training phase. The attention receptive field of each frame is constrained to only look backward at historical context and within the current chunk. The resulting continuous Audio Embeddings are then aligned via a linear projector and directly fed into the decoder.
+    
+    \item \textbf{Joy-Duplex Decoder}: The core backbone is a 1.7B-parameter decoder-only language model. The Joy-Duplex Decoder accepts the continuous Audio Embeddings alongside historical context, and autoregressively decodes interleaved Text Tokens and State Tokens within a single unified sequence. Notably, to establish explicit structural boundaries between speech transcripts and interaction states, each predicted text segment is strictly terminated with a dedicated \texttt{<|asr\_eos|>} token (represented as blue circles in Fig.~\ref{fig:joy_duplex_framework}). This boundary token explicitly marks the completion of incremental transcription for the current frame, immediately after which the decoder predicts the corresponding interaction State Tokens.
+\end{itemize}
+
+\subsubsection{Interleaved Sequence Modeling}
+We formulate streaming duplex state control as a token-interleaved sequence modeling task under incrementally available acoustic observations. 
+Let $A_t$ denote the continuous Audio Embeddings extracted from the $t$-th chunk, $T_t = \{w_1, w_2, \dots, \texttt{<|asr\_eos|>\}}$ represent the corresponding streaming Text Tokens terminated by the \texttt{<|asr\_eos|>} token, and $S_t$ denote the predicted State Tokens. At each step $t$, conditioned on the historical context $\mathcal{H}_{t-1} = \{A_{<t}, T_{<t}, S_{<t}\}$, the joint probability of predicting the current frame's text and state sequence is factorized as:
+\begin{equation}
+    P(T_t, S_t \mid A_{\le t}, \mathcal{H}_{t-1}) = P(T_t \mid A_{\le t}, \mathcal{H}_{t-1}) \cdot P(S_t \mid A_{\le t}, T_{\le t}, \mathcal{H}_{t-1})
+\end{equation}
+As illustrated in Fig.~\ref{fig:joy_duplex_framework}, when the user is speaking, the decoder first predicts the aligned Text Tokens $T_t$ and closes the text segment with the \texttt{<|asr\_eos|>} token (e.g., ``What'' $\rightarrow \texttt{<|asr\_eos|>}$), followed immediately by the State Token $S_t$ (e.g., $\texttt{<|partial|>}$) to capture instantaneous semantic and interaction status. Even during speech pauses or acoustic non-speech chunks where no text tokens are generated, the decoder outputs $\texttt{<|asr\_eos|>} \rightarrow \texttt{<|partial|>}$ to securely hold the turn. Only when a complete syntactic boundary is established (e.g., ``What is your name?''), the sequence generates $\text{name} \rightarrow \texttt{<|asr\_eos|>} \rightarrow \texttt{<|complete|>} \rightarrow \texttt{<|accept|>}$, unblocking the semantic gate to trigger the downstream response.
+
+The downstream SDM remains in a gated standby mode, activated for response generation if and only if the Joy-Duplex Decoder emits an explicit \texttt{<|accept|>} token. To enhance deployment safety in multi-speaker or noisy environments, a lightweight Speaker Verification (SV) plugin can run in parallel alongside the encoder for identity matching. This ensures that the SDM is exclusively triggered by the authorized speaker, forming a secure, modular, and robust full-duplex pipeline.
+
+\subsubsection{Interactive State Vocabulary}
+Rather than relying on frame-level acoustic energy which often causes false interruptions during natural hesitations, Joy-Duplex introduces five dedicated state tokens directly integrated into the decoding stream to establish a semantically-informed interaction state machine:
+\begin{itemize}
+    \item \textbf{\texttt{<|partial|>}}: Continuously generated during ongoing active speech, signaling that the user's semantic intent is still developing. This instructs the downstream SDM to remain in standby mode.
+    \item \textbf{\texttt{<|complete|>}}: Triggered immediately when the incremental transcription reaches a coherent syntactic and semantic boundary (e.g., transcribing the end of ``...your name'' $\rightarrow$ \texttt{<|complete|>}). This serves as a precursor for the final interactive gating decision.
+    \item \textbf{\texttt{<|backchannel|>}}: Emitted when the user provides short verbal feedback (e.g., ``uh-huh'', ``yeah''). It allows the system to acknowledge the user's presence without initiating a full conversational turn.
+    \item \textbf{\texttt{<|accept|>} / \texttt{<|reject|>}}: The semantic rejection gate. Immediately following the \texttt{<|complete|>} token, the decoder evaluates the final interaction intent. If a valid, system-directed query is confirmed, it yields \texttt{<|accept|>}, which unblocks the gate and triggers the downstream SDM to speak. Conversely, if the completed segment consists of background leakage, off-target speech, or ambient noise, the decoder outputs \texttt{<|reject|>}, which explicitly suppresses the SDM to prevent accidental activations.
+\end{itemize}

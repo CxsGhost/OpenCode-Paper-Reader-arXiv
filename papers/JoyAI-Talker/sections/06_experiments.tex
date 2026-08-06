@@ -1,0 +1,282 @@
+
+ 
+\section{Experimental Results}
+\subsection{Text-to-Text (T2T) Evaluation}
+To ensure fair and reproducible evaluation, we adopt a standardized evaluation pipeline. Most benchmarks are evaluated with OpenCompass under greedy decoding for deterministic reporting, while RULER is evaluated using its official repository under a 64K context window to remain consistent with its native leaderboard setting. All models evaluated in this section are tested with chat-format inference templates, including conversational special tokens, to better reflect real-world user-interactive scenarios.
+
+To examine whether JoyAI-Talker preserves the text-domain capabilities of its backbone after speech-text joint training and alignment, we evaluate JoyAI-Talker-SFT and JoyAI-Talker-DPO on 14 benchmarks covering knowledge, reasoning, instruction following, long-context modeling, and STEM capabilities. The results are summarized in Table~\ref{tab:instruct_eval}.
+
+We discuss the results from two perspectives: general knowledge, reasoning, and STEM capabilities, as well as instruction following and long-context modeling.
+
+
+\begin{itemize}
+    \item \textbf{General Knowledge and STEM:} JoyAI-Talker demonstrates competitive logical reasoning and academic proficiency. In mathematical reasoning, JoyAI-Talker-DPO reaches $94.62\%$ on MATH and $94.58\%$ on MATH-500. It achieves stable results in complex, college-level reasoning benchmarks, scoring $54.31\%$ on SuperGPQA and $64.51\%$ on GPQA. General knowledge also remains robust, leading on MMLU-Redux with $90.80\%$ and CMMLU with $86.18\%$.
+    
+    \item \textbf{Instruction Following and Long-Context:} On instruction-following benchmarks, the model exhibits stable compliance. The SFT stage successfully bridges the conversational gap, leading to scores of $83.62\%$ on IFEval and $31.67\%$ on IFBench. The DPO phase further refines these capabilities, reaching $83.70\%$ and $31.83\%$ respectively, while sustaining long-horizon conversational coherence with a RULER (64K) score of $76.88\%$. This progressive improvement demonstrates that preference optimization effectively steers the policy toward stricter constraint adherence without compromising general reasoning.
+\end{itemize}
+
+\begin{table}[ht]
+\centering
+%\caption{Comparison of Text-to-Text (T2T) Instruct Model performance between Qwen3-Omni-30B-A3B and different training stages of JoyAI-Talker. Best results are marked in bold.}
+\caption{Text-to-Text (T2T) benchmark results of JoyAI-Talker across different training stages. Best results are marked in bold. Qwen3-Omni is configured with 32B parameters (3B active). JoyAI-Talker is configured with 48B parameters (3B active).}
+\label{tab:instruct_eval}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Task} & \textbf{Qwen3-Omni} & \textbf{JoyAI-Talker-SFT} & \textbf{JoyAI-talker-DPO}  \\
+\midrule
+\rowcolor[gray]{0.92} \textbf{Knowledge} & & & \\
+\quad MMLU-Redux & 89.65 & 89.94 & \textbf{90.80} \\
+\quad C-Eval & 87.79 & 87.31 & \textbf{87.97} \\
+\quad MMLU & 87.90 & 87.72 & \textbf{88.57} \\
+\quad CMMLU & 85.87 & 85.14 & \textbf{86.18} \\
+\hline
+\rowcolor[gray]{0.92} \textbf{Reasoning} & & & \\
+\quad MMLU-Pro & 76.08 & 77.58 & \textbf{80.23}\\
+\quad SuperGPQA & 49.20 & 50.59 & \textbf{54.31}\\
+\quad AGIEval & 42.87 & 50.92 & \textbf{54.22}\\
+\hline
+\rowcolor[gray]{0.92} \textbf{Instruction Following} & & & \\
+\quad IFEval & 82.81 & 83.62 & \textbf{83.70}\\
+\quad IFBench & 26.68 & 31.67 & \textbf{31.83}\\
+\hline
+\rowcolor[gray]{0.92} \textbf{Long-Context} & & & \\
+\quad RULER (64K) & 73.99 & 74.68 & \textbf{76.88}\\
+\hline
+\rowcolor[gray]{0.92} \textbf{STEM} & & & \\
+\quad MATH & 92.04 & 92.60 & \textbf{94.62}\\
+\quad MATH-500 & 92.20 & 92.56 & \textbf{94.58}\\
+\quad GSM8K & \textbf{95.98} & 95.53 & 95.60\\
+\quad GPQA & 58.93 & 60.04 & \textbf{64.51} \\
+\bottomrule
+\vspace{5pt}
+
+\end{tabular}
+\end{table}
+
+
+
+
+
+
+\subsection{Speech-to-Text (S2T) Evaluation}
+
+To comprehensively evaluate speech-conditioned capabilities, we assess the SFT and DPO models across 23 benchmarks spanning acoustic perception, cross-lingual translation, QA, and emotional quotient (EQ). The comparative results are summarized in Table~\ref{tab:s2t_instruct_eval}.
+
+\begin{table}[ht]
+\centering
+\caption{Comparison of Speech-to-Text (S2T) Instruct Model performance between Qwen3-Omni and JoyAI-Talker SFT/DPO checkpoints. Best results are marked in bold.}
+\label{tab:s2t_instruct_eval}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Task} & \textbf{Qwen3-Omni} & \textbf{JoyAI-Talker-SFT} & \textbf{JoyAI-talker-DPO} \\
+\midrule
+\rowcolor[gray]{0.92} \textbf{ASR} ~($\downarrow$) & & & \\
+\quad Aishell 1 & 1.04 & 0.87 & \textbf{0.86} \\
+\quad Aishell 2 & 2.48 & 2.18 & \textbf{2.17} \\
+\quad LibriSpeech (clean) & 1.52 & 1.33 & \textbf{1.32} \\
+\quad LibriSpeech (other) & 3.22 & \textbf{2.55} & 2.58 \\
+\quad Wenetspeech (net) & 4.64 & 4.47 & \textbf{4.46} \\
+\quad Wenetspeech (meeting) & 5.97 & \textbf{5.86} & 5.88 \\
+\quad Fleurs (zh) & 2.79 & 2.54 & \textbf{2.48} \\
+\quad Fleurs (en) & 3.18 & \textbf{3.05} & \textbf{3.05} \\
+\quad GigaSpeech & 11.27 & 10.25 & \textbf{9.39} \\
+\quad Tedium & 3.49 & \textbf{2.85} & 2.90 \\
+\hline
+\rowcolor[gray]{0.92} \textbf{Translation} ~($\uparrow$) & & & \\
+\quad Covost2 (en2zh) & 44.80 & \textbf{51.29} & 50.37 \\
+\quad Covost2 (zh2en) & \textbf{28.50} & 27.89 & 27.95 \\
+\quad FLEURS (en2zh) & 41.83 & \textbf{43.99} & 43.84 \\
+\quad FLEURS (zh2en) & 26.56 & \textbf{27.66} & 27.32 \\
+\hline
+\rowcolor[gray]{0.92} \textbf{QA} ~($\uparrow$) & & & \\
+\quad AdvBench & 99.62 & \textbf{99.81} & \textbf{99.81} \\
+\quad AlpacaEval & \textbf{4.68} & 4.62 & 4.61 \\
+\quad CommonEval & \textbf{4.53} & 4.51 & \textbf{4.53} \\
+\quad OpenBookQA & 93.19 & 93.84 & \textbf{94.73} \\
+\quad MMSU & 81.82 & 82.40 & \textbf{84.65} \\
+\quad SD-QA & 73.96 & 73.96 & \textbf{75.77} \\
+\hline
+\rowcolor[gray]{0.92} \textbf{EQ} ~($\uparrow$) & & & \\
+\quad Gender & 97.59 & \textbf{98.25} & 98.20 \\
+\quad Age & 65.20 & 76.90 & \textbf{77.30} \\
+\quad Emotion & 77.00 & 78.97 & \textbf{79.57} \\
+\bottomrule
+
+\end{tabular}
+\end{table}
+
+We analyze the model's performance categorized across these critical domains:
+
+\begin{itemize}
+    \item \textbf{Acoustic Perception (ASR):} JoyAI-Talker achieves solid results across various test suites representing different scenarios. At the DPO stage, it reaches competitive Word Error Rates (WER) on Aishell-1 ($0.86\%$), Aishell-2 ($2.17\%$), and LibriSpeech-clean ($1.32\%$), while maintaining stable performance on other challenging speech datasets.
+    
+    \item \textbf{Cross-Lingual Translation:} The model displays competitive speech-to-text translation capabilities, particularly in english-to-chinese translation tasks where it reaches a CoVoST-2 score of $51.29$ and a FLEURS score of $43.99$, ensuring stable bilingual conceptual transfer.
+    
+    \item \textbf{Speech Reasoning (QA):} Benefiting from our pretraining paradigm designed to alleviate cognitive degradation, the model's textual cognitive capacity successfully transfers to speech-conditioned queries. In speech QA benchmarks, JoyAI-Talker-DPO achieves solid reasoning performance, scoring $94.73\%$ on OpenBookQA, $84.65\%$ on MMSU, and $75.77\%$ on SD-QA, demonstrating its capability in processing complex speech queries.
+    
+    \item \textbf{Emotional Quotient (EQ) Perception:} Paralinguistic modeling serves as a foundation for our Persona-Adaptive Empathetic Response (PAER) framework. By incorporating empathetic and paralinguistic datasets, JoyAI-Talker displays stable performance in extracting speaker attributes from raw audio, scoring $98.25\%$ in Gender classification, $77.30\%$ in Age classification, and $79.57\%$ in Emotion classification, providing a foundation for emotionally intelligent conversational feedback.
+\end{itemize}
+
+\vspace{3pt}
+\subsection{Evaluation of Persona-Adaptive Empathetic Response}
+\label{sec:empathy_eval}
+
+\subsubsection{Audio Understanding and Chain-of-Thought Reasoning.}
+
+
+To establish a foundation for personalized empathy, we evaluate the model's capability in perceiving speaker attributes from raw audio. 
+
+\begin{itemize}
+    \item \textbf{Acoustic Perception Evaluation:} We assess gender and age recognition on AIR-Bench, and emotion recognition on MER2025. To capture emotional nuances more precisely, we audited the test set labels for Track 1, transitioning from six discrete emotional categories to a richer "primary emotion + mental state description" format.
+    
+    \item \textbf{Evaluation Settings:} We evaluate the model under two distinct settings: (1) \textit{Direct}, which measures atomic perception capabilities in isolation, and (2) \textit{CoT}, which evaluates the attributes explicitly generated within the model's intermediate Chain-of-Thought reasoning steps during actual dialogue generation.
+    
+    \item \textbf{Perception Results Analysis:} As shown in Table~\ref{tab:user_state_perception}, JoyAI-Talker displays solid and stable capabilities:
+    \begin{itemize}
+        \item Under the \textit{Direct} setting, the model demonstrates stable baseline understanding, reaching $98.2\%$ in gender, $77.3\%$ in age, and $79.6\%$ in emotion recognition.
+        \item Under the \textit{CoT} setting, the model successfully retains and utilizes its acoustic perception within a continuous conversational reasoning process, achieving a competitive $77.7\%$ accuracy in age prediction.
+    \end{itemize}
+\end{itemize}
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Gender and age are evaluated on the original AIR-Bench labels, while emotion is evaluated on our refined MER2025 annotations. \textit{Direct} tests the model's atomic perception capability in isolation, whereas \textit{CoT} evaluates the attributes explicitly generated within the model's chain-of-thought reasoning prior to formulating a dialogue response.}
+\label{tab:user_state_perception}
+\begin{tabular}{l l ccc}
+\toprule
+Model & Setting & Gender~($\uparrow$) & Age~($\uparrow$) & Emotion~($\uparrow$) \\
+\midrule
+Qwen3-Omni & Direct & 97.59 & 65.2 & 77.0 \\
+\midrule
+JoyAI-Talker & Direct & \textbf{98.2} & 77.3 & \textbf{79.6} \\
+JoyAI-Talker & CoT & 89.3 & \textbf{77.7} & 72.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+\subsubsection{Empathetic Dialogue Generation.}
+
+
+We assess the final generated responses to evaluate the model's empathetic and persona-adaptive response quality, with the acoustic realization evaluated separately.
+
+\begin{itemize}
+    \item \textbf{Evaluation Setup:} We evaluate the final responses using three English subsets derived from EchoMind (Emotion, Age, and Gender). An LLM-as-a-judge paradigm is employed, rating responses on a 1--10 scale across six weighted dimensions: \textit{Basic Logic} ($10\%$), \textit{Knowledge Consistency} ($10\%$), \textit{Diversity} ($10\%$), \textit{Content Logic} ($20\%$), \textit{Interaction} ($20\%$), and \textit{Empathy} ($30\%$).
+    
+    \item \textbf{Performance Analysis:} As detailed in Table~\ref{tab:empathy_response}, the results highlight the progressive alignment of our framework:
+    \begin{itemize}
+        \item JoyAI-Talker achieves competitive results across both the overall weighted scores and the dedicated empathy dimensions.
+        \item Favorable gains are observed on the EchoMind-Emotion subset. On EchoMind-Age, while the overall weighted score shows a slight increase, the dedicated empathy score displays a notable improvement (climbing to $7.49$).
+        \item These targeted gains demonstrate that our decoupled framework effectively concentrates modeling capacity on deep persona adaptation and emotional resonance by seamlessly integrating audio understanding, explicit persona-driven reasoning, and empathetic response generation.
+    \end{itemize}
+\end{itemize}
+
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Empathetic-response evaluation based on LLM-as-a-judge. \textit{Weighted Score} denotes the six-dimensional weighted score, while \textit{Empathy Score} denotes the dedicated empathetic-response dimension.}
+\label{tab:empathy_response}
+\begin{tabular}{l cc cc}
+\toprule
+\multirow{2}{*}{Benchmark} & 
+\multicolumn{2}{c}{Weighted Score} &
+\multicolumn{2}{c}{Empathy Score} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+& Qwen3-Omni & JoyAI-Talker & Qwen3-Omni & JoyAI-Talker \\
+\midrule
+EchoMind-Emotion~($\uparrow$) & 8.91 & \textbf{9.38} & 7.71 & \textbf{8.28} \\
+EchoMind-Age~($\uparrow$) & 8.91 & \textbf{9.08} & 7.03 & \textbf{7.49} \\
+EchoMind-Gender~($\uparrow$) & 9.47 & \textbf{9.79} & 9.20 & \textbf{9.73} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+
+
+
+\subsection{Full Duplex Evaluation}
+\subsubsection{Evaluation Benchmark}
+To verify the efficacy of our proposed framework, we conduct extensive evaluations using the latest established full-duplex conversational standard. We evaluate Joy-Duplex on \textbf{Full-Duplex-Bench v1.5}~\cite{lin2026fullduplexv1.5}, a benchmark designed to assess an audio assistant's categorical behaviors under four typical conversational overlap scenarios:
+\begin{itemize}
+    \item \textbf{User Interruption}: The user genuinely attempts to take over the floor (e.g., ``Wait, I want to...''). The system must yield the turn immediately and address the new query ($C_{\text{RESPOND}} \uparrow$).
+    \item \textbf{User Backchannel}: The user injects short affirmations (e.g., ``uh-huh'', ``yeah'') to signal engagement rather than taking the turn. The system should ignore these cues and continue speaking ($C_{\text{RESUME}} \uparrow$).
+    \item \textbf{Talking to Other}: The user addresses a third party in the environment (e.g., ``Hey Grandma...''). The system must perform semantic addressee detection and hold the floor ($C_{\text{RESUME}} \uparrow$, $C_{\text{RESPOND}} \downarrow$).
+    \item \textbf{Background Speech}: Ambient far-field speech or environmental noise occurs. The system must remain robust to this acoustic interference and continue its response ($C_{\text{RESUME}} \uparrow$, $C_{\text{RESPOND}} \downarrow$).
+\end{itemize}
+Following the benchmark protocol, all system behavioral outputs are classified into four categories: $C_{\text{RESPOND}}$ (yielding and responding), $C_{\text{RESUME}}$ (ignoring and continuing), $C_{\text{UNCERTAIN}}$ (addressee checking), and $C_{\text{UNKNOWN}}$ (unclassified behaviors).
+
+\subsubsection{Results and Discussion}
+The quantitative results on Full-Duplex-Bench v1.5 are summarized in Table~\ref{tab:fd_bench_eval_comprehensive}. To ensure a state-of-the-art evaluation, in addition to citing baselines from the original benchmark paper~\cite{lin2026fullduplexv1.5}, we leverage the commercial API to locally evaluate and include performance metrics for the released Gemini 3.1 Live model.
+
+\begin{table}[ht]
+\centering
+\caption{Behavioral response performance on Full-Duplex-Bench v1.5. For each scenario, the primary target metric is denoted with $\uparrow$ for higher is better and the false trigger or action metric with $\downarrow$ for lower is better. Best results are marked in bold.}
+\label{tab:fd_bench_eval_comprehensive}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Scenario / Metric} & \textbf{Freeze-Omni$^*$} & \textbf{Moshi$^*$} & \textbf{GPT-4o$^*$} & \textbf{Gemini 3.1 Live$^\dagger$} & \textbf{Joy-Duplex} \\
+\midrule
+\rowcolor[gray]{0.92} \textbf{User Interruption} & & & & & \\
+\quad $C_{\text{RESPOND}}$~($\uparrow$) & 0.72 & 0.50 & 0.78 & 0.77 & \textbf{0.88} \\
+\quad $C_{\text{RESUME}}$~($\downarrow$)  & 0.12 & 0.26 & 0.10 & 0.20 & \textbf{0.07} \\
+\hline
+\rowcolor[gray]{0.92} \textbf{User Backchannel} & & & & & \\
+\quad $C_{\text{RESPOND}}$~($\downarrow$) & 0.07 & 0.02 & 0.03 & 0.02 & \textbf{0.01} \\
+\quad $C_{\text{RESUME}}$~($\uparrow$)  & 0.80 & 0.06 & 0.70 & 0.95 & \textbf{0.96} \\
+\hline
+\rowcolor[gray]{0.92} \textbf{Talking to Other} & & & & & \\
+\quad $C_{\text{RESPOND}}$~($\downarrow$) & 0.58 & 0.20 & 0.91 & 0.27 & \textbf{0.17} \\
+\quad $C_{\text{RESUME}}$~($\uparrow$)  & 0.25 & 0.19 & 0.02 & 0.66 & \textbf{0.72} \\
+\hline
+\rowcolor[gray]{0.92} \textbf{Background Speech} & & & & & \\
+\quad $C_{\text{RESPOND}}$~($\downarrow$) & 0.62 & 0.21 & 0.93 & 0.28 & \textbf{0.10} \\
+\quad $C_{\text{RESUME}}$~($\uparrow$)  & 0.25 & 0.07 & 0.04 & 0.66 & \textbf{0.85} \\
+\bottomrule
+\multicolumn{6}{l}{\small $^*$ Results are cited directly from the original Full-Duplex-Bench v1.5 paper~\cite{lin2026fullduplexv1.5}.} \\
+\multicolumn{6}{l}{\small $^\dagger$ Results are evaluated by ourselves via the latest commercial Gemini Live API.}
+\end{tabular}
+\end{table}
+
+As presented in Table~\ref{tab:fd_bench_eval_comprehensive}, Joy-Duplex achieves state-of-the-art performance across all four conversational scenarios, demonstrating superior capabilities in both turn-yielding and turn-holding decisions. Driven by our chunk-masked streaming encoder and explicit state transition gating, the system achieves a strong interruption response rate and suppresses erroneous floor-holding. The remaining unresponded interruptions are primarily attributed to a conservative trade-off introduced by our semantic rejection tokens (\texttt{<|reject|>}), which prioritize preventing false activations under ambiguous acoustic conditions.
+
+When encountering non-floor-taking inputs, this conservative gating policy exhibits notable advantages by maintaining appropriate turn-holding behaviors. When users address third parties, Joy-Duplex reduces false responses to 0.17 while maintaining a 0.72 resume rate. Under background speech interference, false activations are suppressed to 0.10 with an 0.85 resume rate. Furthermore, the system seamlessly maintains conversational flow during user backchannels, achieving a high resume rate of 0.96 with a minimal false trigger rate of 0.01. Overall, these evaluations confirm that Joy-Duplex delivers a well-balanced interaction policy by effectively combining prompt turn-yielding with robust semantic rejection.
+
+% The empirical data demonstrates that classical end-to-end full-duplex models such as Freeze-Omni and Moshi suffer from severe false activations under non-floor-taking scenarios due to weak semantic rejection capabilities, with false response rates exceeding 0.58. Advanced proprietary models also fall into two distinct paradigms. GPT-4o exhibits an over-reactive policy that triggers catastrophically on non-floor-taking inputs, yielding false response rates of 0.93 under Background Speech and 0.91 under Talking to Other. Meanwhile, Gemini 3.1 Live adopts a more conservative floor-holding stance, yet it still leaves room for improvement when filtering out off-target speech, maintaining a false response rate between 0.27 and 0.28.
+
+% In contrast, Joy-Duplex achieves state-of-the-art performance across all four evaluation scenarios. Driven by our chunk-masked streaming encoder and explicit state transition gating, it delivers exceptional responsiveness during genuine interruptions, achieving a response rate of 0.88 and a minimal resume rate of 0.07. At the same time, it effectively suppresses false triggers in complex multi-party and noisy environments, reducing false response rates to 0.17 for Talking to Other and 0.10 for Background Speech. Furthermore, it seamlessly preserves conversational flow during user backchannels, achieving a resume rate of 0.96. These results confirm that Joy-Duplex successfully balances immediate turn-yielding with precise semantic rejection.
+
+\subsection{Speech Tool Calling}
+
+Table~\ref{tab:speech_toolcall_bench} reports the performance of JoyAI-Talker on representative speech function calling benchmarks. Compared with two size-matched baselines a text-only model (Qwen3.6-35B) and a multimodal model (Qwen3-omni). JoyAI-Talker achieves the best performance on Speech-ACEBench (Single) while maintaining competitive performance on Speech-BFCL and Speech-SmartInteract. These results demonstrate that JoyAI-Talker effectively transfers text domain agent capabilities to speech interactions, achieving strong overall performance across diverse speech tool-calling tasks.
+
+We attribute these gains to two complementary components. First, high-quality supervised fine-tuning (SFT) agent training data enables the model to acquire strong tool reasoning and function calling capabilities from the text domain. Second, speech oriented agent training data exposes the model to diverse voice-based tool calling scenarios, enabling it to learn the mapping between speech user intents and corresponding tool invocations. These components equip JoyAI-Talker with robust speech agent capabilities and consistently high tool-calling accuracy across a wide range of real-world voice interaction scenarios.
+
+\begin{table}[ht]
+\centering
+\caption{Performance comparison on speech function calling benchmarks. Bold denotes the best result among the evaluated models. Qwen3.6 is configured with 35B parameters (3B active). Qwen3-Omni is configured with 32B parameters (3B active). JoyAI-Talker is configured with 48B parameters (3B active).}
+\label{tab:speech_toolcall_bench}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Benchmark} &
+\textbf{Qwen3.6 (Text only)} &
+\textbf{Qwen3-Omni} &
+\textbf{JoyAI-Talker} \\
+\midrule
+Speech-ACEBench (Single)~($\uparrow$)    & 96.63 & 92.79 & \textbf{98.56} \\
+Speech-ACEBench (Parallel)~($\uparrow$)  & \textbf{61.36} & 38.63 & 44.32 \\
+\midrule
+Speech-BFCL (Single)~($\uparrow$)        & \textbf{94.81} & 92.21 & 89.62 \\
+Speech-BFCL (Parallel)~($\uparrow$)      & 78.76 & \textbf{84.68} & 78.72 \\
+\midrule
+Speech-SmartInteract~($\uparrow$)        & \textbf{83.08} & 75.90 & 80.39 \\
+\bottomrule
+\end{tabular}
+\end{table}

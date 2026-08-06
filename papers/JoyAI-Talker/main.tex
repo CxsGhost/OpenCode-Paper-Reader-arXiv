@@ -1,0 +1,110 @@
+
+\documentclass[]{jingdong}
+\definecolor{jsonstr}{rgb}{0.5,0.5,0.5}
+\usepackage{authblk} % 用于管理作者和联系信息
+
+\usepackage{marvosym}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{colortbl}  % 用于实现表格行底色 \rowcolor
+\usepackage{xcolor}    % 配合 colortbl 使用
+\lstdefinelanguage{json}{
+    basicstyle=\ttfamily\tiny,
+    showstringspaces=false,
+    breaklines=true,                 % 长行自动换行
+    breakatwhitespace=false,
+    frame=single,                    % 边框
+    rulecolor=\color{gray!40},
+    backgroundcolor=\color{gray!5},  % 浅灰背景
+    literate=
+     *{:}{{{\color{black}{:}}}}{1}
+      {,}{{{\color{black}{,}}}}{1}
+      {\{}{{{\color{black}{\{}}}}{1}
+      {\}}{{{\color{black}{\}}}}}{1}
+      {[}{{{\color{black}{[}}}}{1}
+      {]}{{{\color{black}{]}}}}{1},
+    morestring=[b]",
+    stringstyle=\color{jsonstr},
+}
+
+
+% \renewcommand{\todo}[2][]{\textcolor{red}{[TODO: #2]}}
+\input{sections/00_decl}
+
+\setcounter{topnumber}{2}
+\setcounter{bottomnumber}{2}
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\textfraction}{0.03}
+\renewcommand{\floatpagefraction}{0.85}
+\setlength{\textfloatsep}{6pt plus 1pt minus 2pt}
+\setlength{\floatsep}{6pt plus 1pt minus 2pt}
+
+
+% \renewcommand\Authfont{\small} 
+\title{JoyAI-Talker: Full-Duplex Speech Interactive Large Model Built for Empathetic Voice Agents}
+%\title{JoyAI-Talker Technical Report}
+%\author[]{}
+
+
+%\author{
+%  \bf SpeechTeam, JD
+%}
+
+%\affil{Speech Lab, JD Explore Academy, JD.com Inc.}
+%\affil{\texttt{joyai\_audio\_llm@jd.com}}
+
+
+\vspace{-40pt}
+
+%\contribution[*]{Equal Contribution}
+%\contribution[\dagger]{Project Lead}
+%\contribution[\textsuperscript{\Letter}]{Corresponding Authors}
+\affiliation[]{JD.com}
+
+\vspace{-40pt}
+
+
+%\checkdata[Project page]{\href{https://joyai-vl-video-future-academy-jd.github.io/JoyAI-VL-Interaction/}{https://joyai-vl-video-future-academy-jd.github.io/JoyAI-VL-Interaction/}}
+%\checkdata[Repository]{\href{https://github.com/jd-opensource/JoyAI-VL-Interaction}{https://github.com/jd-opensource/JoyAI-VL-Interaction}}
+%\checkdata[Release]{The model weights, interaction data, and full system code will be released by June 20, 2026.}
+
+\abstract{
+We present \textbf{JoyAI-Talker}, a full-duplex speech dialogue system that delivers robust foundation model capabilities while empowering \textbf{empathetic interaction and voice agent intelligence}. 
+JoyAI-Talker adopts a modular Thinker-Talker architecture that decouples cognitive planning, conversational state coordination, and speech generation, and further implements a unified speech-text joint training pipeline to mitigate the common "cognitive degradation" bottleneck, thereby largely preserving the model’s core textual reasoning, STEM, and logical capabilities while extending them to speech-based interaction.
+For expressive speech synthesis, the Talker module employs a text-controllable generation paradigm that enables natural-language instructions to flexibly control vocal attributes and localized paralinguistic events, such as laughter and sighs, supporting more expressive and fine-grained speech responses.
+To enhance conversational empathy, we introduce the \textbf{Persona-Adaptive Empathetic Response (PAER)} framework. PAER employs a hierarchical cognitive pipeline to extract non-verbal speaker cues, such as gender, age, and emotional state, from raw input audio, incorporate them into the Thinker's CoT reasoning, and generate context-adaptive responses that align semantically appropriate text with fine-grained control over utterance-level expressiveness and localized paralinguistic events, including sighs, speaking rate, and volume. We further integrate \textbf{Joy-Duplex}, a state-driven, plug-and-play full-duplex framework that functions as an efficient gating engine for real-time turn control. 
+Extensive evaluations show that JoyAI-Talker achieves \textbf{highly competitive performance on foundational text-to-text (T2T) and speech-to-text (S2T) benchmarks}. In full-duplex evaluation, the system reaches a high response rate of $0.88$ under user interruptions while maintaining an extremely low false-trigger rate under background speech, demonstrating its readiness for fluid and natural speech dialogue.
+
+\vspace{-30pt}
+}
+
+%We present JoyAI-Talker, a full-duplex speech dialogue system that delivers robust foundation model capabilities while empowering empathetic interaction and voice agent intelligence. JoyAI-Talker adopts a modular Thinker-Talker architecture and further implements a unified speech-text joint training pipeline to mitigate the common "cognitive degradation" bottleneck, thereby largely preserving the model’s core textual reasoning, STEM, and logical capabilities while extending them to speech-based interaction. For expressive speech synthesis, the Talker module employs a text-controllable generation paradigm that enables natural-language instructions to flexibly control vocal attributes and localized paralinguistic events, such as laughter and sighs, supporting more expressive and fine-grained speech responses. To enhance conversational empathy, we introduce the Persona-Adaptive Empathetic Response (PAER) framework. PAER employs a hierarchical cognitive pipeline to extract non-verbal speaker cues, such as gender, age, and emotional state, from raw input audio, incorporate them into the Thinker CoT reasoning, and generate context-adaptive responses that align semantically appropriate text with fine-grained control over utterance-level expressiveness and localized paralinguistic events, including sighs, speaking rate, and volume. We further integrate Joy-Duplex, a state-driven, plug-and-play full-duplex framework that functions as an efficient gating engine for real-time turn control. Extensive evaluations show that JoyAI-Talker achieves highly competitive performance on foundational T2T and S2T benchmarks. In full-duplex evaluation, the system reaches a high response rate of 0.88 under user interruptions while maintaining an extremely low false-trigger rate under background speech, demonstrating its readiness for fluid and natural speech dialogue.
+
+\begin{document}
+
+
+\maketitle
+
+
+
+\input{sections/01_intro}
+\input{sections/02_architecture}
+\input{sections/03_thinker}
+\input{sections/04_talker}
+\input{sections/05_duplex}
+\input{sections/06_experiments}
+\input{sections/07_conclusion}
+
+% \section{Acknowledgment}
+
+% ddd
+
+
+%\bibliographystyle{assets/plainnat}
+\bibliographystyle{unsrt}
+\bibliography{references}
+%\input{sections/99_appendix}
+
+\end{document}
