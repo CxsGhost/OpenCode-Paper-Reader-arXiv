@@ -20,12 +20,14 @@ When a user provides a paper title or arXiv ID, follow these steps:
 
 ### 2. Download Source
 - URL: `https://arxiv.org/src/{arxiv_id}`
-- Create directory: `papers/{sanitized_title}/`
+- Create directory: `papers/{sanitized_full_title}/`
+  - **必须使用论文完整标题**，空格替换为下划线，去除 `/\:*?"<>|` 等非法字符
+  - 示例: `JoyAI-Talker_Full-Duplex_Speech_Interactive_Large_Model_Built_for_Empathetic_Voice_Agents`
 - Inside paper directory, create two subdirectories:
   - `src/` — for extracted LaTeX source files
   - `analysis_report/` — for AI-generated documents
 - Extract `.tar.gz` into the `src/` subdirectory
-- Final structure: `papers/{title}/src/` (源码) + `papers/{title}/analysis_report/` (分析报告)
+- Final structure: `papers/{full_title}/src/` (源码) + `papers/{full_title}/analysis_report/` (分析报告)
 
 ### 3. Generate Summary (Chinese)
 Read LaTeX source and generate `analysis_report/summary.md` covering:
