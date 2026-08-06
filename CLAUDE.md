@@ -20,9 +20,12 @@ When a user provides a paper title or arXiv ID, follow these steps:
 
 ### 2. Download Source
 - URL: `https://arxiv.org/src/{arxiv_id}`
-- Create directory named after sanitized paper title
-- Extract `.tar.gz` into directory
-- Create `analysis_report/` subdirectory
+- Create directory: `papers/{sanitized_title}/`
+- Inside paper directory, create two subdirectories:
+  - `src/` — for extracted LaTeX source files
+  - `analysis_report/` — for AI-generated documents
+- Extract `.tar.gz` into the `src/` subdirectory
+- Final structure: `papers/{title}/src/` (源码) + `papers/{title}/analysis_report/` (分析报告)
 
 ### 3. Generate Summary (Chinese)
 Read LaTeX source and generate `analysis_report/summary.md` covering:
