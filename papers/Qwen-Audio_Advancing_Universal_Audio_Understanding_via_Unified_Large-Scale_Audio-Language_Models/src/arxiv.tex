@@ -1,0 +1,637 @@
+
+\documentclass{article}
+\usepackage{hello}
+
+\usepackage[margin=1in]{geometry}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{graphicx}
+% \usepackage{subfigure}
+% \usepackage[subfigure]{tocloft}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{multirow}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{url}
+\usepackage{longtable}
+\usepackage{supertabular}
+\usepackage{float}
+% \usepackage[fontset=ubuntu]{ctex}
+% \usepackage{xeCJK}
+\usepackage{enumitem}
+\usepackage{tablefootnote}
+\usepackage[round,semicolon]{natbib}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{xspace}
+\usepackage{textcomp}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{lscape} 
+\usepackage{siunitx}
+\usepackage{tabularx}
+
+\setlength{\columnsep}{2em}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{0.7em}
+
+\usepackage{amssymb}% http://ctan.org/pkg/amssymb
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+\usepackage{scrextend}
+
+\usepackage{array}
+\usepackage{tgpagella}
+% \usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\definecolor{mydarkblue}{rgb}{0,0.08,0.45}
+\usepackage[colorlinks,citecolor=mydarkblue,urlcolor=mydarkblue,linkcolor=mydarkblue]{hyperref}
+\usepackage{url}            % simple URL typesetting
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{changepage}
+\usepackage{xargs}          % Use more than one optional parameter in a new commands
+\usepackage{wrapfig,lipsum,booktabs}
+\usepackage{longtable}
+\usepackage{caption}
+\usepackage{subcaption}
+% \usepackage[symbol]{footmisc}
+\usepackage{endnotes}
+\usepackage{tablefootnote} % for table footnotes
+% \renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+\usepackage{pgfplots}
+\usetikzlibrary{pgfplots.groupplots}
+\pgfplotsset{compat=1.3}
+\usepackage{tikz}
+\usetikzlibrary{patterns}
+
+\usepackage[most]{tcolorbox}
+
+\usepackage[capitalize,noabbrev]{cleveref}
+\crefname{section}{Section}{\S\S}
+\Crefname{section}{Section}{\S\S}
+\crefname{table}{Table}{Tables}
+\crefname{figure}{Figure}{Figures}
+\crefname{algorithm}{Algorithm}{}
+\crefname{equation}{eq.}{}
+\crefname{appendix}{Appendix}{}
+\crefformat{section}{Section #2#1#3}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{bm}
+
+\usepackage{tcolorbox}
+\usepackage{titlesec}
+\titleformat*{\section}{\large\bfseries}
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+\DeclareMathOperator{\softmax}{softmax}
+\DeclareMathOperator{\concat}{concat}
+\DeclareMathOperator{\layernorm}{LayerNorm}
+
+\definecolor{battleshipgrey}{rgb}{0.3, 0.3, 0.3}
+\definecolor{brilliantrose}{rgb}{1.0, 0.33, 0.64}
+\definecolor{americanrose}{rgb}{1.0, 0.01, 0.24}
+\definecolor{jweigreen}{rgb}{0,0.45,0.24}
+\definecolor{bluegray}{rgb}{0.1, 0.1, 0.4}
+\definecolor{ao(english)}{rgb}{0.0, 0.5, 0.0}
+\definecolor{blanchedalmond}{rgb}{1.0, 0.92, 0.8}
+\definecolor{atomictangerine}{rgb}{1.0, 0.6, 0.4}
+\definecolor{chocolate(web)}{rgb}{0.82, 0.41, 0.12}
+\definecolor{bananayellow}{rgb}{1.0, 0.88, 0.21}
+\definecolor{goldenbrown}{rgb}{0.6, 0.4, 0.08}
+\definecolor{aliceblue}{rgb}{0.94, 0.97, 1.0}
+\definecolor{beige}{rgb}{0.96, 0.96, 0.86}
+\definecolor{babyblue}{rgb}{0.54, 0.81, 0.94}
+\definecolor{camel}{rgb}{0.76, 0.6, 0.42}
+\definecolor{cinnamon}{rgb}{0.82, 0.41, 0.12}
+\definecolor{deepskyblue}{rgb}{0.0, 0.75, 1.0}
+\definecolor{frenchblue}{rgb}{0.0, 0.45, 0.73}
+\definecolor{classicrose}{rgb}{0.98, 0.8, 0.91}
+\definecolor{frenchrose}{rgb}{0.96, 0.29, 0.54}
+\definecolor{frenchlilac}{rgb}{0.53, 0.38, 0.56}
+\definecolor{frenchbeige}{rgb}{0.65, 0.48, 0.36}
+\definecolor{verylightgreen}{RGB}{240, 255, 235}
+\definecolor{verylightred}{RGB}{255, 235, 235}
+\definecolor{verylightyellow}{RGB}{255, 254, 235}
+\definecolor{dt}{gray}{0.7}
+\newcommand{\battleshipgrey}[1]{{\color{battleshipgrey}{#1}}}
+\newcommand{\americanrose}[1]{{\color{americanrose}{#1}}}
+\newcommand{\jweigreen}[1]{{\color{jweigreen}{#1}}}
+\newcommand{\darkgreen}[1]{{\color{ao(english)}{#1}}}
+\newcommand{\aliceblue}[1]{{\color{aliceblue}{#1}}}
+\newcommand{\beige}[1]{{\color{beige}{#1}}}
+\newcommand{\babyblue}[1]{{\color{babyblue}{#1}}}
+\newcommand{\camel}[1]{{\color{camel}{#1}}}
+\newcommand{\cinnamon}[1]{{\color{cinnamon}{#1}}}
+\newcommand{\deepskyblue}[1]{{\color{deepskyblue}{#1}}}
+\newcommand{\frenchblue}[1]{{\color{frenchblue}{#1}}}
+\newcommand{\classicrose}[1]{{\color{classicrose}{#1}}}
+\newcommand{\frenchrose}[1]{{\color{frenchrose}{#1}}}
+\newcommand{\frenchlilac}[1]{{\color{frenchlilac}{#1}}}
+\newcommand{\atomictangerine}[1]{{\color{atomictangerine}{#1}}}
+\newcommand{\gptcolor}[0]{frenchlilac!80}
+\newcommand{\anthrocolor}[0]{black!40}
+\newcommand{\optcolor}[0]{atomictangerine}
+
+\definecolor{forestgreen}{HTML}{2e7d43}
+\definecolor{color1}{HTML}{FF9999}
+\definecolor{color2}{HTML}{FF6666}
+\definecolor{color3}{HTML}{FF3333}
+\definecolor{color4}{HTML}{E60000}
+\definecolor{color5}{HTML}{B30000}
+\definecolor{color6}{HTML}{8CD98C}
+\definecolor{color7}{HTML}{53c653}
+\definecolor{color8}{HTML}{39ac39}
+\definecolor{color9}{HTML}{2d862d}
+\definecolor{color10}{HTML}{206020}
+\definecolor{color11}{HTML}{cca300}
+
+\newcommand{\lehou}[1]{\textcolor{red}{[lehou: #1]}}
+\newcommand{\leunsure}[1]{[\textcolor{green}{#1}]}
+\newcommand{\slongpre}[1]{\textcolor{magenta}{[slongpre: #1]}}
+\newcommand{\hwchung}[1]{\textcolor{magenta}{[hwchung: #1]}}
+\newcommand{\jasonwei}[1]{\textcolor{orange}{[jasonwei: #1]}}
+\newcommand{\jeff}[1]{\textcolor{blue}{[jeff: #1]}}
+\newcommand{\dehghani}[1]{\textcolor{green!10!orange}{[dehghani: #1]}}
+\newcommand{\checkme}[1]{\textcolor{blue!90!black}{#1}}
+% \newcommand{\respondtojeffcomment}[1]{#1}
+
+\newcommand{\sbt}{\,\begin{picture}(-1,1)(-1,-3)\circle*{3}\end{picture}\ }
+\newcommand{\smallbullet}[0]{\sbt\ \ }
+
+\newcommand{\flan}[0]{flan}
+\newcommand{\flanmixture}[0]{Muffin}
+\newcommand{\palm}[0]{PaLM}
+\newcommand{\stmoe}[0]{ST-MoE}
+\newcommand{\flanpalm}[0]{Flan-PaLM}
+\newcommand{\flanstmoe}[0]{Flan-ST-MoE}
+\newcommand{\flanultwo}[0]{Flan-UL2}
+\newcommand{\flantfive}[0]{Flan-T5}
+\newcommand{\tzeromixture}[0]{T0-SF}
+\newcommand{\upalm}[0]{U-PaLM}
+\newcommand{\flanupalm}[0]{Flan-U-PaLM}
+\newcommand{\contpalm}[0]{cont-PaLM}
+\newcommand{\flancontpalm}[0]{Flan-cont-PaLM}
+\newcommand{\palmxaxis}[0]{Model scale (\# params)}
+
+\newcommand{\textdavinci}[0]{InstructGPT}
+\newcommand{\codedavinci}[0]{Codex}
+\newcommand{\greenbold}[1]{\underline{\textbf{\jweigreen{\normalsize{#1}}}}}
+\newcommand{\bluegain}[1]{\textbf{\frenchblue{(+#1)}}}
+\usepackage{minitoc}
+
+% Make the "Part I" text invisible
+\renewcommand \thepart{}
+\renewcommand \partname{}
+
+%A Frontier Large Vision-Language Model with Versatile Abilities
+\title{
+\textbf{
+Qwen-Audio: Advancing Universal Audio Understanding via Unified Large-Scale Audio-Language Models}
+}
+% Qwen-Audio: Large-Scale Audio-Language Foundation Models Towards Universal Audio Understanding
+% Qwen-Audio: Advancing Generic Audio Understanding via Unified Large-Scale Audio-Language Models
+% Qwen-Audio: Advancing Universal Audio Understanding via Unified Large-Scale Audio-Language Models
+
+\author{
+\large{}
+Yunfei Chu$^*$ \hspace{6mm} Jin Xu$^*$ \hspace{6mm} Xiaohuan Zhou$^*$ \hspace{6mm} Qian Yang\\
+Shiliang Zhang \hspace{6mm} Zhijie Yan \hspace{6mm} Chang Zhou$^{\dag}$ \hspace{6mm} Jingren Zhou
+\\
+\large{}
+Alibaba Group
+\\
+\\
+\small{}
+Code \& Demo \& Models: \ \ \url{https://github.com/QwenLM/Qwen-Audio}
+}
+
+\date{}
+
+\begin{document}
+
+\doparttoc % Tell to minitoc to generate a toc for the parts
+\faketableofcontents % Run a fake tableofcontents command for the partocs
+
+\maketitle
+
+\begin{abstract}
+\noindent
+Recently, instruction-following audio-language models have received broad attention for audio interaction with humans.
+However, the absence of pre-trained audio models capable of handling diverse audio types and tasks has hindered progress in this field. Consequently, most existing works have only been able to support a limited range of interaction capabilities. In this paper, we develop the Qwen-Audio model and address this limitation by scaling up audio-language pre-training to cover over 30 tasks and various audio types, such as human speech, natural sounds, music, and songs, to facilitate universal audio understanding abilities. 
+However, directly co-training all tasks and datasets can lead to interference issues, as the textual labels associated with different datasets exhibit considerable variations due to differences in task focus, language, granularity of annotation, and text structure. 
+To overcome the one-to-many interference, we carefully design a multi-task training framework by conditioning on a sequence of hierarchical tags to the decoder for encouraging knowledge sharing and avoiding interference through shared and specified tags respectively. Remarkably, Qwen-Audio achieves impressive performance across diverse benchmark tasks without requiring any task-specific fine-tuning, surpassing its counterparts. Building upon the capabilities of Qwen-Audio, we further develop Qwen-Audio-Chat, which allows for input from various audios and text inputs, enabling multi-turn dialogues and supporting various audio-central scenarios.
+
+
+\end{abstract}
+
+
+{\let\thefootnote\relax\footnotetext{$^*$Equal contribution, $^\dag$Corresponding author}}
+
+
+
+
+\begin{figure*}[t!]
+\centering
+\includegraphics[width=12cm]{images/radar_compare_qwen_audio.pdf}
+\caption{Performance of Qwen-Audio and previous top-tiers from multi-task audio-text learning models such as SpeechT5~\citep{ao2021speecht5}, SpeechNet~\citep{chen2021speechnet}, SpeechLLaMA~\citep{speechllama}, SALMONN~\citep{anonymous2023salmonn} and Pengi~\citep{Pengi}. We demonstrate the test set results across the 12 datasets covering Automatic Speech Recognition~(ASR), Speech-to-Text Translation~(S2TT), Automatic Audio Captioning~(AAC), Acoustic Scene Classification~(ASC), Speech Emotion Recognition~(SER), Audio Question and Answering~(AQA), Vocal Sound Classification~(VSC), and Music Note Analysis~(MNA). The results of ASR datasets, such as Librispeech, Aishell1 and Aishell2 refer to 1 - WER\%. The results of CoVoST2 is the average BLEU score of seven translation directions (en-de, de-en, en-zh, zh-en, es-en, fr-en and it-en). Qwen-Audio achieves remarkable performance without requiring any task-specific fine-tuning, surpassing its counterparts.}
+\label{img:radar}
+\end{figure*}
+
+
+\begin{figure*}[t!]
+\centering
+\includegraphics[width=\textwidth]{images/demo.pdf}
+\caption{Examples of Qwen-Audio showcasing its proficiency in perceiving and comprehending various types of audio. Qwen-Audio supports multiple-audio analysis, sound understanding and reasoning, music appreciation, and tool usage for speech editing. Demos are available at \url{https://qwen-audio.github.io/Qwen-Audio/}.}
+\label{img:demo}
+\end{figure*}
+
+
+
+\section{Introduction}
+Large language models (LLMs)~\citep{gpt3, chatgpt, gpt4, palm, palm2, llama, llama2, qwen7b} have greatly propelled advancements in the field of general artificial intelligence (AGI) due to their strong knowledge retention, complex reasoning and problem-solving capabilities. However, language models lack the capability to perceive non-textual modalities like images and audio in the same manner as humans do. Speech, as an important modality, provides diverse and complex signals beyond texts such as emotions, tones, and intentions in human voice, train whistle, clock chime and thunder in natural sounds, and melody in music. Enabling LLMs to perceive and comprehend rich audio signals for audio interaction has received broad attention~\citep{AudioGPT, HuggingGPT, wang2023blsp, Macaw-LLM, NextGPT, LTU, wang2023slm, shu2023llasm}.
+
+
+Prior works for instruction following mainly inherit the capabilities from large (multimodal) LLMs and adopt light-weight supervised fine-tuning to activate the abilities of the model to align with user intent~\citep{ouyang2022intructgpt, wang2023blsp, LTU}. However, most works have been constrained in terms of audio interaction capabilities due to the lack of  pre-trained audio-language models that can handle diverse audio types and tasks. Existing representative audio-language multi-tasks language models, such as SpeechNet~\citep{chen2021speechnet}, SpeechT5~\citep{ao2021speecht5}, VIOLA~\citep{VIOLA}, Whisper~\citep{Whisper} and Pengi~\citep{Pengi} are limited to processing specific audio types, such as human speech or natural sounds.
+
+
+To promote the growth and development of the audio-text multimodal community, we introduce Qwen-Audio, a large-scale audio-language model. Qwen-Audio is a multi-task language model conditioning on audio and text inputs, that extends the Qwen-7B~\citep{bai2023qwen} language model to effectively perceive audio signals by the connection of a single audio encoder. Different from previous works that primarily cater to a single type of audio such as human speech, or focus on specific tasks like speech recognition and captioning, or limit models to a single language~\citep{wang2023blsp, Macaw-LLM, NextGPT, LTU, shu2023llasm}, we scale up the training to dozens of datasets covering over 30 tasks, eight languages and various types of audio for advancing universal audio understanding abilities. A significant challenge of multi-task and multi-dataset co-training arises from the considerable variation in textual labels associated with different datasets. This variation stems from differences in task objectives, languages, annotation granularity, and text structure (structured or unstructured). To address this one-to-many challenge, we have carefully designed a multi-task training framework that conditions the decoder on a sequence of hierarchical tags. This design encourages knowledge sharing and helps mitigate interference through shared and specified tags, respectively. Furthermore, we incorporate the speech recognition with the word-level time-stamp prediction (SRWT) task for training, which is usually ignored in previous multi-task learning research. We find the task not only improves the grounding and grounding-based QA tasks beyond speech signals such as sound and music, but also improves the performance of ASR. As shown in Figure~\ref{img:radar}, extensive evaluation demonstrates that Qwen-Audio, without any task-specific fine-tuning, outperforms previous multi-task training models across a diverse range of tasks. A notable achievement of Qwen-Audio is its state-of-the-art performance on the test set of Aishell1, cochlscene, ClothoAQA, and VocalSound. Leveraging the capabilities of Qwen-Audio, we introduce Qwen-Audio-Chat via supervised instruction fine-tuning, which facilitates flexible input from both audio and text modalities in multi-turn dialogues, enabling effective interaction following human instructions. The contribution of the paper is summarized below:
+
+
+\begin{itemize}
+%yq part
+\item We introduce Qwen-Audio, a fundamental multi-task audio-language model that supports various tasks, languages, and audio types, serving as a universal audio understanding model. Building upon Qwen-Audio, we develop Qwen-Audio-Chat through instruction fine-tuning, enabling multi-turn dialogues and supporting diverse audio-oriented scenarios. Both Qwen-Audio and Qwen-Audio-Chat models are open-source, promoting the growth and development of the audio-text multimodal community. 
+\item To scale up audio-language pre-training, we address the challenge of variation in textual labels associated with different datasets by proposing a multi-task training framework, enabling knowledge sharing and avoiding one-to-many interference. Our model incorporates more than 30 tasks and extensive experiments show the model achieves strong performance.
+\item To promote audio-language pre-training, we demonstrate that incorporating the SRWT task, which is often overlooked in the audio multimodal research community, improves grounding and grounding-based question answering tasks beyond speech signals, as well as ASR performance.
+\item Experimental results show that Qwen-Audio achieves impressive performance across diverse benchmark tasks without requiring any task-specific fine-tuning, surpassing its counterparts. Specifically, Qwen-Audio achieves state-of-the-art results on the test set of Aishell1, cochlscene, ClothoAQA, and VocalSound. 
+
+\end{itemize}
+
+\section{Related Work}
+\label{sec:related_work}
+\paragraph{Multi-task Audio-Text Learning}
+The goal of multi-task training is to transfer knowledge between different tasks with unified model architectures and data format~\citep{raffel2020exploring,ao2021speecht5,chen2021speechnet}. In audio processing domains, it is challenging to unify all audio processing tasks since there are various audio signals, such as human speech, natural sounds, music, and songs, and their labeling format differs a lot. SpeechNet~\citep{chen2021speechnet} and SpeechT5~\citep{ao2021speecht5} treat human speech tasks into a speech/text input and speech/text output format, and leverage a shared encoder-decoder framework for pretraining. Many works~\citep{VIOLA, maiti2023voxtlm, AudioPALM, SpeechX, LMWithVoice} unify data format and tasks by directly feeding speech representation~\citep{LMWithVoice} or encoding continuous speech signals as discrete codes~\citep{Encodec, SoundStream,USM}, and treating different human speech tasks as conditional generative tasks. For training, they directly adopt a decoder-only Transformer model~\citep{Transformer}. VoiceBox~\citep{VoiceBox} employs a non-autoregressive continuous normalizing flow model for human speech synthesis and speech editing tasks. 
+Whisper~\citep{Whisper} proposes a template for multi-task training, considering the granularity of dataset annotations (with or without sentence-level timestamps) and task types (human speech recognition and translation) for unified training. Previous works mostly focus only on human speech processing tasks such as speech recognition and translation and ignore other types of audio such as natural sounds and music. Pengi~\citep{Pengi} focuses on natural sound understanding tasks and treats these tasks as text generation tasks. Specifically, Pengi unifies data format with text templates and then trains all tasks within a Transformer decoder model. In this work, Qwen-Audio integrates diverse audio types, such as human speech, natural sounds, music, and songs, and facilitates co-training on datasets sourced from heterogeneous data and featured disparate labeling granularities. This is achieved through introducing a unified learning framework. Upon completion of the co-training process, the model demonstrates comprehensive capabilities in speech perception, comprehension, and recognition tasks, eliminating the need for additional task-specific architectural extensions.
+
+\paragraph{Interact with LLMs through Multiple Modality}
+Recently, large language models such as ChatGPT~\citep{chatgpt} have demonstrated impressive capabilities for knowledge retention, reasoning, and coding followed by human instructions. To extend to application scope of LLMs beyond pure text tasks, many LLM-based multimodal models have been developed. For visual modality, GPT4~\citep{gpt4}, Flamingo~\citep{alayrac2022flamingo}, Kosmos~\citep{kosmos2}, BLIP~\citep{blip}, Shikra~\citep{shikra}, Emu~\citep{EMU} and Qwen-VL~\citep{qwenvl} have proposed different integration method to enable image understanding or generation capabilities for LLMs.
+
+For the audio modality, there have been attempts to utilize well-trained audio foundation models as tools, such as AudioGPT~\citep{AudioGPT} and HuggingGPT~\citep{HuggingGPT}, while leveraging LLMs as a versatile interface. These endeavors involve instructing LLMs to generate commands for controlling external tools or transcribing human speech to text before inputting into the LLMs. However, these approaches lack the inclusion of crucial information like prosody and sentiment in human speech, and in certain cases, they fail to convert non-textual audio, such as natural sound. Consequently, the transfer of knowledge from LLMs to the speech modality encounters obstacles, and the LLMs lack the necessary capabilities to perceive and comprehend audio signals. Recent efforts explore training end-to-end audio-text LLMs for direct speech interaction. SpeechGPT~\citep{speechgpt} first converts human speech into discrete HuBERT tokens~\citep{HuBERT}, and then designs a three-stage training pipeline on paired speech data, speech instruction data and chain-of-modality instruction data accordingly. BLSP~\citep{wang2023blsp} aligns representation by requiring the LLM to generate the same text continuation given the human speech and corresponding transcripts.
+LLaSM~\citep{shu2023llasm} creates large speech instruction datasets by generating speech questions using Microsoft TTS API, and then conducts training to enable end-to-end interaction between human speech and text.
+
+LTU~\citep{LTU} creates a 5M audio QA dataset, and conducts supervised finetuning (SFT) on the audio module and LoRA adapters~\citep{hu2021lora} of LLaMA~\citep{touvron2023llama} to enhance the alignment between sound perception and reasoning. SALMMON~\citep{anonymous2023salmonn} utilizes both a text encoder and a speech encoder to extract the representation from different kinds of audio and text input, and then connects the inputs to a well-train LLM with Q-former~\citep{blip2} style attention to generate response.
+In this work, Qwen-Audio aims at training a unified audio-text multi-task multilingual LLMs capable of perceiving and understanding audio inputs while preserving the textual conversational abilities. Qwen-Audio employs a single encoder for all audios, and bridges the gap of audio and text modality by large-scale end-to-end training to support various tasks such as natural sound detection, human speech recognition and grounding, and audio captions tasks. The resulting model demonstrates superior performance than previous works across a diverse style of tasks.
+
+\section{Methodology}
+\label{method}
+This section provides details of Qwen-Audio and Qwen-Audio-Chat, which are designed for universal audio understanding and flexible interaction based on human instructions. The model structure of Qwen-Audio and Qwen-Audio-Chat is first presented in Section~\ref{exp:model_arch}. The training process of our models consists of two stages: multitask pretraining and supervised fine-tuning. We describe the training of Qwen-Audio via multitask learning in Section~\ref{exp:multitask_train}. Then, we describe Qwen-Audio-Chat with supervised fine-tuning in Section~\ref{exp:sft} , which enables flexible human interaction.
+
+\begin{figure*}[t!]
+\centering
+\includegraphics[width=15cm]{images/framework.pdf}
+   \caption{The overview of Qwen-Audio architecture and multitask-pretraining.}
+\label{img:format}
+\end{figure*}
+
+\subsection{Model Architecture}\label{exp:model_arch}
+The architecture of Qwen-Audio models is depicted in Figure~\ref{img:format}. Qwen-Audio contains an audio encoder and a large language model. Given the paired data $(\bm{a}, \bm{x})$, where the $\bm{a}$ and $\bm{x}$ denote the audio sequences and text sequences, the training objective is to maximize the next text token probability as
+\begin{equation}
+    \mathcal{P}_{\theta}(x_t|\bm{x}_{<t}, \text{Encoder}_{\phi}(\bm{a})),
+\end{equation}
+conditioning on audio representations and previous text sequences $\bm{x}_{<t}$, where $\theta$ and $\phi$ denote the trainable parameters of the LLM and audio encoder respectively. 
+
+\paragraph{Audio Encoder}
+Qwen-Audio employs a single audio encoder to process various types of audio. The initialization of the audio encoder is based on the Whisper-large-v2 model~\citep{Whisper}, which is a 32-layer Transformer model that includes two convolution down-sampling layers as a stem. The audio encoder is composed of 640M parameters. Although Whisper is supervised trained for speech recognition and translation, its encoded representation still contains rich information, such as background noise~\citep{whisperAT}, and can even be used for recovering the original speech~\citep{SpeechTokenizer}.
+To preprocess the audio data, Whisper resamples it to a frequency of 16kHz and converts the raw waveform into 80-channel mel-spectrogram using a window size of 25ms and a hop size of 10ms. Additionally, a pooling layer with a stride of two is incorporated to reduce the length of the audio representation. As a result, each frame of the encoder output approximately corresponds to a 40ms segment of the original audio signal. SpecAugment~\citep{specaug} is applied at the training time as data augmentation.
+
+
+\paragraph{Large Language Model}
+Qwen-Audio incorporates a large language model as its foundational component. The model is initialized using pre-trained weights derived from Qwen-7B~\citep{bai2023qwen}. Qwen-7B is a 32-layer Transformer decoder model with a hidden size of 4096, encompassing a total of 7.7B parameters.
+
+
+\subsection{Multitask Pretraining}\label{exp:multitask_train}
+In the domain of audio processing, diverse audio datasets have been developed to address specific tasks, as shown in Table~\ref{tab:train_table}. Qwen-Audio aims to perform co-training using a wide range of audio datasets. The objective is to train a unified model capable of supporting all audio tasks, eliminating the need for laborious model switching when dealing with different tasks. More importantly, during co-training, tasks can benefit from each other since 1) similar tasks can benefit from knowledge sharing and collaborative learning, as they share a common focus on the fundamental information embedded within the audio signal; 2) tasks that rely on lower-level perceptual abilities can assist tasks that require higher-level understanding or reasoning capabilities.
+
+However, different datasets exhibit significant variations in textual labels due to differences in task focus, language, granularity of annotation, and text structure (e.g., some data is structured while others are unstructured). To train a network for different tasks, simply mixing these diverse datasets cannot lead to mutual enhancement; instead, it introduces interference. Most existing multi-task training approaches have either grouped similar tasks (e.g., audio captioning, transcription) or assigned a dataset ID to each dataset~\citep{wang2023blsp, Macaw-LLM, NextGPT, LTU, shu2023llasm} to avoid interference. Although these approaches have achieved certain effectiveness, there is still considerable room for improvement. Whisper proposes a multitask training format by specifying tasks and condition information as a sequence of input special tokens to the language decoder, such as voice activity detection, language identification, and sentence-level timestamp tags. However, Whisper focuses on speech translation and recognition tasks only.
+
+\begin{table}[t!]
+\caption{Multi-task pre-training dataset.}
+\centering
+\vspace{-2mm}
+\scalebox{1.0}{
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Types} & \textbf{Task}                                               & \textbf{Description}                                                  & \textbf{Hours}         \\ \midrule
+\multirow{18}{*}{\textbf{Speech}} & ASR      & Automatic speech recognition~(multiple languages)                                      & 30k           \\
+ & S2TT                                & Speech-to-text translation                                                   & 3.7k          \\
+ & OSR                                & Overlapped speech recognition                                                   & $<$1k          \\
+ & Dialect ASR                                        & Automatic dialect speech recognition                                                                                 & 2k      \\
+ & \multirow{2}{*}{SRWT} & English speech recognition with word-level timestamps                           & 10k          \\
+&                       & Mandarin speech recognition with word-level timestamps                                           & 11k           \\
+ & DID             &  Dialect identification     & 2k            \\
+ & LID                          & Spoken language identification                             & 11.7k \\
+ & SGC                        & Speaker gender recognition~(biologically)                                                                       & 4.8k \\
+ & ER                                     & Emotion recognition                  & $<$1k  \\
+ & SV                                & Speaker verification                  & 1.2k          \\
+ & SD                              & Speaker diarization                         & $<$1k          \\
+ & SER                    & Speech entity recognition                                     & $<$1k           \\
+ & KS                      & Keyword spotting                                                                                                & $<$1k            \\
+ & IC                      & Intent classification                                     & $<$1k            \\
+ & SF                      & Slot filling                                            & $<$1k            \\
+ & SAP                             & Speaker age prediction                                                         & 4.8k          \\
+  & VSC              & Vocal sound classification                                                                  & $<$1k            \\\midrule
+
+\multirow{5}{*}{\textbf{Sound}} & AAC                               & Automatic audio caption                           & 8.4k          \\
+ & SEC                    & Sound event classification                   & 5.4k          \\
+ & ASC                      & Acoustic scene classification    &  $<$1k          \\
+ & SED                             & Sound event detection with timestamps                                        & $<$1k           \\
+ & AQA                                    & Audio question answering                                                & $<$1k           \\\midrule
+
+
+\multirow{9}{*}{\textbf{Music\&Song}} & SID     & Singer identification                                                                        & $<$1k           \\
+ & SMER                        & Singer and music emotion recognition                                                                       & $<$1k \\
+ & MC                & Music caption                     & 25k           \\
+ & MIC                   & Music instruments classification                                              & $<$1k            \\
+ & MNA                               & Music note analysis such as pitch, velocity &  $<$1k \\
+ & MGR                            & Music genre recognition                                                       & 9.5k          \\
+ & MR                          & Music recognition                                       & $<$1k           \\
+ & MQA                                     & Music question answering                          & $<$1k               \\ \bottomrule
+
+\end{tabular}%
+}
+\label{tab:train_table}
+\end{table}
+
+ 
+\paragraph{Multi-task Training Format Framework} Motivated by Whisper~\citep{Whisper}, to incorporate different kinds of audio, we propose a multitask training format framework as follows: 
+\begin{itemize}
+    \item Transcription Tag: The initiation of prediction is denoted using a transcription tag. The <|startoftranscripts|> is employed to indicate the tasks involve \textit{accurately} transcribing the spoken words and capturing the linguistic content of a speech recording, such as speech recognition and speech translation tasks. For other tasks, the <|startofanalysis|> tag is utilized.
+    \item Audio Language Tag: Then, we incorporate a language tag that indicates the spoken language in the audio. This tag uses a unique token assigned to each language present in our training set, eight languages in totally. In the case where an audio segment does not contain any speech, such as natural sounds and music, the model is trained to predict a <|unknown|> token.
+    \item Task Tag: The subsequent tokens specify the task. We categorize the collected audio tasks into five categories: <|transcribe|>, <|translate|>, <|caption|>, <|analysis|>, and <|question-answer|> tasks. For question-answer (QA) tasks, we append the corresponding questions after the tag.
+    \item Text Language Tag: The tag token specifies the language of output text sequences.
+    \item Timestamps Tag: The presence of a <|timestamps|> or <|notimestamps|> token determines whether the model needs to predict timestamps or not. Different from the sentence-level timestamps used in Whisper, the inclusion of the <|timestamps|> tag requires the model to perform fine-grained \textit{word-level} timestamp prediction, abbreviated as SRWT (Speech Recognition with Word-level Timestamps). The prediction of these timestamps is interleaved with the transcription words: the start time token is predicted before each transcription token, while the end time token is predicted after. According to our experiments, SRWT improves the ability of the model to align audio signals with timestamps. This improved alignment contributes to a comprehensive understanding of speech signals by the model, resulting in notable advancements across many tasks such as speech recognition and audio QA tasks.
+    \item Output Instruction: Lastly, we provide output instruction to further specify the task and desired format for different subtasks, and then the text output begins.
+\end{itemize}
+
+The guiding principle behind our framework is to maximize the sharing of knowledge among similar tasks through shared tags, thereby improving their performance. Meanwhile, we ensure that different tasks and output formats can be distinguished to avoid the one-to-many mapping problem for the model. Please see Figure~\ref{img:format} for an overview of our multitask format of Qwen-Audio.
+
+
+
+
+\subsection{Supervised Fine-tuning}\label{exp:sft}
+The extensive pretraining of multitask models has equipped them with a broad understanding of audio. Building upon this, we employ instruction-based fine-tuning techniques to improve the ability of the model to align with human intent, resulting in an interactive chat model, termed Qwen-Audio-Chat. 
+To accomplish this, we manually create demonstrations for each task. These demonstrations consist of raw text labels, questions, and answers. We then utilize GPT-3.5~\citep{chatgpt} to generate further questions and answers based on the provided raw text labels. Additionally, we also create a dataset of audio-dialogue data by employing manual annotation, model generation, and strategy concatenation. This dataset helps us incorporate reasoning, story generation, and multi-image comprehension abilities into our model. 
+
+To handle multi-audio dialogue and multiple audio inputs effectively, we introduce the convention of labeling different audios with "Audio $id$:", where $id$ corresponds to the order of the audio input dialogue. In terms of dialogue format, we construct our instruction tuning dataset using the ChatML~\citep{chatml} format. In this format, each interaction's statement is marked with two special tokens ($<$im\_start$>$ and $<$im\_end$>$) to facilitate dialogue termination. 
+
+
+\begin{tcolorbox}[colback=black!5!white,colframe=black!75!black,title=The Data Format Example of Supervised Fine-Tuning.]
+\textcolor{blue}{$<$im\_start$>$}user
+
+Audio 1: $<$audio$>$emov-db/141-168-0155.wav$<$/audio$>$what does the speaker say?\textcolor{blue}{$<$im\_end$>$}
+
+\textcolor{blue}{$<$im\_start$>$}assistant
+
+\textcolor{blue}{The speaker says in English, "Won't you draw up, gentlemen.".$<$im\_end$>$}
+
+\textcolor{blue}{$<$im\_start$>$}user
+
+What's the mood of the person?\textcolor{blue}{$<$im\_end$>$}
+
+\textcolor{blue}{$<$im\_start$>$}assistant
+
+\textcolor{blue}{Based on the voice, the mood of the person is disgusted.$<$im\_end$>$}
+\end{tcolorbox}
+
+In order to facilitate versatile input from both audio and pure text modalities within multi-turn dialogues, we use a combination of audio-centric instruction data mentioned above and pure text instruction data during this training process. This approach allows the model to handle diverse forms of input seamlessly. The total amount of instruction tuning data is 20k.
+
+% During training, we ensure the consistency between prediction and training distributions by only supervising answers and special tokens (blue in the example), and not supervising role names or question prompts.  
+
+\begin{table}[t!]
+\centering
+\caption{Summary of the evaluation benchmarks for Qwen-Audio.}
+\vspace{-2mm}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Task}                 & \textbf{Description}                                & \textbf{Dataset}     & \textbf{Split}      & \textbf{Metric}                                  \\\midrule
+\multirow{3}{*}{ASR} & \multirow{3}{*}{Automatic Speech Recognition} & Aishell1~\citep{aishell1}    & dev | test & \multirow{3}{*}{WER}                    \\
+                     &                                               & Aishell2~\citep{aishell2}    & test        &                                         \\
+                     &                                               & Librispeech~\citep{Librispeech} & dev | test &                                         \\\midrule
+S2TT                  & Speech-to-text translation                           & CoVoST2~\citep{CoVoST2}     & test        & BLEU\footnote~\citep{papineni2002bleu}                                   \\\midrule
+SRWT                & Speech Recognition with Word-level Timestamp                     &      Industrial Data~\citep{FunASR}    & test        & AAS~\citep{shi2023achieving}                                     \\\midrule
+\multirow{2}{*}{AAC} & \multirow{2}{*}{Automatic Audio Caption}      & \multirow{2}{*}{Clotho~\citep{Clotho}}      &     \multirow{2}{*}{test}        & CIDEr | SPICE | SPIDEr \\
+ &       &      &           & \citep{vedantam2015cider, anderson2016spice} \\
+
+\midrule
+\multirow{2}{*}{ASC} & \multirow{2}{*}{Acoustic Scene Classfication} & CochlScene~\citep{cochlscene}  &     test        & \multirow{2}{*}{ACC}                    \\
+                     &                                               & TUT2017~\citep{TUT2017}     &    eval         &                                         \\\midrule
+SER                  & Speech Emotion Recognition                    & Meld~\citep{Meld}        &      test       & ACC                                     \\\midrule
+AQA                  & Audio Question \& Answer                      & ClothoAQA~\citep{ClothoAQA}   &     test        & ACC                                     \\\midrule
+VSC                  & Vocal Sound Classification                     & VocalSound~\citep{VocalSound}  &    test         & ACC                                     \\\midrule
+MNA                  & Music Note Analysis                           & NSynth~\citep{NSynth}      &       test      & ACC / MAP                      \\\bottomrule         
+\end{tabular}
+}
+\label{tab:evaluation}
+\end{table}
+\footnotetext{https://github.com/mjpost/sacrebleu}
+
+
+\section{Experiments}
+\label{sec:experiments}
+\subsection{Setup}
+For multi-task pre-training, we freeze the weights of LLM and only optimize the audio encoder. This trained model is referred to as Qwen-Audio. In the subsequent supervised fine-tuning stage, we fix the weights of the audio encoder and only optimize the LLM. The resulting model is denoted as Qwen-Audio-Chat. The detailed training configurations of both stages are listed in Table~\ref{tab:hyperparam}.
+
+
+\subsection{Evaluation}
+
+In order to assess the universal understanding capabilities of Qwen-Audio, as shown in Table~\ref{tab:evaluation}, we perform a comprehensive evaluation that encompasses various tasks, namely Automatic Speech Recognition (ASR), Speech-to-Text Translation (S2TT), Automatic Audio Captioning (AAC), Acoustic Scene Classification (ASC), Speech Emotion Recognition (SER), Audio Question and Answering (AQA), Vocal Sound Classification (VSC), and Music Note Analysis (MNA). This evaluation is conducted across 12 datasets. The evaluation datasets are rigorously excluded from the training data to avoid data leakage. The detailed training configurations of both stages are listed in Table~\ref{tab:hyperparam}.
+
+
+\begin{table}[t!]
+\centering
+\caption{The results of Automatic Speech Recognition~(ASR), Speech-to-Text Translation~(S2TT), Automatic Audio Captioning~(AAC), Speech Recognition with Word-level Timestamps~(SRWT), Acoustic Scene Classification~(ASC), Speech Emotion Recognition~(SER), Audio Question and Answering~(AQA), Vocal Sound Classification~(VSC), and Music Note Analysis~(MNA) tasks. For SRWT task, the results of Forced-aligner~\citep{forcealigner} are to predict the timestamps given the ground-truth transcripts, while Paraformer-large-TP~\citep{FunASR} and Qwen-audio tackle a more challenging scenario by directly generating sequences containing both transcriptions and timestamps.}
+\vspace{-2mm}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\multirow{2}{*}{\textbf{Task}}                           & \multirow{2}{*}{\textbf{Dataset} }       & \multirow{2}{*}{\textbf{Model}} & \multicolumn{2}{c}{\textbf{Performance} }                                \\ \cmidrule(l){4-5} 
+                                                  &                                 &                        & \textbf{Metrics}                                 & \textbf{Results}               \\ \midrule
+\multirow{12}{*}{ASR}    & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{Librispeech}\\      \textit{dev-clean} | \textit{dev-other} | \\ \textit{test-clean} | \textit{test-other} \end{tabular}}     & SpeechT5~\citep{ao2021speecht5}    & \multirow{5}{*}{WER~$\downarrow$}                  & 2.1 | 5.5 | 2.4 | 5.8                \\
+                                                  &                                  & SpeechNet~\citep{chen2021speechnet}               &                                         & - | - | 30.7 | -            \\
+                                                  &                              & SLM-FT~\citep{SLM}               &                                         & - | - | 2.6 | 5.0            \\
+                                                  
+                                                  &                           & SALMONN~\citep{anonymous2023salmonn}               &                                         & - | - | 2.1 | 4.9            \\
+                                                  
+                                                  &                                   & Qwen-Audio               &                                         & \textbf{1.8} | \textbf{4.0} | \textbf{2.0} | \textbf{4.2}            \\
+\cmidrule(l){2-5}
+                                                  & \multirow{4}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{Aishell1} \\ \textit{dev} | \textit{test} \end{tabular}}        & MMSpeech-base~\citep{mmspeech}              &       \multirow{4}{*}{WER~$\downarrow$}            & 2.0 | 2.1                \\
+                                                  &                           & MMSpeech-large~\citep{mmspeech}                  &                                         & 1.6 | 1.9 
+                                                  \\
+                                                  &                           & Paraformer-large~\citep{FunASR}          &                                         & - | 2.0                 \\
+                                                  
+                                                  &                           & Qwen-Audio           &                                         & \textbf{1.2} | \textbf{1.3}                 \\
+\cmidrule(l){2-5} 
+                                                  & \multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{Aishell2} \\ \textit{Mic} | \textit{iOS} | \textit{Android} \end{tabular}}        & MMSpeech-base~\citep{mmspeech}              &     \multirow{3}{*}{WER~$\downarrow$}              & 4.5 | 3.9 | 4.0                \\
+                                                  &                           & Paraformer-large~\citep{FunASR}          &                                         & - | \textbf{2.9} | -                 \\
+                                                  
+                                                  &                           & Qwen-Audio           &                                         & \textbf{3.3} | 3.1 | \textbf{3.3}                 \\
+                                                  \midrule
+\multirow{6}{*}{S2TT}    & \multirow{4}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{CoVoST2} \\ \textit{en-de} | \textit{de-en} | \\ \textit{en-zh} | \textit{zh-en} \end{tabular}}     & SALMONN~\citep{anonymous2023salmonn}    & \multirow{4}{*}{BLEU~$\uparrow$}                    & 18.6 | - | 33.1 | -                \\
+                                                  &                              & SpeechLLaMA~\citep{speechllama}                &                                         & - | 27.1 | - | 12.3            \\
+                                                  
+                                                  &                         & BLSP~\citep{wang2023blsp}            &                                         & 14.1 | - | - | -            \\
+                                                  &                               & Qwen-Audio                &                                         & \textbf{25.1} | \textbf{33.9} | \textbf{41.5} | \textbf{15.7}            \\
+\cmidrule(l){2-5}
+                                                  & \textbf{CoVoST2}        & SpeechLLaMA~\citep{speechllama}              &    \multirow{2}{*}{BLEU~$\uparrow$}              & 27.9 | 25.2 | 25.9                \\
+                                                  &      \textit{es-en} | \textit{fr-en} | \textit{it-en}                           & Qwen-Audio                   &                                         & \textbf{39.7} | \textbf{38.5} | \textbf{36.0}                 \\ \midrule
+                                                  
+\multirow{2}{*}{AAC}    & \multirow{2}{*}{\textbf{Clotho}}         & Pengi~\citep{Pengi}                 & \multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}CIDEr | \\ SPICE | SPIDEr~$\uparrow$ \end{tabular}}
+& 0.416 | 0.126 | 0.271 \\
+                                                  &                                 & Qwen-Audio                   &                                         & \textbf{0.441} | \textbf{0.136} | \textbf{0.288}  \\ \midrule
+                                    
+\multirow{3}{*}{SRWT}   & \multirow{3}{*}{\textbf{Industrial Data} }        & Force-aligner~\citep{forcealigner}               & \multirow{3}{*}{AAS~(ms)~$\downarrow$} & 60.3 \\
+     &           & Paraformer-large-TP~\citep{FunASR}                   &                                         & 65.3  \\
+      &                    & Qwen-Audio                   &                                         & \textbf{51.5}  \\\midrule
+\multirow{4}{*}{ASC}    & \multirow{2}{*}{\textbf{CochlScene}}     & CochlScene~\citep{cochlscene}    & \multirow{2}{*}{ACC~$\uparrow$}                    & 0.669                 \\
+                                                  &                                 & Qwen-Audio                   &                                         & \textbf{0.795}                 \\ \cmidrule(l){2-5} 
+                                                  & \multirow{2}{*}{\textbf{TUT2017} }       & Pengi~\citep{Pengi}                  & \multirow{2}{*}{ACC~$\uparrow$}                    & 0.353                 \\
+                                                  &                                 & Qwen-Audio                   &                                         & \textbf{0.649}                 \\ \midrule
+\multirow{2}{*}{SER} & \multirow{2}{*}{\textbf{Meld}}           & WavLM-large~\citep{wavlm}            & \multirow{2}{*}{ACC~$\uparrow$}                    & 0.542                 \\
+                                                  &                                 & Qwen-Audio                    &                                         & \textbf{0.557}                 \\ \midrule
+\multirow{3}{*}{AQA}   & \multirow{3}{*}{\textbf{ClothoAQA}}      & ClothoAQA~\citep{ClothoAQA}     & \multirow{3}{*}{ACC | ACC (binary)~$\uparrow$}     & 0.542 | 0.627         \\
+                                                  &                                 & Pengi~\citep{Pengi}                  &                                         & - | 0.645             \\
+                                                  &                                 & Qwen-Audio                    &                                         & \textbf{0.579} | \textbf{0.749}         \\ \midrule
+\multirow{3}{*}{VSC}       & \multirow{3}{*}{\textbf{VocalSound}}     & CLAP~\citep{CLAP}                   & \multirow{3}{*}{ACC~$\uparrow$}                    & 0.4945                \\
+                                                  &                                 & Pengi~\citep{Pengi}                  &                                         & 0.6035                \\
+                                                  &                                 & Qwen-Audio                    &                                         & \textbf{0.9289}                \\ \midrule
+\multirow{4}{*}{MNA}             
+                                                  & \multirow{2}{*}{\textbf{NS. Qualities}}  & Pengi~\citep{Pengi}                  & \multirow{2}{*}{MAP~$\uparrow$}                    & 0.3860                \\
+                                                  &                                 & Qwen-Audio                    &                                         & \textbf{0.4742}                \\ \cmidrule(l){2-5} 
+                                                  & \multirow{2}{*}{\textbf{NS. Instrument}} & Pengi~\citep{Pengi}                  & \multirow{2}{*}{ACC~$\uparrow$}                    & 0.5007                \\
+                                                  &                                 & Qwen-Audio                   &                                         & \textbf{0.7882}                \\ \bottomrule
+\end{tabular}%
+}
+\label{tab:audio_analysis_table}
+\end{table}
+
+\subsection{Main Results}
+In this section, we present a comprehensive evaluation of the Qwen-Audio model, assessing its performance across various tasks without any task-specific fine-tuning. We begin by examining its English Automatic Speech Recognition (ASR) results, as depicted in Table~\ref{tab:audio_analysis_table}, where Qwen-Audio exhibits superior performance compared to previous multi-task learning models. Specifically, it achieves a 2.0\% and 4.2\% WER on the librispeech test-clean and test-other datasets, respectively. Similarly, the Chinese Mandarin ASR results demonstrate Qwen-Audio's competitive performance against previous approaches. To the best of our knowledge, Qwen-Audio achieves state-of-the-art results on the Aishell1 dev and test sets. Furthermore, we evaluate Qwen-Audio's speech translation performance on the CoVoST2 dataset. The results reveal that Qwen-Audio outperforms the baselines by a substantial margin across all seven translation directions.
+
+Lastly, we analyze the performance of Qwen-Audio on various audio analysis tasks, including AAC, SWRT ASC, SER, AQA, VSC, and MNA, as summarized in Table~\ref{tab:audio_analysis_table}. Across these tasks, Qwen-Audio consistently outperforms the baselines by a significant margin. Notably, it achieves state-of-the-art results on CochlScene, ClothoAQA, and VocalSound, thereby demonstrating the model's robust audio understanding capabilities.
+
+
+\subsection{Results of Interactive Chat}
+We showcase the conversational capabilities of Qwen-Audio-Chat through illustrative cases depicted in Figure~\ref{img:demo}. Furthermore, we intend to provide public access to the trained models for online chat interactions.
+
+
+
+\subsection{The Analysis of Word-level Timestamps Prediction}
+We propose the task of speech recognition with word-level timestamps (SRWT) by training Qwen-Audio to not only recognize speech transcripts but also predict the timestamps for each word. The purpose of SRWT is twofold: firstly, to improve the model's ability to align audio signals with fine-grained timestamps; secondly, to support grounding of speech and audio, and grounding-based QA tasks in Qwen-Audio-Chat, such as finding the starting and ending time of an audio segment mentioning a person's name or identifying whether a sound occurs in the given audio~\footnote{Audio event detection can be considered as a subtask of event timestamp prediction as the absence of an event's timestamp implies its non-occurrence in the audio.}. 
+
+In this section, we exclude the training of SRWT tasks from multi-task pretraining while maintaining the other tasks unchanged. Notably, the removal of SRWT does not impact the coverage of audio datasets for training since SRWT tasks share the same audio dataset as automatic speech recognition (ASR) tasks. The results are shown in Table~\ref{tab:ab_asr} and Table~\ref{tab:ab_aqa}: models trained with SRWT achieve superior performance in automatic speech recognition and audio question-answering tasks, including natural sounds QA and Music QA. These results highlight the efficacy of incorporating fine-grained word-level timestamps to enhance the general audio signal grounding ability and subsequently improve the performance of sound and music signal QA tasks.
+
+
+
+\begin{table}[t!]
+\centering
+\caption{Results of ASR tasks with or without training word-level timestamps tasks.}
+\vspace{-2mm}
+\begin{tabular}{lcccccc}
+\toprule
+\multirow{2}{*}{\textbf{Method}} & \multicolumn{4}{c}{\textbf{LibriSpeech} }                              & \multicolumn{2}{c}{\textbf{AISHELL1}}  \\ \cmidrule(l){2-7} 
+                  & dev-clean     & dev-other     & test-clean    & test-other    & dev           & test          \\ \midrule
+w/o SRWT & 1.93          & 4.18          & 2.22          & 4.21          & 1.54          & 1.71          \\
+Qwen-Audio               & \textbf{1.79} & \textbf{4.00} & \textbf{2.04} & \textbf{4.19} & \textbf{1.22} & \textbf{1.29} \\ \bottomrule
+\end{tabular}%
+\label{tab:ab_asr}
+\end{table}
+
+
+\begin{table}[t!]
+\centering
+\caption{Results of AQA tasks with or without training word-level timestamps tasks.}
+\vspace{-2mm}
+\begin{tabular}{lccc}
+\toprule
+\multirow{2}{*}{\textbf{Method}} & \multicolumn{2}{c}{\textbf{ClothoAQA}}     & \textbf{MusicAVQA}       \\ \cmidrule(l){2-4} 
+                  & test            & test-binary     & audio question  \\ \midrule
+w/o SRWT & 0.5648          & 0.7418          & 0.7027          \\
+Qwen-Audio      & \textbf{0.5795} & \textbf{0.7491} & \textbf{0.7211} \\ \bottomrule
+\end{tabular}%
+\label{tab:ab_aqa}
+\end{table}
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+In this paper, we present the Qwen-Audio series, a set of large-scale audio-language models with universal audio understanding abilities. To incorporate different kinds of audios for co-training, we propose a unified multi-task learning framework that facilitates the sharing of knowledge among similar tasks and avoids one-to-many mapping problem caused by different text formats. Without any task-specific fine-tuning, the resulting Qwen-Audio models outperform previous works across diverse benchmarks, demonstrating its universal audio understanding abilities. Through supervised instruction finetuning, Qwen-Audio-Chat showcases robust capabilities in aligning with human intent, supporting multilingual and multi-turn dialogues from both audio and text inputs. 
+
+
+
+\section{Acknowledgements}
+We express our gratitude to Jinze Bai, Shuai Bai, Peng Wang, Sinan Tan, Shijie Wang for their insightful discussion. We would like to thank Juan Zhu, Junyang Lin, Siqi Zheng, Jiaming Wang and Zhihao Du for their support of this project.
+
+
+\bibliographystyle{plainnat} 
+\bibliography{references}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+\newpage
+
+\appendix
+
+\section{Hyperparameters}
+\label{appendix:hyperparam}
+We report the detailed training hyperparameter settings of Qwen-Audio in Table~\ref{tab:hyperparam}.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Training hyperparameters of Qwen-Audio}
+    \begin{tabular}{l cc}
+         \toprule
+         Configuration            &  Multi-task Pre-training & Supervised Fine-tuning \\
+         \midrule
+         Audio encoder init.      & Whisper-large-v2 & Qwen-audio 1st-stage \\
+         LLM init.                & Qwen-7B & Qwen-7B \\
+         SpecAugment Policy       & LibriSpeech Basic & LibriSpeech Basic \\
+         Optimizer                & AdamW & AdamW \\
+         Optimizer hyperparameter & \multicolumn{2}{c}{$\beta_{1}$=0.9, $\beta_{2}$=0.98, $eps=1e^{-6}$} \\
+         Peak learning rate       & $5e^{-5}$ & $1e^{-5}$ \\
+         Minimum learning rate    & $1e^{-5}$ & $1e^{-6}$ \\
+         Audio encoder learning rate decay  & 0.95 & 0 \\
+         Learning rate schedule   & cosine decay & cosine decay \\
+         Weight decay             & 0.05 & 0.05 \\
+         Gradient clip            & 1.0 & 1.0 \\
+         Training steps           & 500k & 8k \\
+         Warm-up steps            & 2000 & 3k \\
+         Global batch size        & 120 & 128 \\
+         Gradient Acc.            & 1 & 8 \\
+         Numerical precision      & {$\mathtt{bfloat16}$} & {$\mathtt{bfloat16}$}\\
+         Optimizer sharding       & {\ding{51}} & {\ding{51}}\\
+         Activation checkpointing & {\ding{55}} & {\ding{55}}\\
+         Model parallelism        & \ding{55} & 2 \\
+         Pipeline parallelism     & {\ding{55}}  & {\ding{55}}\\
+         \bottomrule
+    \end{tabular}
+    \label{tab:hyperparam}
+\end{table}
+
+
+\end{document}
+
