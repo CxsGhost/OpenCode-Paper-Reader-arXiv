@@ -1,0 +1,332 @@
+
+
+
+
+\section{Evaluation}
+\label{sec:experiment}
+% We conduct comprehensive evaluation of \method, including Qwen3-Omni-30B-A3B-Instruct, Qwen3-Omni-30B-A3B-Thinking, and our internal Qwen3-Omni-Flash-Instruct and Qwen3-Omni-Flash-Thinking, which is optimized both in efficacy and efficiency with new features like supporting of dialects. 
+A comprehensive evaluation was performed on a suite of models, including Qwen3-Omni-30B-A3B-Instruct, Qwen3-Omni-30B-A3B-Thinking, and two in-house developed variants, designated Qwen3-Omni-Flash-Instruct and Qwen3-Omni-Flash-Thinking. These ``Flash'' models were designed to improve both computational efficiency and performance efficacy, integrating new functionalities, notably the support for various dialects.
+The evaluation results are divided into two main categories: understanding~(X$\to$Text) and speech generation~(X$\to$Speech). 
+
+\subsection{Evaluation of X$\to$Text}
+In this section, we evaluate \method's ability to comprehend various multimodal inputs (text, audio, vision, and audiovisual video) and generate textual responses.
+
+% MMLU-Pro \citep{mmlupro}, , and SuperGPQA \citep{supergpqa}
+% , and LiveBench~(2024-11-25) \citep{livebench}
+% LiveCodeBench~(v6, 2025.02-2025.05) \citep{livecodebench} and 
+% , TAU2~\citep{barres2025tau2}
+% , MMLU-ProX~\citep{mmluprox}, INCLUDE \citep{include}, 
+\paragraph{Text$\to$Text} Our evaluation of \method on text $\to$ text primarily focuses on general tasks, reasoning ability, coding ability, alignment tasks, agent, and multilingual tasks. 
+Specifically, we utilize MMLU-Redux \citep{mmluredux} and GPQA \citep{gpqa} for general tasks, AIME25~\citep{aime} and ZebraLogic~\citep{zebralogic} for reasoning evaluation, 
+MultiPL-E \citep{multiple} for coding, IFEval \citep{ifeval}, Creative Writing V3 \citep{creative_writing} and WritingBench \citep{writingbench} for alignment tasks, 
+BFCL-v3 \citep{bfcl} for agent evaluation, 
+MultiIF~\citep{multiif} and PolyMath \citep{polymath} for multilingual tasks.
+
+% The evaluation of \method for
+% We use MMLU-Pro~\citep{mmlupro}, MMLU-redux~\citep{mmluredux} and Livebench0803~\citep{livebench} for general evaluation, 
+% \begin{itemize}
+%     \item \textbf{General Tasks.} MMLU-Pro~\citep{mmlupro}, MMLU-redux~\citep{mmluredux} and Livebench0803~\citep{livebench}.
+%     \item \textbf{Mathematics \& Science Tasks.} GPQA~\citep{gpqa}, GSM8K~\citep{gsm8k} and MATH~\citep{math}.
+%     \item \textbf{Coding Tasks.} HumanEval~\citep{humaneval}, MBPP~\citep{mbpp}, MultiPL-E~\citep{multiple} (Python, C++, JAVA, PHP, TypeScript, C\#, Bash, JavaScript) and LiveCodeBench 2305-2409~\citep{livecodebench}.
+%     \item \textbf{Alignment Tasks.} IFEval~\citep{ifeval}.
+% \end{itemize}
+
+% , MMAR~\citep{mmar},
+\paragraph{Audio$\to$Text} The evaluation can be categorized into basic audio tasks, including Automatic Speech Recognition (ASR), Speech-to-Text (S2TT), and Music Understanding, as well as advanced audio tasks, including Voice Chatting and Audio Reasoning.
+For music understanding, we use RUL-MuchoMusic \citep{zang2025you} for a comprehensive evaluation of the music understanding capabilities of the model.
+We utilize MMAU~\citep{sakshi2024mmaumassivemultitaskaudio} and MMSU~\citep{mmsu} for audio reasoning tasks, VoiceBench~\citep{chen2024voicebench} for voice-chatting tasks. We also employ multiple datasets including GTZAN \citep{tzanetakis2002musical}, four subsets of MTG-Jamendo (MTG, \cite{bogdanov2019mtg}), and MagnaTagATune \citep{law2009evaluation} to evaluate the model's capabilities across various music information retrieval tasks including genre identification, emotion and theme recognition, instrument recognition and music keyword annotation. We follow the evaluation set composition in MARBLE \citep{yuan2023marble} for GTZAN, MTG-Jamendo and MagnaTagATune.
+
+
+%, and a self-curated speech-query benchmark
+% OCRBench~\citep{liu2024ocrbenchhiddenmysteryocr}, 
+% InfoVQA~\citep{Mathew2021InfographicVQA}, 
+\paragraph{Vision$\to$Text}
+The evaluation of the model's vision-to-text capabilities encompasses a suite of benchmarks targeting diverse and challenging tasks. To assess performance in general visual question answering, the model is evaluated on MMStar~\citep{chen2024we}, HallusionBench~\citep{hallusionbench}, and MM-MT-Bench~\citep{agrawal2024pixtral12b}. For the specialized domain of mathematical and STEM reasoning, we utilize MathVista~\citep{mathvista}, MathVision~\citep{mathvision}, MMMU~\citep{yue2023mmmu}, and MMMU-Pro~\citep{mmmupro}. The model's proficiency in document understanding is measured using the AI2D~\citep{kembhavi2016diagram} and ChartQA~\citep{masry2022chartqa} benchmarks. Furthermore, the model's numerical reasoning and counting abilities are specifically tested on CountBench~\citep{countbench}. To evaluate performance on dynamic visual data, we report results on three long video understanding benchmarks: Video-MME~\citep{fu2024video}, LVBench~\citep{lvbench}, and MLVU~\citep{mlvu}.
+
+% Specifically, we utilize MMMU~\citep{yue2023mmmu} and MMMU-Pro~\citep{mmmupro} for college-level problems evaluation, MathVista~\citep{mathvista} and MathVision~\citep{mathvision} for math. For general visual question answering, we evaluate the performance on benchmark datasets such as MMBench-V1.1~\citep{MMBench}, MMVet~\citep{yu2024mm}, MMStar~\citep{chen2024we}, MME~\citep{fu2023mme}, MuirBench~\citep{wang2024muirbenchcomprehensivebenchmarkrobust}, CRPE~\citep{wang2024allseeingprojectv2general}, RealWorldQA~\citep{X.AI.}, 
+% MMERealWorld~\citep{mme-realworld}, and MM-MT-Bench~\citep{agrawal2024pixtral12b}. 
+% Additionally, we evaluate \method on various OCR benchmarks, such as AI2D~\citep{kembhavi2016diagram}, TextVQA~\citep{textvqa}, DocVQA~\citep{docvqa}, ChartQA~\citep{masry2022chartqa}, and OCRBench\_v2~\citep{fu2024ocrbenchv2improvedbenchmark}. Furthermore, we also evaluate the visual grounding capability of our model on the referring expression comprehension benchmarks~\citep{kazemzadeh-etal-2014-referitgame, mao2016generationcomprehensionunambiguousobject}, object detection in the wild~\citep{li2022groundedlanguageimagepretraining} and a self-curated point grounding benchmark. We assess our model on several representative video understanding tasks like Video-MME~\citep{fu2024video},
+% MVBench~\citep{li2024mvbench}, and EgoSchema~\citep{mangalam2023egoschema}.
+
+
+
+
+\paragraph{AudioVisual Video$\to$Text}
+To evaluate the model's ability to process dynamic multi-modal information, we first assessed its performance on the WorldSense benchmark~\citep{worldsense}. This benchmark is designed to measure the integration of visual and auditory signals, a foundational capability for operating in complex, open-world environments. To further examine the model's higher-order cognitive functions, we then evaluated its performance on two audiovisual reasoning benchmarks: DailyOmni~\citep{dailyomni} and VideoHolmes~\citep{videoholmes}.
+
+
+
+
+\subsubsection{Performance of Text$\to$Text}
+We compare \method with other leading large language models (thinking or instruct). According to Table \ref{tab:text_nonthink} and \ref{tab:text_think}, 
+notably, despite a smaller parameter count, \method-30B-A3B-Instruct surpasses the performance of the larger open-source model Qwen3-235B-A22B Non-Thinking and the formidable closed-source model GPT-4o-0327 across a suite of benchmarks, including GPQA, AIME25, ZebraLogic, WritingBench, and PolyMath. Concurrently, \method-30B-A3B-Thinking demonstrates performance comparable to that of Gemini-2.5-Flash-Thinking and Qwen3-235B-A22B Non-Thinking. Furthermore, \method-30B-A3B exhibits textual capabilities on par with its text-only counterparts, namely the Qwen3-30B-A3B-Instruct-2507 and Qwen3-30B-A3B-Thinking-2507. 
+
+
+% Furthermore, Our internal Qwen3-Omni-Flash achieves even better results.
+
+\input{posttrain_tables/text.tex}
+
+\subsubsection{Performance of Audio$\to$Text}
+We compare \method with other leading specialist and generalist models on ASR \& S2TT, voice-chatting, audio reasoning, and music understanding benchmarks. For brevity, we defer the results of the Qwen3-Omni-Thinking model on ASR \& S2TT and music understanding to the \textbf{Appendix}~\ref{sec:audio-eval}.
+\input{posttrain_tables/audio_asrs2tt.tex}
+
+
+As shown in Table \ref{tab:audio_asr}, \method-Instruct achieves state-of-the-art En \& Zh ASR and lyric ASR performance on Librispeech, Wenetspeech, Fleurs, CommonVoice, Opencpop-test and MIR-1K (vocal). It also delivers better or comparable performance with other specialist or generalist models like Voxtral-Small and Gemini-2.5-Pro on Multilingual ASR and S2TT. These results show a strong performance of \method in speech recognition and speech translation.
+
+Additionally, on VoiceBench shown in Table \ref{tab:audio_voicebench}, \method-Thinking achieves an impressive average score of 89.5, surpassing all other audio language models except Gemini-2.5-Pro (89.6). This showcases our model's strong capabilities in speech interaction. \method also demonstrates impressive performance in audio reasoning, outperforming the powerful closed-source models Gemini-2.5-Pro and Gemini-2.5-Flash on the MMAU benchmark, as well as Gemini-2.5-Flash and GPT-4o-Audio on MMSU. These results demonstrate the powerful capabilities of \method in general audio understanding and reasoning.
+\input{posttrain_tables/voicechat.tex}
+% \input{posttrain_tables/audio_reasoning.tex}
+
+% with outstanding scores of 52.0 and 52.1 
+For music understanding, we compare \method-Instruct with both generalist audio language models and specialist models in Table \ref{tab:audio_music}. For multi-label classification tasks on MTG-Jamendo and MagnaTagATune, we use micro F1 to compare with BERT-like music specialists instead of AP/AUROC, as language models output discrete label sets without calibrated per-label probabilities/scores required by ranking-based metrics. It is shown in Table \ref{tab:audio_music} that \method-Instruct achieve state-of-the-art performance on RUL-MuchoMusic. On GTZAN, MTG-Jamendo, and MagnaTagATune, the scores of \method-Instruct also significantly surpass other audio language models, including Gemini-2.5-Pro and GPT-4o-Audio, as well as self-supervised music specialist models probed on the respective datasets. These results demonstrate the superior capabilities of \method-Instruct across a variety of music understanding tasks.
+\input{posttrain_tables/audio_music.tex}
+
+
+
+% \vspace{-.1in}
+
+% Baichuan-Omni-1.5\citep{li2025baichuan}
+% MiniCPM-o~\citep{yao2024minicpm}
+% Lyra-Base~\citep{zhong2024lyra}
+% Megrez-3B-Omni ~\citep{Megrez-3B-Omni}
+% VITA-1.5 ~\citep{fu2025vita}
+\subsubsection{Performance of Vision $\to$ Text}
+To comprehensively evaluate the capabilities on Vision $\to$ Text, we compare \method-Instruct with the Qwen2.5-VL-72B and other good-performing closed-source vision-language models. As illustrated in Table \ref{tab:qwen3-omni-vl-results}, \method-Instruct demonstrates comparable performance to Qwen2.5-VL-72B, and attains better results on Math \& STEM related tasks like MMMU-Pro\textsubscript{overall}, MathVista\textsubscript{mini}, and MATH-Vision\textsubscript{full},  than other vision language models including GPT4-o and Gemini-2.0-Flash. These results reveal the excellent capability of our model on image understanding and reasoning tasks. 
+
+To assess its capabilities, we evaluated the performance of \method-Thinking against several state-of-the-art reasoning models. The comparative results, summarized in Table \ref{tab:qwen3-omni-vl-reasoning-results}, indicate that our proposed model achieves significant advancements. For instance, on Math and STEM benchmarks, it outperforms the \method-Instruct baseline by 4.4 points. It is also noteworthy that our \method-30B-A3B-Thinking model attains a performance level on par with substantially larger baselines, which highlights its excellent balance of effectiveness and computational efficiency.
+% Of particular note, \method-30B-A3B-Thinking achieves performance comparable to the much larger InternVL-3.5-241B-A28B model, despite possessing only one-eighth of its parameters, highlighting its remarkable efficiency. 
+A limitation of the current model is its suboptimal performance on long video benchmarks. This deficiency stems from two architectural constraints: a limited capacity for positional extrapolation and a restricted context length. Addressing these constraints is a key objective for future work.
+
+
+\vspace{-.1in}
+
+\input{posttrain_tables/vl}
+
+
+% For visual grounding, we compare \method with Qwen2.5-VL-7B and other leading LVLMs including Gemini and Grounding-DINO~\citep{liu2024groundingdinomarryingdino}. As illustrated in Table \ref{tab:qwen3-omni-vl-results}, our model outperforms other models across most benchmarks from box-grounding to point-grounding and achieves a good performance of 42.2mAP on open-vocabulary object detection, which reveals the strong visual grounding capability of our model.
+
+% Similar to Image$\to$Text, we compare \method with Qwen2.5-VL-7B and other omni models. As shown in Table \ref{tab:qwen3-omni-vl-results}, \method outperforms all other state-of-the-art open-sourced omni models, and attains better or competitive results compared to Qwen2.5-VL-72B, which demonstrates the superior performance on video understanding.
+% \input{posttrain_tables/vl}
+
+
+\subsubsection{Performance of AudioVisual Video$\to$Text}
+As is shown in Table \ref{tab:qwen3-omni-va-results}, the experimental results validate the efficacy of \method across diverse audiovisual tasks. For general understanding, \method-Instruct achieves state-of-the-art performance on the WorldSense benchmark, surpassing other Omni models by a substantial margin. This outcome demonstrates its effectiveness in foundational multimodal integration. Moreover, the model exhibits enhanced performance on complex reasoning tasks, as illustrated in Table \ref{tab:qwen3-omni-va-reasoning-results}, particularly on benchmarks that necessitate reasoning over interconnected audio and visual information. These findings collectively suggest that \method possesses considerable potential for advanced perception and reasoning in real-world contexts.
+% DailyOmni, WorldSense, and VideoHolmes benchmarks, surpassing other Omni models by a large margin, which demonstrates the superiority of our model in multimodality understanding.
+\input{posttrain_tables/va}
+
+
+\subsection{Evaluation of X$\to$Speech}
+In this section, we evaluate the speech generation capabilities of \method. Due to the lack of relevant assessments, the evaluation of speech generation focuses primarily speech generation given texts, similarity to text-to-speech (TTS), on following three aspects:
+
+\begin{itemize}
+    \item \textbf{Zero-Shot Speech Generation}: We assess the content consistency (WER) and speaker similarity (SIM) of our model in zero-shot speech generation on SEED~\citep{seedtts}.
+    \item \textbf{Multilingual Speech Generation}: We assess the content consistency and speaker similarity of our model in zero-shot multilingual speech generation on MiniMax multilingual test set~\citep{minimaxspeech}.
+    \item \textbf{Cross-Lingual Speech Generation}: We assess the content consistency of our model in zero-shot cross-lingual speech generation on CV3-Eval~\citep{cosyvoice3}.
+    % \item \textbf{Single-Speaker Speech Generation}. We assess the stability of our speaker fine-tuned model on the SEED~\citep{seedtts} and MiniMax multilingual test set~\citep{minimaxspeech}.
+\end{itemize}
+
+
+
+\subsubsection{Evaluation of Zero-Shot Speech Generation}
+We compare the \method with state-of-the-art zero-shot TTS systems. As shown in Table~\ref{tab:zero_shot_speech_generation_table}, \method demonstrates highly competitive performance, highlighting its robust speech understanding and generation capabilities developed through pretraining and continual pretraining. Additionally, with reinforcement learning (RL) optimization, \method yields significant improvements in generation stability, which achieves the best performance in the test-en set.
+
+\vspace{-.1in}
+
+\begin{table}[H]
+\centering
+\caption{\textbf{Zero-Shot Speech Generation on Seed-TTS Test Set. The highest scores are shown in bold.}}
+\vspace{-.1in}
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}cll@{}}
+\toprule
+\textbf{Datasets} & \textbf{Model} & \textbf{Performance} \\
+\midrule
+\multicolumn{3}{c}{\textit{Content Consistency}} \\
+\midrule 
+\multirow{9}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{SEED} \\ \textit{test-zh} | \textit{test-en} \end{tabular}}   
+   & Seed-TTS\textsubscript{ICL}~\citep{seedtts} & 1.11 | 2.24  \\ 
+   & Seed-TTS\textsubscript{RL}~\citep{seedtts}  & 1.00 | 1.94  \\ 
+   & MaskGCT~\citep{maskgct}                     & 2.27 | 2.62  \\ 
+   & E2 TTS~\citep{e2tts}                        & 1.97 | 2.19  \\ 
+   & F5-TTS~\citep{f5tts}                        & 1.56 | 1.83  \\ 
+   & Spark TTS~\citep{sparktts}            & 1.20 | 1.98  \\
+   & CosyVoice 2~\citep{cosyvoice2}              & 1.45 | 2.57  \\
+   & CosyVoice 3~\citep{cosyvoice3}            & \textbf{0.71} | 1.45  \\
+   % & Qwen2.5-Omni-7B\textsubscript{ICL}~\citep{qwen2.5omni}                & 1.70 | 2.72 | 7.97 \\
+   & Qwen2.5-Omni-7B~\citep{qwen2.5omni}                 & 1.42 | 2.33 \\
+   % & \method-30B-A3B\textsubscript{ICL}                & - | - | - \\
+   & \method-30B-A3B                 & 1.07 | \textbf{1.39} \\
+\bottomrule
+\end{tabular}
+\label{tab:zero_shot_speech_generation_table}
+\end{table}
+
+% \begin{table}[t!]
+% \centering
+% \caption{Zero-Shot Speech Generation}
+% \setlength{\tabcolsep}{2.6pt}
+% \begin{tabular}{@{}cll@{}}
+% \toprule
+% \textbf{Datasets} & \textbf{Model} & \textbf{Performance} \\
+% \midrule
+% \multicolumn{3}{c}{\textit{Content Consistency}} \\
+% \midrule 
+% \multirow{9}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{SEED} \\ \textit{test-zh} | \textit{test-en} | \\ \textit{test-hard} \end{tabular}}   
+%    & Seed-TTS\textsubscript{ICL}~\citep{seedtts} & 1.11 | 2.24 | 7.58 \\ 
+%    & Seed-TTS\textsubscript{RL}~\citep{seedtts}  & 1.00 | 1.94 | 6.42 \\ 
+%    & MaskGCT~\citep{maskgct}                     & 2.27 | 2.62 | 10.27 \\ 
+%    & E2 TTS~\citep{e2tts}                        & 1.97 | 2.19 | - \\ 
+%    & F5-TTS~\citep{f5tts}                        & 1.56 | 1.83 | 8.67 \\ 
+%    & Spark TTS~\citep{sparktts}            & 1.20 | 1.98 | - \\
+%    & CosyVoice 2~\citep{cosyvoice2}              & 1.45 | 2.57 | 6.83 \\
+%    & CosyVoice 3~\citep{cosyvoice3}            & \textbf{0.71} | 1.45 | \textbf{5.66} \\
+%    % & Qwen2.5-Omni-7B\textsubscript{ICL}~\citep{qwen2.5omni}                & 1.70 | 2.72 | 7.97 \\
+%    & Qwen2.5-Omni-7B~\citep{qwen2.5omni}                 & 1.42 | 2.33 | 6.54 \\
+%    % & \method-30B-A3B\textsubscript{ICL}                & - | - | - \\
+%    & \method-30B-A3B                 & 1.07 | \textbf{1.39} | 7.51 \\
+% \midrule
+% \multicolumn{3}{c}{\textit{Speaker Similarity}} \\
+% \midrule 
+% \multirow{9}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{SEED} \\ \textit{test-zh} | \textit{test-en} | \\ \textit{test-hard} \end{tabular}}   
+%    & Seed-TTS\textsubscript{ICL}~\citep{seedtts} & 0.796 | 0.762 | 0.776 \\ 
+%    & Seed-TTS\textsubscript{RL}~\citep{seedtts}  & \textbf{0.801} | \textbf{0.766} | \textbf{0.782} \\ 
+%    & MaskGCT~\citep{maskgct}                     & 0.774 | 0.714 | 0.748 \\ 
+%    & E2 TTS~\citep{e2tts}                        & 0.730 | 0.710 | - \\ 
+%    & F5-TTS~\citep{f5tts}                        & 0.741 | 0.647 | 0.713 \\ 
+%    & Spark TTS~\citep{sparktts}                 & 0.672 | 0.584 | - \\
+%    & CosyVoice 2~\citep{cosyvoice2}              & 0.748 | 0.652 | 0.724 \\
+%    & CosyVoice3~\citep{cosyvoice3} & 0.775 | 0.695 | 0.750 \\
+%    % & Qwen2.5-Omni-7B\textsubscript{ICL}~\citep{qwen2.5omni}                & 0.752 | 0.632 | 0.747 \\
+%    & Qwen2.5-Omni-7B~\citep{qwen2.5omni}                 & 0.754 | 0.641 | 0.752 \\
+%    % & \method-30B-A3B\textsubscript{ICL}                & - | - | - \\
+%    & \method-30B-A3B                 & 0.726 | 0.663 | 0.705 \\
+% \bottomrule
+% \end{tabular}
+% \label{tab:zero_shot_speech_generation_table}
+% \end{table}
+
+
+
+
+
+
+
+\subsubsection{Evaluation of Multilingual Speech Generation}
+\method supports speech generation across 10 languages. We evaluate its performance against both the MiniMax-Speech and ElevenLabs Multilingual v2 models for multilingual speech generation. As shown in Table~\ref{tab:multilingual_speech_generation_table}, \method surpasses these models by a significant margin for languages such as Chinese, English, and French, while delivering competitive results in the remaining languages. These findings indicate that \method generates cloned speech with consistent  stability and human-like voice across all evaluated languages.
+
+% the performance of  \method  is comparable to that of  MiniMax-Speech and ElevenLabs Multilingual v2 model
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{multirow}
+\begin{table}[H]
+\centering
+\caption{\textbf{Multilingual Speech Generation on MiniMax Multilingual Test Set. The highest scores are shown in bold.}}
+\begin{tabular}{@{}lllllll@{}}
+\toprule
+\multirow{2}{*}{\textbf{Language}} & \multicolumn{3}{c}{\textbf{Content Consistency}}      & \multicolumn{3}{c}{\textbf{Speaker Similarity}}           \\ \cmidrule(l){2-7} 
+                          & \tabincell{c}{\textbf{\method}\\\textbf{-30B-A3B}}       & \textbf{MiniMax} & \textbf{ElevenLabs} & \tabincell{c}{\textbf{\method}\\\textbf{-30B-A3B}}       & \textbf{MiniMax} & \textbf{ElevenLabs} \\ \midrule
+Chinese                    & \textbf{0.716} & 2.252   & 16.026      & 0.772          & \textbf{0.780}   & 0.677      \\
+English                    & \textbf{1.069} & 2.164   & 2.339      & \textbf{0.773}          & 0.756   & 0.613      \\
+German                    & 0.777 & 1.906   & \textbf{0.572}      & \textbf{0.738}          & 0.733   & 0.614      \\
+Italian                   & \textbf{1.067} & 1.543   & 1.743      & \textbf{0.742} & 0.699   & 0.579      \\
+Portuguese                & 1.872          & 1.877   & \textbf{1.331}      & 0.770          & \textbf{0.805}   & 0.711      \\
+Spanish                   & 1.765          & \textbf{1.029}   & 1.084      & 0.744 & \textbf{0.762}   & 0.615      \\
+Japanese                  & 3.631          & \textbf{3.519}   & 10.646     & 0.763 & \textbf{0.776}   & 0.738      \\
+Korean                    & \textbf{1.670}          & 1.747   & 1.865      & \textbf{0.778} & 0.776   & 0.700      \\
+French                    & \textbf{2.505} & 4.099   & 5.216      & \textbf{0.689} & 0.628   & 0.535      \\
+Russian                   & 3.986          & 4.281   & \textbf{3.878}      & 0.759          & \textbf{0.761}   & 0.676      \\ \bottomrule
+% Thai                      & 5.437          & \textbf{2.701}   & 73.936     & 0.771          & \textbf{0.800}   & 0.588      \\
+% Indonesian                & 1.219          & 1.237   & \textbf{1.059}      & \textbf{0.733} & 0.729   & 0.660      \\ \bottomrule
+\end{tabular}
+\label{tab:multilingual_speech_generation_table}
+\end{table}
+
+
+
+% depends on the performance
+\subsubsection{Evaluation of Cross-Lingual Speech Generation}
+\method supports not only multilingual voice cloning but also cross-lingual voice cloning. We evaluate its performance against CosyVoice2 and CosyVoice3 for cross-lingual speech generation. As shown in Table~\ref{tab:cross_lingual_speech_generation_table}, \method outperforms CosyVoice3 in any-to-en (any language to English) and any-to-ko (any language to Korean) voice cloning. Notably, in any-to-ja (any language to Japanese) tasks, \method achieves comparable performance to CosyVoice3 even without text normalization, despite CosyVoice3 converting all Japanese characters into phonetic kana. These results highlight \method's superiority in cross-lingual speech generation, demonstrating its adaptability across diverse linguistic contexts.
+
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{table}[H]
+\centering
+\caption{\textbf{Cross-Lingual Speech Generation on CosyVoice3 Cross-Lingual Test Set. The highest scores are shown in bold.}}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Language} & \multicolumn{1}{c}{\textbf{\method-30B-A3B}} & \multicolumn{1}{c}{\textbf{CosyVoice3}} & \multicolumn{1}{c}{\textbf{CosyVoice2}} \\ \midrule
+en-to-zh & 5.37                        & \textbf{5.09}                           & 13.5                           \\
+ja-to-zh & 3.32                        & \textbf{3.05}                           & 48.1                           \\
+ko-to-zh & \textbf{0.99}                        & 1.06                           & 7.70                           \\
+zh-to-en & \textbf{2.76}                        & 2.98                           & 6.47                           \\
+ja-to-en & \textbf{3.31}                        & 4.20                           & 17.1                           \\
+ko-to-en & \textbf{3.34}                        & 4.19                           & 11.2                           \\
+zh-to-ja & 8.29                        & \textbf{7.08}                           & 13.1                           \\
+en-to-ja & 7.53                        & \textbf{6.80}                           & 14.9                           \\
+ko-to-ja & 4.24                        & \textbf{3.93}                           & 5.86                           \\
+zh-to-ko & \textbf{5.13}                        & 14.4                           & 24.8                           \\
+en-to-ko & \textbf{4.96}                        & 5.87                           & 21.9                           \\
+ja-to-ko & \textbf{6.23}                        & 7.92                           & 21.5                           \\ \bottomrule
+\end{tabular}
+\label{tab:cross_lingual_speech_generation_table}
+\end{table}
+
+% \begin{table}[t!]
+% \centering
+% \caption{Single-Speaker Speech Generation}
+% \setlength{\tabcolsep}{2.6pt}
+% \begin{tabular}{@{}clc@{}}
+% \toprule
+% \textbf{Datasets} & \textbf{Model} & \textbf{Performance} \\
+% \midrule
+% \multicolumn{3}{c}{\textit{Content Consistency}} \\
+% \midrule 
+% \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{SEED} \\ \textit{test-zh} | \textit{test-en} | \\ \textit{test-hard} \end{tabular}} 
+%    & Human                                & \textbf{1.25} | 2.14 | - \\
+%    & \method\textsubscript{RL}          & 1.30 | 2.33 | 6.54 \\
+%    & \method\textsubscript{Speaker A}   & 1.29 | 1.86 | 6.59 \\
+%    & \method\textsubscript{Speaker B}   & 1.37 | 1.89 | 7.25 \\
+%    & \method\textsubscript{Speaker C}   & 1.30 | 2.13 | \textbf{6.43} \\
+%    & \method\textsubscript{Speaker D}   & 1.28 | \textbf{1.83} | 7.16 \\
+% \midrule
+% \multicolumn{3}{c}{\textit{Naturalness}} \\
+% \midrule 
+% \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{NMOS} \\ \textit{zh} | \textit{en} \end{tabular}} 
+%    & Human                                & \textbf{4.51} | -     \\
+%    & \method\textsubscript{Speaker A}   & 4.46 | 4.51 \\
+%    & \method\textsubscript{Speaker B}   & \textbf{4.51} | \textbf{4.62} \\
+%    & \method\textsubscript{Speaker C}   & 4.50 | 4.60 \\
+%    & \method\textsubscript{Speaker D}   & 4.48 | 4.58 \\
+% \bottomrule
+% \end{tabular}
+% \label{tab:zero_shot_speech_generation_table}
+% \end{table}
+
+
+% \subsubsection{Evaluation of Single-Speaker Speech Generation.}
+% We evaluate the \method model after speaker fine-tuning on multilingual speech generation for each speaker. We assess the performance of \method against the GPT-4o-Audio-Preview (Ballad voice), MiniMax-Speech (Bestie voice) and ElevenLabs Multilingual v2 (Brian) model. As shown in Table~\ref{tab:single_speech_generation_table}, the speaker-finetuned \method more precisely captures the nuanced prosodic styles of the target speakers while maintaining the foundational stability of the base model. Remarkably, despite being fine-tuned exclusively on monolingual data for each speaker, \method consistently generates stable, natural and expressive speech across multiple languages for all speakers.
+
+
+% \begin{table}[]
+% \centering
+% \caption{\textbf{Single-Speaker Multilingual Speech Generation On MiniMax Multilingual Test Set. The highest scores are shown in bold.}}
+% \begin{tabular}{@{}lccccc@{}}
+% \toprule
+% \textbf{Language}   & \multicolumn{1}{c}{\textbf{Speaker A}} & \multicolumn{1}{c}{\textbf{Speaker B}} & \multicolumn{1}{c}{\textbf{GPT-4o-Audio-Preview}} & \multicolumn{1}{c}{\textbf{MiniMax}} & \multicolumn{1}{c}{\textbf{ElevenLabs}}\\ \midrule
+% Chinese    & -         & -                    & 3.149  & 0.890                    & 5.200                           \\
+% English    & -       & -                    & 2.197  & 0.916                    & 0.914                           \\
+% German     & -                      & -                    & 1.161   & 1.534                    & 1.974                          \\
+% Italian    & -                               & -                    & 1.194  & 0.951                    & 0.668                  \\
+% Portuguese & -                                                   & -                             & 1.504   & 1.211                    & 1.092                          \\
+% Spanish    & -                                                 & -                             & 4.000   & 0.921                    & 0.733                 \\
+% Japanese   & -                                             & -                             & 5.001   & 3.658                    & 14.08                 \\
+% Korean     & -                                                & -                             & 2.763      & 1.574                    & 2.105              \\
+% French     & -                    & -                    & 3.605                & 3.064                    & 3.019                    \\
+% Russian    & -                                       & -    & 5.250                             & 3.483                             & 4.477                             \\ \bottomrule
+% % Thai       & -             & -                    & -                & -                             & -                             & -                             \\
+% % Indonesian & -              & -                    & -               & -                             & -                             & -                    \\ 
+% \end{tabular}
+% \label{tab:single_speech_generation_table}
+% \end{table}

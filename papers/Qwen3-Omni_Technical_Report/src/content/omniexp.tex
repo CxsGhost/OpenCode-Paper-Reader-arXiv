@@ -1,0 +1,130 @@
+\section{Evaluating Non‑Degradation Across Modalities}\label{sec:omniexp}
+% Since the post-training procedures differ across modalities, with varying techniques and optimization goals, a strict and standardized integration of the data is not feasible. To obtain a rigorous conclusion, we pre-trained size-matched text-only, vision-only, and Omni models. The Omni model used exactly the same text and vision datasets as the respective single-modality baselines. We further match the effective number of epochs per modality by tuning sampling ratios and align the learning-rate schedules and batch sizes across models. The only difference is that the Omni model additionally audio data and a small amount of audio-visual video data.
+A standardized data integration methodology is rendered impractical by the heterogeneous nature of different modalities, each requiring distinct pre-training objectives and optimization techniques. To ensure a fair and rigorous evaluation, we therefore designed a controlled comparative study. Our approach involved pre-training three models with matched parameter counts: a text-only baseline, a vision-only baseline, and a multimodal ``Omni'' model. To isolate the effects of multimodality, all confounding variables were meticulously controlled. Specifically, the Omni model was trained on the identical text and vision corpora as the unimodal baselines. Moreover, we aligned critical training parameters across all models, including learning rate schedules, batch sizes, and the effective number of training epochs for each modality, which was normalized by adjusting data sampling ratios. Consequently, the sole differentiating factor in our experiment was the Omni model's inclusion of supplementary audio and audio-visual data during its pre-training phase.
+
+
+The results are shown in Table~\ref{tab:non-degradation across modalities}, we evaluate comprehensive benchmarks covering a variety of modalities, including the text modality (general tasks, math \& STEM tasks, coding tasks, multilingual tasks), the visual modality (college-level problems, OCR-related tasks), and the video modality (video understanding tasks). The experimental results not only demonstrate that mixing unimodal and cross-modal data during the early stage of text pretraining can achieve better performance across all modalities, but also indicate that joint multimodal training enables mutual enhancement between different modalities, leading to improved performance in single modalities as well. 
+This fully showcases the versatility and robustness of \method across diverse evaluation criteria.
+
+
+Due to the prohibitive experimental cost, we could not conduct a comprehensive sweep across all model scales. Based on Table~\ref{tab:non-degradation across modalities} and our internal experiments, we observe: (1) early multimodal integration during pretraining allows language models to be co-trained with vision or audio without any degradation in language capability; (2) the inclusion of the text modality substantially improves performance in the vision and audio. In constrast, we do not observe measurable gains in language ability from adding visual or audio signals; (3) empirically, adding audio data consistently improves vision performance on the MMMU benchmark and OCR-related tasks
+
+
+\begin{table}[H]
+\centering
+\caption{\textbf{We compare the performance of 30A3 models that are contemporaneous and identical in size in Qwen series. To ensure experimental rigor, all models were trained under the same schedule, using identical datasets for their respective modalities and exactly matched training compute (FLOPs).}}
+\vspace{-1mm}
+\label{tab:non-degradation across modalities}
+% \adjustbox{center=\textwidth}{
+% \small
+% \setlength{\tabcolsep}{3pt} %
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}clccc@{}}
+\toprule
+& \textbf{Datasets} & \tabincell{c}{\textbf{Qwen3-30B-A3B}\\\textbf{-Base-202507}} & \tabincell{c}{\textbf{Qwen3-VL-30B-A3B}\\\textbf{-Base-202507}} & \tabincell{c}{\textbf{\method-30B-A3B}\\\textbf{-Base-202507}} \\
+\midrule
+\multirow{4}{*}{\tabincell{c}{\textit{General}\\\textit{Tasks}}} & MMLU & 81.24 & - & \textbf{81.69} \\
+& MMLU-Redux & 80.17 & - & \textbf{80.60} \\
+& MMLU-Pro & \textbf{61.81} & - & 61.57 \\
+& SuperGPQA & 38.24 & - & \textbf{40.14} \\
+& BBH & \textbf{83.79} & - & 83.53 \\
+\midrule
+\multirow{1}{*}{\tabincell{c}{\textit{Math \& STEAM}\\\textit{Tasks}}} & GSM8K & 90.83 & - & \textbf{91.36} \\
+& MATH & \textbf{60.84} & - & 60.42 \\
+\midrule
+\multirow{3}{*}{\tabincell{c}{\textit{Coding}\\\textit{Tasks}}} & EvalPlus & 69.70 & - & \textbf{73.96} \\
+& MultiPL-E & \textbf{65.75} & - & 64.79 \\
+& MBPP & 72.60 & - & \textbf{72.60} \\
+& CRUX-O & 66.94 & - & \textbf{69.06} \\
+\midrule
+\multirow{1}{*}{\tabincell{c}{\textit{Multilingual}\\\textit{Tasks}}} & MGSM & 78.75 & - & \textbf{79.93} \\
+& INCLUDE & \textbf{65.17} & - & 64.73 \\
+
+\midrule
+\tabincell{c}{\textit{College-level}\\\textit{Problems}} & MMMU\textsubscript{val} & - & 57.22 & \textbf{59.33} \\
+\midrule
+\multirow{1}{*}{\tabincell{c}{\textit{General Visual}\\\textit{Question Answering}}} & MMStar & - & 67.2 & \textbf{69.6} \\
+& RealWorldQA\textsubscript{avg} & - & \textbf{73.98} & 71.89 \\
+\midrule
+\multirow{5}{*}{\tabincell{c}{\textit{OCR-related}\\\textit{Tasks}}} & AI2D & - & 85.88 & \textbf{86.62} \\
+& TextVQA\textsubscript{val} & - & \textbf{81.67} & 81.65 \\
+& DocVQA\textsubscript{test} & - & 95.19 & \textbf{95.27} \\
+& InfoVQA\textsubscript{test} & - & 81.17 & \textbf{83.31} \\
+& ChartQA\textsubscript{test Avg} & - & 87.12 & \textbf{87.52} \\
+& OCRBench & - & 85.8 & \textbf{86.0} \\
+\midrule
+\multirow{2}{*}{\tabincell{c}{\textit{Video Understanding}\\\textit{Tasks}}} & Video-MME\textsubscript{w/o sub} & - & 69.22 & \textbf{69.25} \\
+& MVBench & - & \textbf{71.87} & 69.50 \\
+& LVBench & - & 48.61 & \textbf{51.07} \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+
+% \begin{table}[t]
+% \centering
+% \caption{\textbf{Across modalities performance of 30B-A3B models and \method}}
+% \label{tab:non-degradation across modalities}
+% \small
+% \setlength{\tabcolsep}{2.6pt}
+% \begin{tabular}{@{}lccc@{}}
+% \toprule
+% \textbf{Datasets} & \textbf{Qwen3-30B-A3B Base} & \textbf{Qwen3-VL-30B-A3B Base} & \textbf{\method-30B-A3 Base} \\
+
+
+% \midrule
+% \multicolumn{4}{c}{\textit{General Tasks}} \\
+% \midrule
+% MMLU & 81.24 & 81.39 & 81.69 \\
+% MMLU-Redux & 80.17 & 80.63 & 80.60 \\
+% MMLU-Pro & 61.81 & 60.63 & 61.57 \\
+% SuperGPQA & 38.24 & 37.91 & 40.14 \\
+% BBH & 83.79 & 79.97 & 83.53 \\
+% \midrule
+% \multicolumn{4}{c}{\textit{Math \& STEAM Tasks}} \\
+% \midrule
+% GSM8K & 90.83 & 91.36 & 91.36 \\
+% MATH & 60.84 & 62.86 & 60.42 \\
+% \midrule
+% \multicolumn{4}{c}{\textit{Coding Tasks}} \\
+% \midrule
+% EvalPlus & 69.70 & 71.51 & 73.96 \\
+% MultiPL-E & 65.75 & 42.59 & 64.79 \\
+% MBPP & 72.60 & 70.60 & 72.60 \\
+% CRUX-O & 66.94 & 55.56 & 69.06 \\
+% \midrule
+% \multicolumn{4}{c}{\textit{Coding Tasks}} \\
+% \midrule
+% MGSM & 78.75 & 78.35 & 79.93 \\
+% INCLUDE & 65.17 & 63.35 & 64.73 \\
+% \midrule
+% \multicolumn{4}{c}{\textit{College-level Problems}} \\
+% \midrule
+% MMMU\textsubscript{val} & - & 57.22 & 59.33 \\
+% \midrule
+% \multicolumn{4}{c}{\textit{General Visual Question Answering}} \\
+% \midrule
+% MMStar & - & 67.2 & 69.6 \\
+% RealWorldQA\textsubscript{avg} & - & 73.98 & 71.89 \\
+% \midrule
+% \multicolumn{4}{c}{\textit{OCR-related Tasks}} \\
+% \midrule
+% AI2D & - & 85.88 & 86.62 \\
+% TextVQA\textsubscript{val} & - & 81.67 & 81.65 \\
+% DocVQA\textsubscript{test} & - & 95.19 & 95.27 \\
+% InfoVQA\textsubscript{test} & - & 81.17 & 83.31 \\
+% ChartQA\textsubscript{test Avg} & - & 87.12 & 87.52 \\
+% OCRBench & - & 85.8 & 86.0 \\
+% \midrule
+% \multicolumn{4}{c}{\textit{Video Understanding Tasks}} \\
+% \midrule
+% Video-MME\textsubscript{w/o sub} & - & 69.22 & 69.25 \\
+% MVBench & - & 71.87 & 69.50 \\
+% LVBench & - & 48.61 & 51.07 \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
+
+
+

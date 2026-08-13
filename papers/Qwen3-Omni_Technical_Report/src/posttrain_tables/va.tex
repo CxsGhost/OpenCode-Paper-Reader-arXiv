@@ -1,0 +1,48 @@
+\begin{table}[H]
+\centering
+\caption{\textbf{AudioVisual $\to$ Text performance of \method-Instruct and other non-reasoning baselines. The highest
+scores are shown in bold.}}
+\vspace{-1mm}
+\label{tab:qwen3-omni-va-results}
+% \adjustbox{center=\textwidth}{
+% \small
+% \setlength{\tabcolsep}{3pt} %
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}clcccccc@{}}
+\toprule
+% & \textbf{Datasets} & \tabincell{c}{\textbf{Gemini-2.5-Flash}}  & \tabincell{c}{\textbf{Prior SoTA}} &\tabincell{c}{\textbf{Qwen2.5-Omni}}  & \tabincell{c}{\textbf{\method-30B-A3B}\\\textbf{-Instruct}}   & \tabincell{c}{\textbf{\method-Flash}\\\textbf{-Instruct}}\\
+% \midrule
+% & WorldSense & 50.9* &  47.1\citep{humanomniv2} & 45.4 & 54.0 & 54.1  \\
+& \textbf{Datasets}  & \tabincell{c}{\textbf{Previous}\\\textbf{Open-source SoTA}} & \tabincell{c}{\textbf{Gemini-2.5-Flash}}  &\tabincell{c}{\textbf{Qwen2.5-Omni}}  & \tabincell{c}{\textbf{\method-30B-A3B}\\\textbf{-Instruct}}   & \tabincell{c}{\textbf{\method-Flash}\\\textbf{-Instruct}}\\
+\midrule
+& WorldSense &  47.1\citep{humanomniv2}  & 50.9 & 45.4 & 54.0 & \textbf{54.1}  \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+
+
+
+\begin{table}[H]
+\centering
+\caption{\textbf{AudioVisual $\to$ Text performance of Qwen3-Omni-30B-A3B-Thinking and other reasoning baselines. The highest
+scores are shown in bold.}}
+\vspace{-1mm}
+\label{tab:qwen3-omni-va-reasoning-results}
+% \adjustbox{center=\textwidth}{
+\resizebox{\textwidth}{!}{%
+\small
+\setlength{\tabcolsep}{3pt} %
+\begin{tabular}{@{}clcccccc@{}}
+\toprule
+& \textbf{Datasets}   & \tabincell{c}{\textbf{Previous}\\\textbf{Open-source SoTA}} & \tabincell{c}{\textbf{Gemini-2.5-Flash}\\\textbf{-Thinking}}  & \tabincell{c}{\textbf{\method-30B-A3B}\\\textbf{-Thinking}}  & \tabincell{c}{\textbf{\method-Flash}\\\textbf{-Thinking}}  \\
+\midrule
+& DailyOmni   &  69.8\citep{videosalmonn2} & 72.7  & 75.8 & \textbf{76.2}    \\
+% & WorldSense  & 52.3* &  47.1 & 52.5 & 53.4  \\
+& VideoHolmes  &  55.6\citep{videosalmonn2} & 49.5  & \textbf{57.3} & \textbf{57.3}  \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+

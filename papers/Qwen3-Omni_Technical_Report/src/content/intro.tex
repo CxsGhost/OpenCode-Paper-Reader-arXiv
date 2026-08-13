@@ -1,0 +1,61 @@
+\section{Introduction}
+\label{sec:intro}
+
+Humans perceive visual and auditory inputs in parallel, cognitively process these signals, and emit responses through textual expression, vocalization, and tool-mediated or bodily actions, facilitating information exchange with other organisms and demonstrating intelligence. Building on the rapid advances in the understanding and reasoning capabilities of unimodal large models~\citep{gpt3,gpt4,gemini,claude,claude2,claude3,qwen,qwen2,qwen3,llama2,llama3,blip2,llava,minigpt-4,qwenvl,qwen2.5vl, qwenaudio, qwen2-audio}, natively multimodal systems have drawn substantial attention~\citep{gpt4o,gemini2.5,qwen2.5omni}. Human learning typically progresses through the coordinated use of multiple modalities, where complementary specialization and cross-modal synergy improve learning efficiency. However, contemporary LLM-centric multimodal models often exhibit modality trade-offs, with gains in one modality accompanied by degradation in others.
+
+
+In this report, we take a step toward resolving this limitation by exploring integrated multimodal training within the prevailing LLM-based paradigm. We demonstrate that joint multimodal training can achieve parity across all modalities—i.e., no modality-specific performance degradation—while markedly enhancing cross-modal capabilities such as video understanding. A key ingredient is mixing unimodal and cross-modal data during the early stage of text pretraining. As evidenced by Qwen3-Omni-30B-A3B-Base, its text and vision performance is on par with same-sized single-modal text and vision base models across extensive benchmarks, while simultaneously exhibiting strong audio competence, audiovisual understanding, cross-modal ``thinking'', and real-time audiovisual interaction. The development of non-degrading multimodal systems is an achievable objective. Such systems are characterized by two key properties: first, their ability to match the performance of specialized unimodal models in their respective tasks, and second, their capacity to facilitate novel cross-modal reasoning and interaction. These latter capabilities represent a significant advantage, as they are not present in traditional unimodal approaches.
+
+% Although multiple routes may lead to non-degrading multimodality, 
+% we want to make clear to researchers and practitioners that non-degrading multimodality is attainable: native multimodal models can match modality-specific performance across all modalities and, moreover, provide cross-modal reasoning and interaction capacities unavailable to unimodal counterparts.
+
+
+Qwen3-Omni builds on the Thinker–Talker architecture introduced in Qwen2.5-Omni~\citep{qwen2.5omni} and introduces \textbf{five key upgrades}: (1) both the Thinker and Talker are upgraded to Mixture-of-Experts (MoE) designs; (2) we replace Whisper audio encoder with our AuT (Audio Transformer) encoder, trained from scratch on 20 million hours of supervised audio, yielding stronger general-purpose audio representations. AuT employs block-wise window attention to enable real-time prefill caching; (3) on the speech generation side, we adopt a multi-codebook representation,
+% , named \textit{Qwen3-TTS-Tokenizer-v2}, 
+whose increased capacity supports faithful modeling of diverse voices, paralinguistic cues, and acoustic phenomena; (4) the Talker shifts from single-track to multi-track codec modeling, autoregressively predicting multiple codebook layers via MTP modules, while the waveform stage (Code2Wav) replaces block-wise DiT with a lightweight convolutional network (ConvNet); and (5) the input and output audio code rates are reduced to 12.5 Hz, with the output codec enabling single-frame, immediate speech synthesis. Taken together, these changes enable low-latency speech interaction under high concurrency in industrial-scale deployments.
+
+Compared with Qwen2.5-Omni, Qwen3-Omni introduces \textbf{four major improvements}: (1) support for audio understanding on inputs exceeding 40 minutes; (2) expanded language coverage to 119 written languages, 19 and 10 spoken languages for understanding and generation respectively ; (3) a Thinking model enabling full-modality reasoning, including audio–video and audio-only scenarios; and (4) improved streaming performance with end-to-end latency as low as 234 ms.
+% Discuss the differences between Qwen3-omni and Qwen2.5-Omni
+% 1 长音频和长视频
+% 2 帧率
+% 3 多语言文本，语音理解
+% 4 数据量
+% 5 生成
+% 5.1 多语言语音生成
+% 5.2 极致流式 - 多码本 with sub-Talker
+% 5.3 跨语种迁移能力
+% 6 全模态不降智
+% 7 交互效率
+% 8 Thinking
+% Compared to its predecessor, Qwen2.5-Omni, the Qwen3-Omni model incorporates four principal advancements:
+
+% \begin{itemize}
+%     \item \textbf{Extended Audio Processing:} The model's capacity for audio comprehension has been enhanced to process long-form inputs with durations exceeding 40 minutes.
+    
+%     \item \textbf{Expanded Multilingualism:} Language support has been significantly broadened to encompass 119 written languages. Furthermore, spoken language capabilities now include 19 languages for understanding and 10 for generation.
+    
+%     \item \textbf{Advanced Multimodal Reasoning:} A specialized 'Thinking' model has been integrated to facilitate full-modality reasoning across complex scenarios, including those involving combined audio-video and audio-only data.
+    
+%     \item \textbf{Improved Streaming Latency:} Streaming performance has been optimized, achieving a reduced end-to-end latency with a minimum response time of 234 milliseconds (ms).
+% \end{itemize}
+
+
+
+Critically, Qwen3-Omni maintains state-of-the-art performance on text and visual modalities without degradation relative to same-size single-model Qwen counterparts. Across 36 audio and audio-visual benchmarks, it achieves open-source SOTA on 32 and sets the SOTA on 22, outperforming strong closed-source systems such as Gemini 2.5 Pro, Seed-ASR, and GPT-4o-Transcribe.
+% \jin{On the XX benchmark, it achieves state-of-the-art results across XX, outperforming leading systems such as Gemini 2.5-pro, GPT-4o-Transcribe, and Seed-ASR in English and Chinese speech recognition. For audio understanding and conversational benchmarks, Qwen3-Omni surpasses Gemini 2.5-pro by XX points on MMAU and exceeds Gemini 2.5-flash by XX on MMAR and MMSU. It also outperforms GPT-4o-audio by XX points on VoiceBench. Its audiovisual capabilities achieve open-source state-of-the-art results on benchmarks such as XX, underscoring its broad multimodal competence.}
+% is comparable with the similarly sized Qwen2.5-VL~\citep{qwen2vl} and outperforms Qwen2-Audio~\citep{qwen2-audio} in image and audio capabilities respectively. Furthermore, \method achieves state-of-the-art performance on multimodal benchmarks such as OmniBench~\citep{li2024omnibench}. Notably, \method's performance in end-to-end speech instruction following is comparable to its capabilities with text inputs, as evidenced by benchmarks such as MMLU~\citep{mmlu} and GSM8K~\citep{gsm8k}. As for speech generation, \method achieves 1.42\%, 2.33\% and 6.54\% WER on seed-tts-eval~\citep{seedtts} test-zh, test-en and test-hard set respectively, outperforming MaskGCT~\citep{maskgct} and CosyVoice~2~\citep{cosyvoice2}.
+
+% The key features of \method can be summarized as:
+
+% \begin{itemize}
+%     \item  We introduce \method, a unified model that can perceive all modalities and simultaneously generate text and natural speech responses in a streaming fashion.
+%     \item We present a novel positional embedding algorithm, termed TMRoPE, which explicitly incorporates temporal information for synchronizing audio and video.
+%     \item We propose the Thinker-Talker Architecture to facilitate real-time comprehension and speech generation.
+%     \item \method demonstrates strong performance across all modalities when benchmarked against similarly sized single-modality models. It significantly enhances the capability of following voice commands, achieving performance levels comparable to pure text input. For tasks that involve integrating multiple modalities, such as those evaluated in OmniBench~\citep{li2024omnibench}, \method achieves state-of-the-art performance. Notably, \method achieves strong performance on seed-tts-eval~\citep{seedtts}, demonstrating robust speech generation abilities.
+% \end{itemize}
+
+The remainder of this paper is organized as follows. Section~2 presents the algorithms and architecture of Qwen3-Omni. Sections~3 and~4 describe the pretraining and post-training datasets and pipelines, respectively. Section~5 reports the experimental results. Section~6 compares Qwen3-Omni with recent Qwen models of comparable parameter scales, demonstrating multimodal performance without modality-induced degradation. 
+%Section~7 presents an application case in which we fine-tune Qwen3-Omni to obtain Qwen3-Omni-Captioner, a model that generates highly detailed captions for general audio.
+
+
+

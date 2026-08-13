@@ -1,0 +1,93 @@
+\begin{table}[H]
+\centering
+\caption{\textbf{Vision $\to$ Text performance of \method-Instruct and other non-reasoning baselines. The highest scores are shown in bold.}}
+\vspace{-.1in}
+\label{tab:qwen3-omni-vl-results}
+% \adjustbox{center=\textwidth}{
+% \small
+% \setlength{\tabcolsep}{3pt} %
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Datasets} & \tabincell{c}{\textbf{GPT4-o}} & \tabincell{c}{\textbf{Gemini-2.0-Flash}} & \tabincell{c}{\textbf{Qwen2.5-VL}\\\textbf{72B}} & \tabincell{c}{\textbf{\method-30B-A3B}\\\textbf{-Instruct}} & \tabincell{c}{\textbf{\method-Flash}\\\textbf{-Instruct}} \\
+\midrule
+\multicolumn{6}{c}{\textit{General Visual Question Answering}} \\
+\midrule
+MMStar & 64.7 & \textbf{71.4} & 70.8 & 68.5 & 69.3 \\
+HallusionBench & 55.0 & 56.3 & 55.2 & 59.7 & \textbf{60.4} \\
+MM-MT-Bench & \textbf{7.7} & 6.7 & 7.6 & 7.4 & 7.6 \\
+\midrule
+\multicolumn{6}{c}{\textit{Math \& STEM}} \\
+\midrule
+MMMU\textsubscript{val}  & 69.1 & \textbf{71.3} & 70.2 & 69.1 & 69.8 \\
+MMMU-Pro\textsubscript{overall} & 51.9 & 56.1 & 51.1 & 57.0 & \textbf{58.2} \\
+MathVista\textsubscript{mini} & 63.8 & 71.4 & 74.8 & 75.9 & \textbf{77.4} \\
+MATH-Vision\textsubscript{full} & 30.4 & 48.6 & 38.1 & 56.3 & \textbf{57.3} \\
+\midrule
+\multicolumn{6}{c}{\textit{Documentation Understanding}} \\
+\midrule
+AI2D\textsubscript{w.M.} & 84.6 & 86.7 & \textbf{88.7} & 85.2 & 86.4 \\
+ChartQA\textsubscript{test Avg.} & 86.7 & 64.6 & \textbf{89.5} & 86.8  & 87.1 \\
+\midrule
+\multicolumn{6}{c}{Counting} \\
+\midrule
+CountBench & 87.9 & 91.2 & \textbf{93.6} & 90.0 & 90.0 \\
+\midrule
+\multicolumn{6}{c}{Video Understanding} \\
+\midrule
+Video-MME\textsubscript{w/o sub} & 71.9 & 72.4 & \textbf{73.3} & 70.5 & 71.4 \\
+LVBench & 30.8 & \textbf{57.9} & 47.3 & 50.2 & 51.1 \\
+MLVU & 64.6 & 71.0 & 74.6 & 75.2 & \textbf{75.7} \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\vspace{-.15in}
+
+\begin{table}[H]
+\centering
+\caption{\textbf{Vision $\to$ Text performance of \method-Thinking and other reasoning baselines. The highest
+scores are shown in bold.}}
+
+\vspace{-.1in}
+\label{tab:qwen3-omni-vl-reasoning-results}
+\resizebox{\textwidth}{!}{%
+% \adjustbox{center=\textwidth}{
+% \small
+% \setlength{\tabcolsep}{3pt} %
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Datasets}  & \tabincell{c}{\textbf{Gemini-2.5-Flash}\\\textbf{-Thinking}} & \tabincell{c}{\textbf{InternVL-3.5-241B-A28B}} & \tabincell{c}{\textbf{\method-30B-A3B}\\\textbf{-Thinking}} & \tabincell{c}{\textbf{\method-Flash}\\\textbf{-Thinking}} \\
+\midrule
+\multicolumn{5}{c}{\textit{General Visual Question Answering}} \\
+\midrule
+MMStar & 75.5 & \textbf{77.9} & 74.9 & 75.5 \\
+HallusionBench & 61.1 & 57.3 & 62.8 & \textbf{63.4} \\
+MM-MT-Bench & 7.8 & -- & \textbf{8.0} & \textbf{8.0} \\
+\midrule
+\multicolumn{5}{c}{\textit{Math \& STEM}} \\
+\midrule
+MMMU\textsubscript{val} & 76.9 & \textbf{77.7} & 75.6 & 75.0 \\
+MMMU-Pro\textsubscript{overall} & \textbf{65.8} & -- & 60.5 & 60.8 \\
+MathVista\textsubscript{mini} & 77.6 & \textbf{82.7} & 80.0 & 81.2 \\
+MATH-Vision\textsubscript{full} & 62.3 & \textbf{63.9} & 62.9 & 63.8 \\
+\midrule
+\multicolumn{5}{c}{\textit{Documentation Understanding}} \\
+\midrule
+AI2D\textsubscript{w.M.} & \textbf{88.6} & 87.3 & 86.1 & 86.8 \\
+ChartQA\textsubscript{test Avg.} & -- & 88.0 & \textbf{89.5} & 89.3 \\
+\midrule
+\multicolumn{5}{c}{\textit{Counting}} \\
+\midrule
+CountBench & 88.6 & -- & 88.6 & \textbf{92.5} \\
+\midrule
+\multicolumn{5}{c}{\textit{Video Understanding}} \\
+\midrule
+Video-MME\textsubscript{w/o sub} & \textbf{79.6} & 72.9 & 69.7 & 69.8 \\
+LVBench & \textbf{64.5} & -- & 49.0 & 49.5 \\
+MLVU & \textbf{82.1} & 78.2 & 72.9 & 73.9 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}

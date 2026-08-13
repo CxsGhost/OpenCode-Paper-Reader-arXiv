@@ -1,0 +1,72 @@
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{multirow}
+% \usepackage{graphicx}
+\begin{table}[H]
+\centering
+\caption{\textbf{Text $\to$ Text performance of \method-Instruct and other non-reasoning baselines. The highest
+scores are shown in bold.}}
+\vspace{-.1in}
+\label{tab:text_nonthink}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}clccccc@{}}
+\toprule
+\multicolumn{1}{l}{\textit{}} &
+  \textit{} &
+  \textbf{GPT-4o-0327} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-235B-A22B}\\ \textbf{Non Thinking}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-30B-A3B}\\ \textbf{-Instruct-2507}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-Omni-30B-A3B}\\ \textbf{-Instruct}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-Omni-Flash}\\ \textbf{-Instruct}\end{tabular} \\ \midrule
+\multirow{2}{*}{GeneralTasks}                                                 & MMLU-Redux          & \textbf{91.3} & 89.2          & 89.3          & 86.6 & 86.8          \\
+                                                                              & GPQA                & 66.9          & 62.9          & \textbf{70.4} & 69.6 & 69.7          \\ \midrule
+\multirow{2}{*}{Reasoning}                                                    & AIME25              & 26.7          & 24.7          & 61.3          & 65.0 & \textbf{65.9} \\
+                                                                              & ZebraLogic          & 52.6          & 37.7          & \textbf{90.0} & 76.0 & 76.1          \\ \midrule
+Code                                                                          & MultiPL-E           & 82.7          & 79.3          & \textbf{83.8} & 81.4 & 81.5          \\ \midrule
+\multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}Alignment\\ Tasks\end{tabular}}    & IFEval              & 83.9          & 83.2          & \textbf{84.7} & 81.0 & 81.7          \\
+                                                                              & Creative Writing v3 & 84.9          & 80.4          & \textbf{86.0} & 80.6 & 81.8          \\
+                                                                              & WritingBench        & 75.5          & 77.0          & \textbf{85.5} & 82.6 & 83.0          \\ \midrule
+Agent                                                                         & BFCL-v3             & 66.5          & \textbf{68.0} & 65.1          & 64.4 & 65.0          \\ \midrule
+\multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}Multilingual\\ Tasks\end{tabular}} & MultiIF             & \textbf{70.4} & 70.2          & 67.9          & 64.0 & 64.7          \\
+                                                                              & PolyMATH            & 25.5          & 27.0          & \textbf{43.1} & 37.9 & 39.3          \\ \bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\vspace{-0.1cm}
+
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{multirow}
+% \usepackage{graphicx}
+\begin{table}[H]
+\centering
+\caption{\textbf{Text $\to$ Text performance of Qwen3-Omni-Thinking and other reasoning baselines. The highest
+scores are shown in bold.}}
+\vspace{-0.1in}
+\label{tab:text_think}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}clccccc@{}}
+\toprule
+\multicolumn{1}{l}{\textit{}} & \textit{} & 
+\begin{tabular}[c]{@{}c@{}}\textbf{Gemini-2.5-Flash} \\ \textbf{Thinking}\end{tabular} & 
+\begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-235B-A22B}\\ \textbf{Thinking}\end{tabular} & 
+\begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-30B-A3B}\\ \textbf{-Thinking-2507}\end{tabular} & 
+\begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-Omni-30B-A3B}\\ \textbf{-Thinking}\end{tabular} & 
+\begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-Omni-Flash}\\ \textbf{-Thinking}\end{tabular} \\ \midrule
+\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}General\\ Tasks\end{tabular}}} & MMLU-Redux & 92.1 & \textbf{92.7} & 91.4 & 88.8 & 89.7 \\
+ & GPQA & \textbf{82.8} & 71.1 & 73.4 & 73.1 & 73.1 \\ \midrule
+\multirow{2}{*}{\textit{Reasoning}} & AIME25 & 72.0 & 81.5 & \textbf{85.0} & 73.7 & 74.0 \\
+ & LiveBench 20241125 & 74.3 & \textbf{77.1} & 76.8 & 71.8 & 70.3 \\ \midrule
+\textit{Code} & MultiPL-E & \textbf{84.5} & 79.9 & 81.3 & 80.6 & 81.0 \\ \midrule
+\multirow{4}{*}{\textit{\begin{tabular}[c]{@{}c@{}}Alignment\\ Tasks\end{tabular}}} & IFEval & \textbf{89.8} & 83.4 & 88.9 & 85.1 & 85.2 \\
+ & Arena-Hard v2 & 56.7 & \textbf{61.5} & 56.0 & 55.1 & 57.8 \\
+ & Creative Writing v3 & \textbf{85.0} & 84.6 & 84.4 & 82.5 & 83.6 \\
+ & WritingBench & 83.9 & 80.3 & 85.0 & 85.5 & \textbf{85.9} \\ \midrule
+\textit{Agent} & BFCL-v3 & 68.6 & 70.8 & \textbf{72.4} & 63.2 & 64.5 \\ \midrule
+\multirow{2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}Multilingual\\ Tasks\end{tabular}}} & MultiIF & 74.4 & 71.9 & \textbf{76.4} & 72.9 & 73.2 \\
+ & PolyMATH & 49.8 & \textbf{54.7} & 52.6 & 47.1 & 48.7 \\ \bottomrule
+\end{tabular}%
+}
+\end{table}

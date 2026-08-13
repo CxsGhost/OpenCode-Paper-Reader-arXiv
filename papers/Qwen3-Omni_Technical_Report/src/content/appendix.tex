@@ -1,0 +1,465 @@
+% 下面的coding和多语言的细节，考虑放到附录。上面的总表其实也已经有所体现
+\section{Appendix}
+\label{sec:appendix}
+
+\subsection{More Evaluation on Speech and Music Understanding}
+\label{sec:audio-eval}
+
+This section reports the performance of the Qwen3-Omni-thinking model on tasks pertaining to ASR/S2TT and Music. 
+As shown in Table \ref{tab:audio_asr_thinking} and \ref{tab:audio_music_thinking}, in the domains of ASR/S2TT and Music understanding, the Qwen3-Omni-Thinking model is outperformed by its Instruct counterpart, which indicates that for these predominantly perception-based tasks, the engagement of sophisticated reasoning processes fails to yield performance gains. In fact, it may even introduce a higher propensity for hallucinations.
+\input{posttrain_tables/audio_asrs2tt_thinking.tex}
+
+\input{posttrain_tables/audio_music_thinking.tex}
+
+
+
+
+\subsection{Qualitative Results from Qwen3-Omni-30B-A3B-Captioner}
+\label{sec:caption-case}
+
+In this section, we illustrate the performance of our finetuned Qwen3-Omni-30B-A3B-Captioner through three representative case studies. The selected scenarios are designed to test the model's proficiency in: (1) analyzing expressive speech, (2) interpreting complex auditory scenes and sound effects, and (3) captioning composite audio that includes speech, music, and ambient sounds. For reproducibility, the original audio samples can be accessed from our public GitHub repository.
+
+
+
+% Define the specific blue color from the image
+\definecolor{chatmlblue}{RGB}{0, 0, 255}
+% gbsn
+\begin{CJK*}{UTF8}{gkai}
+
+\begin{tcolorbox}[
+    % Box styling
+    colback=lightgray,
+    colframe=black,
+    boxrule=2pt,
+    sharp corners,
+    width=\textwidth,
+    % Title styling
+    title={Analysis of Expressive Speech},
+    colbacktitle=black,
+    coltitle=white,
+    fonttitle=\bfseries\sffamily,
+    halign title=center,
+    % halign=left
+]
+% Use a monospaced font for the content
+\ttfamily
+% First user-assistant exchange
+The audio clip opens in a studio setting, marked by a faint, persistent electronic hiss and a subtle low-frequency hum, indicating professional but not entirely noise-free recording conditions. The male speaker, whose voice is delivered in a clear, energetic, and highly theatrical manner, begins with an assertive “对” (“Right!”), delivered with a sharp, rising intonation that immediately establishes a performative, self-aware tone. He continues, “这就是我，万人敬仰的太乙真人” (“This is me, Taiyi Zhenren, admired by thousands”), using exaggerated emphasis and a pronounced rising inflection on “万人敬仰” (“admired by thousands”) to convey mock grandeur and comic bravado. His articulation is crisp, and his voice is rich in midrange frequencies, suggesting close-mic’d recording with a touch of digital reverb for dramatic effect.\\
+
+After a brief, deliberate pause, the speaker shifts to a more self-deprecating yet still playful register: “虽然有点婴儿肥，但也掩不住我逼人的帅气” (“Although I’m a bit chubby, it still can’t hide my impressive handsomeness”). Here, the tone becomes lighter and more conversational, with a subtle downward inflection on “婴儿肥” (“chubby”) and a playful, rising emphasis on “逼人的帅气” (“impressive handsomeness”), underscoring the comedic contrast between modesty and self-praise. The delivery is marked by expressive inflection and clear articulation, maintaining a consistent presence in the mix.\\
+
+Throughout the speech, the recording remains clean and undistorted, with no background noises, environmental cues, or audience sounds. The voice is centrally positioned in the stereo field, and the use of reverb and EQ creates a sense of theatricality and spatial depth, while the electronic hiss and hum are subtle but present, hinting at professional studio equipment and post-processing. The clip concludes with a sudden, complete cut to silence, with no trailing sounds or fade-out, indicating a deliberate and precise edit.\\
+
+In summary, this audio features a single male speaker delivering a self-introductory monologue in Mandarin, portraying the legendary Taoist figure Taiyi Zhenren in a comedic, over-the-top manner. The performance blends exaggerated bravado with self-deprecating humor, employing dramatic inflection, expressive pacing, and professional studio production to create a memorable, entertaining character portrayal. The absence of background noise and the clean, intentional editing reinforce the clip’s crafted, theatrical nature, making it suitable for online content, podcasts, or digital entertainment aimed at a modern, culturally literate audience.
+
+
+\end{tcolorbox}
+\end{CJK*}
+
+
+
+
+
+% Define the specific blue color from the image
+\definecolor{chatmlblue}{RGB}{0, 0, 255}
+% gbsn
+\begin{CJK*}{UTF8}{gkai}
+
+\begin{tcolorbox}[
+    % Box styling
+    colback=lightgray,
+    colframe=black,
+    boxrule=2pt,
+    sharp corners,
+    width=\textwidth,
+    % Title styling
+    title={Analysis of Complex Scene Sound Effect},
+    colbacktitle=black,
+    coltitle=white,
+    fonttitle=\bfseries\sffamily,
+    halign title=center,
+    % halign=left,
+    % before upper={\par}  % <-- Ensures paragraph mode
+]
+% Use a monospaced font for the content
+\ttfamily
+% First user-assistant exchange
+The audio clip is a highly produced, cinematic soundscape, lasting 25 seconds, designed to evoke intense drama and imminent danger. It begins with a deep, resonant musical drone and a sharp, metallic clank, immediately establishing a mood of tension and foreboding. A slow, rhythmic, and ominous beat joins, layered with swelling orchestral strings and synthetic textures that build suspense and a sense of scale.\par
+
+
+Around the 9-second mark, the soundscape explodes with the thunderous, mechanical roar of a massive engine, its deep, percussive pulses dominating the mix. This is accompanied by a high-pitched, metallic screech, suggesting immense machinery in motion or under strain. The orchestral music intensifies, becoming more urgent and climactic, with the addition of a high-frequency electronic whine that adds to the feeling of technological threat.\\
+
+
+
+At the 15-second point, a colossal, explosive impact occurs, characterized by a sharp, high-frequency crack followed by a deep, resonant boom. The sound of shattering and debris fills the space, with reverberation suggesting a vast, hard-walled environment—perhaps a hangar, tunnel, or industrial facility. The orchestral music reaches its peak, becoming chaotic and overwhelming, before abruptly ceasing at the 19-second mark.\\
+
+
+Immediately after the impact, the focus shifts to the sounds of a single person: heavy, strained breathing, the rustle of heavy fabric, and a low groan. These sounds, recorded with close-mic clarity and natural reverberation, indicate the individual is recovering from exertion or injury, likely amidst the aftermath of the catastrophic event. There are no spoken words, but the vocalizations and physical sounds strongly suggest the presence of a male character.\\
+
+Throughout the clip, there are no voices, dialogue, or environmental cues that would suggest a specific culture, language, or geographic setting. The orchestral and electronic musical elements are universal to modern action, sci-fi, and thriller genres, and the production values are consistent with contemporary Hollywood or AAA video game trailers.\\
+
+In summary, the audio is a tightly crafted, non-verbal scene of a catastrophic event—likely a crash, explosion, or mechanical disaster—in a vast, industrial or futuristic setting, immediately followed by the physical and emotional aftermath of a single survivor. The absence of speech, combined with the orchestration, sound design, and spatial cues, positions the clip as a generic but highly effective trailer or scene cue for a dramatic, action-oriented media product.\\
+
+
+\end{tcolorbox}
+\end{CJK*}
+
+
+
+
+% Define the specific blue color from the image
+\definecolor{chatmlblue}{RGB}{0, 0, 255}
+% gbsn
+\begin{CJK*}{UTF8}{gkai}
+
+\begin{tcolorbox}[
+    % Box styling
+    colback=lightgray,
+    colframe=black,
+    boxrule=2pt,
+    sharp corners,
+    width=\textwidth,
+    % Title styling
+    title={Analysis of Mixed Speech, Audio, and Music},
+    colbacktitle=black,
+    coltitle=white,
+    fonttitle=\bfseries\sffamily,
+    halign title=center,
+    % halign=left,
+    % before upper={\par}  % <-- Ensures paragraph mode
+]
+% Use a monospaced font for the content
+\ttfamily
+% First user-assistant exchange
+The audio begins with a deep, resonant metallic clang, immediately followed by a powerful, low-frequency rumble that evokes the sound of a massive engine or heavy machinery. The space is acoustically vast, with long reverberation tails and a faint, high-pitched whine, suggesting a colossal, metallic environment such as a spaceship hangar or a vast industrial chamber. A mechanical whirring sound emerges, layered with metallic clanking and grinding, creating the impression of a large vehicle or portal activating. These sounds are punctuated by a sharp, high-frequency crackle, reminiscent of electrical arcs or energy discharges, further reinforcing the technological setting. The mechanical noises intensify, with rapid, high-pitched metallic screeches and impacts that imply the movement or collision of massive metal components.\\
+
+Suddenly, the mechanical sounds fade, and the ambient rumble persists, revealing a subtle, high-frequency hiss—possibly from an air filtration system or atmospheric turbulence—while the vastness of the space remains evident through lingering echoes. A female voice, distant and high-pitched, emerges with a plaintive, childlike tone, asking, "Are we there yet?" Her speech is slightly muffled and reverberant, indicating she is physically separated from the microphone, likely inside the vehicle or machinery. This is followed by a deeper, gravelly male voice, close to the microphone, responding with a gruff, impatient tone: "We get there when we get there." His voice is clear and assertive, contrasting with the female’s, and the exchange is typical of familial banter.\\
+
+The mechanical rumble swells again, joined by a whooshing sound as if air is rushing past, and a rapid metallic clatter signals the rapid movement of machinery or vehicles. The environment is further emphasized by a sharp, high-frequency crackle, suggesting an energy surge or system overload. A third male voice, energetic and friendly, calls out from a moderate distance: "How you doing, honey?" His tone is warm and affectionate, with a slight echo, and the use of "honey" implies a familial relationship. Immediately after, the female voice, now closer and more urgent, responds with a high-pitched, exasperated tone: "Do I have to answer?" Her delivery is quick, sharp, and filled with playful annoyance, reflecting a familiar and comfortable dynamic among the group.\\
+
+As the mechanical sounds subside, a low-frequency hum remains, and the audio transitions into a brief, synthesized musical sting. This consists of a single sustained note from a low-frequency synthesizer, likely a bass or synth pad, which is cut off abruptly, suggesting the end of the scene or a transition to another segment. Throughout, the audio is of high fidelity, with no distortion or noise, and each sound is distinct and well-defined. The spatial characteristics—distance, direction, and reverberation—contribute to a vivid sense of a large, metallic, and technological environment. The dialogue is clear and expressive, with emotional tones ranging from impatience and warmth to playful annoyance. The use of "honey" and the familial banter reinforce the impression of a close-knit group, likely family members, engaged in a shared journey within a science fiction or fantasy context.\\
+
+In summary, the audio presents a dynamic, high-fidelity soundscape of a massive, metallic environment—possibly a spaceship or futuristic vehicle—where a group of family members engage in playful banter as they travel together. Mechanical sounds, spatial cues, and expressive dialogue combine to create a vivid sense of place and character, culminating in a synthesized musical sting that signals a narrative transition. The scene is rich in emotional nuance and technological detail, firmly situating the listener within a science fiction or fantasy setting.
+
+
+\end{tcolorbox}
+\end{CJK*}
+
+
+
+
+
+
+
+
+% \begin{table}[tbp]
+% \centering
+% \caption{\textbf{Multilingual benchmarks and the included languages.} The languages are identified in IETF language tags.}
+% \vspace{-1mm}
+% \label{tab:multilingual-benchmark}
+% \begin{tabular}{lcl}
+% \toprule
+% Benchmark   & \# Langs & Languages \\
+% \midrule
+% Multi-IF    & 8 & \tabincell{l}{en, es, fr, hi, it, pt, ru, zh}   \\
+% INCLUDE     & 44 & \multirow{2}{*}{\tabincell{l}{ar, az, be, bg, bn, de, el, es, et, eu, fa, fi, fr, he, hi, hr, hu, hy, id, it, ja, ka, \\kk, ko, lt, mk, ml, ms, ne, nl, pl, pt, ru, sq, sr, ta, te, tl, tr, uk, ur, uz, vi, zh}}  \\
+% \\
+% MMMLU       & 14 & \tabincell{l}{ar, bn, de, en, es, fr, hi, id, it, ja, ko, pt, sw, zh} \\
+% MT-AIME2024 & 55 & \multirow{3}{*}{\tabincell{l}{af, ar, bg, bn, ca, cs, cy, da, de, el, en, es, et, fa, fi, fr, gu, he, hi, hr, hu, id, \\it, ja, kn, ko, lt, lv, mk, ml, mr, ne, nl, no, pa, pl, pt, ro, ru, sk, sl, so, sq, sv, \\ sw, ta, te, th, tl, tr, uk, ur, vi, zh-Hans, zh-Hant}}  \\
+% \\
+% \\
+% PolyMath    & 18 & \tabincell{l}{ar, bn, de, en, es, fr, id, it, ja, ko, ms, pt, ru, sw, te, th, vi, zh} \\
+% MLogiQA     & 10 & \tabincell{l}{ar, en, es, fr, ja, ko, pt, th, vi, zh} \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
+
+% \begin{table}[tbp]
+% \centering
+% \caption{\textbf{Comparison among Qwen3-235B-A22B (Thinking) and other reasoning baselines. The highest and second-best scores are shown in \textbf{bold} and \underline{underlined}, respectively.}}
+% \vspace{-1mm}
+% \label{tab:instruct-235A22}
+% \adjustbox{center=\textwidth}{
+% \small
+% \setlength{\tabcolsep}{3pt} 
+% \begin{tabular}{@{}clccccc@{}}
+% \toprule
+% &  & \textbf{OpenAI-o1} & \textbf{DeepSeek-R1} & \tabincell{c}{\textbf{Grok-3-Beta}\\\textbf{(Think)}} & \textbf{Gemini2.5-Pro} & \textbf{Qwen3-235B-A22B} \\
+% \midrule
+% & Architecture & - & MoE & - & - & MoE \\
+% & \# Activated Params & - & 37B & - & - & 22B \\
+% & \# Total Params & - & 671B & - & - & 235B \\
+% \midrule
+% \multirow{4}{*}{\tabincell{c}{\textit{General}\\\textit{Tasks}}} & MMLU-Redux & 92.8 & \underline{92.9} & - & \textbf{93.7} & 92.7 \\
+% & GPQA-Diamond & 78.0 & 71.5 & \underline{80.2} & \textbf{84.0} & 71.1 \\
+% & C-Eval & 85.5 & \textbf{91.8} & - & 82.9 & \underline{89.6} \\
+% & LiveBench {\tiny{2024-11-25}} & 75.7 & 71.6 & - & \textbf{82.4} & \underline{77.1} \\
+% \midrule
+% \multirow{5}{*}{\tabincell{c}{\textit{Alignment}\\\textit{Tasks}}} & IFEval {\tiny{strict prompt}} & \textbf{92.6} & 83.3 & - & \underline{89.5} & 83.4 \\
+% & Arena-Hard & 92.1 & 92.3 & - & \textbf{96.4} & \underline{95.6} \\
+% & AlignBench v1.1 & 8.86 & 8.76 & - & \textbf{9.03} & \underline{8.94} \\
+% & Creative Writing v3 & 81.7 & \underline{85.5} & - & \textbf{86.0} & 84.6 \\
+% & WritingBench & 7.69 & 7.71 & - & \textbf{8.09} & \underline{8.03} \\
+% \midrule
+% \multirow{5}{*}{\tabincell{c}{\textit{Math \& Text}\\\textit{Reasoning}}} & MATH-500 & 96.4 & 97.3 &  & \textbf{98.8} & \underline{98.0} \\
+% & AIME'24 & 74.3 & 79.8 & 83.9 & \textbf{92.0} & \underline{85.7} \\
+% & AIME'25 & 79.2 & 70.0 & 77.3 & \textbf{86.7} & \underline{81.5} \\
+% & ZebraLogic & \underline{81.0} & 78.7 & - & \textbf{87.4} & 80.3 \\
+% & AutoLogi & 79.8 & \underline{86.1} & - & 85.4 & \textbf{89.0} \\
+% \midrule
+% \multirow{3}{*}{\tabincell{c}{\textit{Agent \&}\\\textit{Coding}}} & BFCL v3 & \underline{67.8} & 56.9 & - & 62.9 & \textbf{70.8} \\
+% & LiveCodeBench v5 & 63.9 & 64.3 & \underline{70.6} & 70.4 & \textbf{70.7} \\
+% & CodeForces {\tiny{(Rating / Percentile)}} & 1891 / 96.7\% & \underline{2029 / 98.1\%} & - & 2001 / 97.9\% & \textbf{2056 / 98.2\%} \\
+% \midrule
+% \multirow{6}{*}{\tabincell{c}{\textit{Multilingual}\\\textit{Tasks}}} & Multi-IF & 48.8 & 67.7 & - & \textbf{77.8} & \underline{71.9} \\
+% & INCLUDE & \underline{84.6} & 82.7 & - & \textbf{85.1} & 78.7 \\
+% & MMMLU {\tiny{14 languages}} & \textbf{88.4} & 86.4 & - & \underline{86.9} & 84.3 \\
+% & MT-AIME2024 & 67.4 & 73.5 & - & \underline{76.9} & \textbf{80.8} \\
+% & PolyMath & 38.9 & 47.1 & - & \underline{52.2} & \textbf{54.7} \\
+% & MLogiQA & 75.5 & 73.8 & - & \underline{75.6} & \textbf{77.1} \\
+% \bottomrule
+% \end{tabular}
+% }
+% \end{table}
+
+
+% \begin{table}[tbp]
+% \centering
+% \caption{\textbf{Comparison among Qwen3-235B-A22B (Non-thinking) and other non-reasoning baselines. The highest and second-best scores are shown in \textbf{bold} and \underline{underlined}, respectively.}}
+% \vspace{-1mm}
+% \label{tab:instruct-235A22-nothink}
+% \adjustbox{center=\textwidth}{
+% \small
+% \setlength{\tabcolsep}{3pt} 
+% \begin{tabular}{@{}clccccc@{}}
+% \toprule
+% &  & \tabincell{c}{\textbf{GPT-4o}\\ \textbf{-2024-11-20}} & \textbf{DeepSeek-V3} & \tabincell{c}{\textbf{Qwen2.5-72B}\\ \textbf{-Instruct}} & \tabincell{c}{\textbf{LLaMA-4}\\\textbf{-Maverick}} & \textbf{Qwen3-235B-A22B} \\
+% \midrule
+% & Architecture & - & MoE & Dense & MoE & MoE \\
+% & \# Activated Params & -  & 37B & 72B & 17B & 22B \\
+% & \# Total Params &  - & 671B & 72B & 402B & 235B \\
+% \midrule
+% \multirow{4}{*}{\tabincell{c}{\textit{General}\\\textit{Tasks}}}  & MMLU-Redux & 87.0 & 89.1 & 86.8 & \textbf{91.8} & \underline{89.2} \\
+% & GPQA-Diamond & 46.0 & 59.1 & 49.0 & \textbf{69.8} & \underline{62.9} \\
+% & C-Eval & 75.5 & \textbf{86.5} & 84.7 & 83.5 & \underline{86.1} \\
+% & LiveBench {\tiny{2024-11-25}} & 52.2 & \underline{60.5} & 51.4 & 59.5 & \textbf{62.5} \\
+% \midrule
+% \multirow{5}{*}{\tabincell{c}{\textit{Alignment}\\\textit{Tasks}}} & IFEval {\tiny{strict prompt}} & \underline{86.5} & 86.1 & 84.1 & \textbf{86.7} & 83.2 \\
+% & Arena-Hard & 85.3 & \underline{85.5} & 81.2 & 82.7 & \textbf{96.1} \\
+% & AlignBench v1.1 & 8.42 & \underline{8.64} & 7.89 & 7.97 & \textbf{8.91} \\
+% & Creative Writing v3 & \textbf{81.1} & 74.0 & 61.8 & 61.3 & \underline{80.4} \\
+% & WritingBench & \underline{7.11} & 6.49 & 7.06 & 5.46 & \textbf{7.70} \\
+% \midrule
+% \multirow{5}{*}{\tabincell{c}{\textit{Math \& Text}\\\textit{Reasoning}}} & MATH-500 & 77.2 & 90.2 & 83.6 & \underline{90.6} & \textbf{91.2} \\
+% & AIME'24 & 11.1 & \underline{39.2} & 18.9 & 38.5 & \textbf{40.1} \\
+% & AIME'25 & 7.6 & \textbf{28.8} & 15.0 & 15.9 & \underline{24.7} \\
+% & ZebraLogic & 27.4 & \textbf{42.1} & 26.6 & \underline{40.0} & 37.7 \\
+% & AutoLogi & 65.9 & \underline{76.1} & 66.1 & 75.2 & \textbf{83.3} \\
+% \midrule
+% \multirow{3}{*}{\tabincell{c}{\textit{Agent \&}\\\textit{Coding}}} & BFCL v3 & \textbf{72.5} & 57.6 & 63.4 & 52.9 & \underline{68.0} \\
+% & LiveCodeBench v5 & 32.7 & 33.1 & 30.7 & \textbf{37.2} & \underline{35.3} \\
+% & CodeForces {\tiny{(Rating / Percentile)}} & 864 / 35.4\% & \underline{1134 / 54.1\%} & 859 / 35.0\% & 712 / 24.3\% & \textbf{1387 / 75.7\%} \\
+% \midrule
+% \multirow{6}{*}{\tabincell{c}{\textit{Multilingual}\\\textit{Tasks}}} & Multi-IF & 65.6 & 55.6 & 65.3 & \textbf{75.5} & \underline{70.2} \\
+% & INCLUDE & \underline{78.8} & 76.7 & 69.6 & \textbf{80.9} & 75.6 \\
+% & MMMLU {\tiny{14 languages}} & 80.3 & \underline{81.1} & 76.9 & \textbf{82.5} & 79.8 \\
+% & MT-AIME2024 & 9.2 & 20.9 & 12.7 & \underline{27.0} & \textbf{32.4} \\
+% & PolyMath & 13.7 & 20.4 & 16.9 & \underline{26.1} & \textbf{27.0} \\
+% & MLogiQA & 57.4 & 58.9 & 59.3 & \underline{59.9} & \textbf{67.6} \\
+% \bottomrule
+% \end{tabular}
+% }
+% \end{table}
+
+
+
+% \begin{table}[tbp]
+% \centering
+% \caption{\textbf{Comparison among Qwen3-32B (Thinking) and other reasoning baselines. The highest and second-best scores are shown in \textbf{bold} and \underline{underlined}, respectively.}}
+% \vspace{-1mm}
+% \label{tab:instruct-32B}
+% \adjustbox{center=\textwidth}{
+% \small
+% \begin{tabular}{@{}clcccc@{}}
+% \toprule
+% &  & \tabincell{c}{\textbf{DeepSeek-R1} \\ \textbf{-Distill-Llama-70B}} &  \textbf{QwQ-32B} &  \tabincell{c}{\textbf{OpenAI-o3-mini} \\ (medium)} & \textbf{Qwen3-32B} \\
+% \midrule
+% & Architecture &  Dense & Dense & - & Dense \\
+% & \# Activated Params & 70B & 32B & - & 32B \\
+% & \# Total Params & 70B & 32B & - & 32B \\
+% \midrule
+% \multirow{4}{*}{\tabincell{c}{\textit{General}\\\textit{Tasks}}} & MMLU-Redux & 89.3 & \underline{90.0} & \underline{90.0} & \textbf{90.9} \\
+% & GPQA-Diamond & 65.2 & 65.6 & \textbf{76.8} & \underline{68.4} \\
+% & C-Eval & 71.8 & \textbf{88.4} & 75.1 & \underline{87.3} \\
+% & LiveBench {\tiny{2024-11-25}} & 54.5 & \underline{72.0} & 70.0 & \textbf{74.9} \\
+% \midrule
+% \multirow{5}{*}{\tabincell{c}{\textit{Alignment}\\\textit{Tasks}}} & IFEval {\tiny{strict prompt}} & 79.3 & 83.9 & \textbf{91.5} & \underline{85.0} \\
+% & Arena-Hard & 60.6 & \underline{89.5} & 89.0 & \textbf{93.8} \\
+% & AlignBench v1.1 & 6.74 & \underline{8.70} & 8.38 & \textbf{8.72} \\
+% & Creative Writing v3 & 62.1 & \textbf{82.4} & 74.8 & \underline{81.0} \\
+% & WritingBench & 6.08 & \underline{7.86} & 7.52 & \textbf{7.90} \\
+% \midrule
+% \multirow{5}{*}{\tabincell{c}{\textit{Math \& Text}\\\textit{Reasoning}}} & MATH-500 & 94.5 & \textbf{98.0} & \textbf{98.0} & \underline{97.2} \\
+% & AIME'24 & 70.0 & 79.5 & \underline{79.6} & \textbf{81.4} \\
+% & AIME'25 & 56.3 & 69.5 & \textbf{74.8} & \underline{72.9} \\
+% & ZebraLogic & 71.3 & 76.8 & \textbf{88.9} & \underline{88.8} \\
+% & AutoLogi & 83.5 & \textbf{88.1} & 86.3 & \underline{87.3} \\
+% \midrule
+% \multirow{3}{*}{\tabincell{c}{\textit{Agent \&}\\\textit{Coding}}} & BFCL v3 & 49.3 & \underline{66.4} & 64.6 & \textbf{70.3} \\
+% & LiveCodeBench v5 & 54.5 & 62.7 & \textbf{66.3} & \underline{65.7} \\
+% & CodeForces {\tiny{(Rating / Percentile)}} & 1633 / 91.4\% & \underline{1982 / 97.7\%} & \textbf{2036 / 98.1\%} & 1977 / 97.7\% \\
+% \midrule
+% \multirow{6}{*}{\tabincell{c}{\textit{Multilingual}\\\textit{Tasks}}} & Multi-IF & 57.6 & \underline{68.3} & 48.4 & \textbf{73.0} \\
+% & INCLUDE & 62.1 & 69.7 & \underline{73.1} & \textbf{73.7} \\
+% & MMMLU {\tiny{14 languages}} & 69.6 & \textbf{80.9} & 79.3 & \underline{80.6} \\
+% & MT-AIME2024 & 29.3 & 68.0 & \underline{73.9} & \textbf{75.0} \\
+% & PolyMath & 29.4 & \underline{45.9} & 38.6 & \textbf{47.4} \\
+% & MLogiQA & 60.3 & \underline{75.5} & 71.1 & \textbf{76.3} \\
+% \bottomrule
+% \end{tabular}
+% }
+% \vspace{1mm}
+% \end{table}
+
+% \begin{table}[tbp]
+% \centering
+% \caption{\textbf{Comparison among Qwen3-32B (Non-thinking) and other non-reasoning baselines. The highest and second-best scores are shown in \textbf{bold} and \underline{underlined}, respectively.}}
+% \vspace{-1mm}
+% \label{tab:instruct-32B-nothink}
+% \adjustbox{center=\textwidth}{
+% \small
+% \begin{tabular}{@{}clcccc@{}}
+% \toprule
+% &  & \tabincell{c}{\textbf{GPT-4o-mini}\\\textbf{-2024-07-18}} & \tabincell{c}{\textbf{LLaMA-4}\\\textbf{-Scout}} & \tabincell{c}{\textbf{Qwen2.5-72B}\\\textbf{-Instruct}} & \textbf{Qwen3-32B} \\
+% \midrule
+% & Architecture & - & MoE & Dense & Dense \\
+% & \# Activated Params & - & 17B & 72B & 32B \\
+% & \# Total Params & - & 109B & 72B & 32B \\
+% \midrule
+% \multirow{4}{*}{\tabincell{c}{\textit{General}\\\textit{Tasks}}} & MMLU-Redux & 81.5 & \underline{86.3} & \textbf{86.8} & 85.7 \\
+% & GPQA-Diamond & 40.2 & \textbf{57.2} & 49.0 & \underline{54.6} \\
+% & C-Eval & 66.3 & 78.2 & \textbf{84.7} & \underline{83.3} \\
+% & LiveBench {\tiny{2024-11-25}} & 41.3 & 47.6 & \underline{51.4} & \textbf{59.8} \\
+% \midrule
+% \multirow{5}{*}{\tabincell{c}{\textit{Alignment}\\\textit{Tasks}}} & IFEval {\tiny{strict prompt}} & 80.4 & \textbf{84.7} & \underline{84.1} & 83.2 \\
+% & Arena-Hard & 74.9 & 70.5 & \underline{81.2} & \textbf{92.8} \\
+% & AlignBench v1.1 & 7.81 & 7.49 & \underline{7.89} & \textbf{8.58} \\
+% & Creative Writing v3 & \underline{70.3} & 55.0 & 61.8 & \textbf{78.3} \\
+% & WritingBench & 5.98 & 5.49 & \underline{7.06} & \textbf{7.54} \\
+% \midrule
+% \multirow{5}{*}{\tabincell{c}{\textit{Math \& Text}\\\textit{Reasoning}}} & MATH-500 & 78.2 & 82.6 & \underline{83.6} & \textbf{88.6} \\
+% & AIME'24 & 8.1 & \underline{28.6} & 18.9 & \textbf{31.0} \\
+% & AIME'25 & 8.8 & 10.0 & \underline{15.0} & \textbf{20.2} \\
+% & ZebraLogic & 20.1 & 24.2 & \underline{26.6} & \textbf{29.2} \\
+% & AutoLogi & 52.6 & 56.8 & \underline{66.1} & \textbf{78.5} \\
+% \midrule
+% \multirow{3}{*}{\tabincell{c}{\textit{Agent \&}\\\textit{Coding}}} & BFCL v3 & \textbf{64.0} & 45.4 & \underline{63.4} & 63.0 \\
+% & LiveCodeBench v5 & 27.9 & 29.8 & \underline{30.7} & \textbf{31.3} \\
+% & CodeForces {\tiny{(Rating / Percentile)}} & \underline{1113 / 52.6\%} & 981 / 43.7\% & 859 / 35.0\% & \textbf{1353 / 71.0\%} \\
+% \midrule
+% \multirow{6}{*}{\tabincell{c}{\textit{Multilingual}\\\textit{Tasks}}} & Multi-IF & 62.4 & 64.2 & \underline{65.3} & \textbf{70.7} \\
+% & INCLUDE & 66.0 & \textbf{74.1} & 69.6 & \underline{70.9} \\
+% & MMMLU {\tiny{14 languages}} & 72.1 & \textbf{77.5} & \underline{76.9} & 76.5 \\
+% & MT-AIME2024 & 6.0 & \underline{19.1} & 12.7 & \textbf{24.1} \\
+% & PolyMath & 12.0 & \underline{20.9} & 16.9 & \textbf{22.5} \\
+% & MLogiQA & 42.6 & 53.9 & \underline{59.3} & \textbf{62.9} \\
+% \bottomrule
+% \end{tabular}
+% }
+% \end{table}
+
+% \begin{table}[tbp]
+% \centering
+% \caption{\textbf{Comparison among Qwen3-30B-A3B / Qwen3-14B (Thinking) and other reasoning baselines. The highest and second-best scores are shown in \textbf{bold} and \underline{underlined}, respectively.}}
+% \vspace{-1mm}
+% \label{tab:instruct-30A3}
+% \adjustbox{center=\textwidth}{
+% \small
+% \begin{tabular}{@{}clcccc@{}}
+% \toprule
+% &  & \tabincell{c}{\textbf{DeepSeek-R1}\\\textbf{-Distill-Qwen-32B}} & \textbf{QwQ-32B} & \textbf{Qwen3-14B} & \textbf{Qwen3-30B-A3B} \\
+% \midrule
+% & Architecture & Dense & Dense &Dense & MoE \\
+% & \# Activated Params & 32B & 32B  & 14B & 3B\\
+% & \# Total Params & 32B & 32B  & 14B & 30B \\
+% \midrule
+% \multirow{4}{*}{\tabincell{c}{\textit{General}\\\textit{Tasks}}} & MMLU-Redux & 88.2 & \textbf{90.0} & 88.6 & \underline{89.5} \\
+% & GPQA-Diamond & 62.1 & \underline{65.6} & 64.0 & \textbf{65.8} \\
+% & C-Eval & 82.2 & \textbf{88.4} & 86.2 & \underline{86.6} \\
+% & LiveBench {\tiny{2024-11-25}} & 45.6 & \underline{72.0} & 71.3 & \textbf{74.3} \\
+% \midrule
+% \multirow{5}{*}{\tabincell{c}{\textit{Alignment}\\\textit{Tasks}}} & IFEval {\tiny{strict prompt}} & 72.5 & 83.9 & \underline{85.4} & \textbf{86.5} \\
+% & Arena-Hard & 60.8 & 89.5 & \textbf{91.7} & \underline{91.0} \\
+% & AlignBench v1.1 & 7.25 & \textbf{8.70} & \underline{8.56} & \textbf{8.70} \\
+% & Creative Writing v3 & 55.0 & \textbf{82.4} & \underline{80.3} & 79.1 \\
+% & WritingBench & 6.13 & \textbf{7.86} & \underline{7.80} & 7.70 \\
+% \midrule
+% \multirow{5}{*}{\tabincell{c}{\textit{Math \& Text}\\\textit{Reasoning}}} & MATH-500 & 94.3 & \textbf{98.0} & \underline{96.8} & \textbf{98.0} \\
+% & AIME'24 & 72.6 & \underline{79.5} & 79.3 & \textbf{80.4} \\
+% & AIME'25 & 49.6 & 69.5 & \underline{70.4} & \textbf{70.9} \\
+% & ZebraLogic & 69.6 & 76.8 & \underline{88.5} & \textbf{89.5} \\
+% & AutoLogi & 74.6 & 88.1 & \textbf{89.2} & \underline{88.7} \\
+% \midrule
+% \multirow{3}{*}{\tabincell{c}{\textit{Agent \&}\\\textit{Coding}}} & BFCL v3 & 53.5 & 66.4 & \textbf{70.4} & \underline{69.1} \\
+% & LiveCodeBench v5 & 54.5 & \underline{62.7} & \textbf{63.5} & 62.6 \\
+% & CodeForces {\tiny{(Rating / Percentile)}} & 1691 / 93.4\% & \textbf{1982 / 97.7\%} & 1766 / 95.3\% & \underline{1974 / 97.7\%} \\
+% \midrule
+% \multirow{6}{*}{\tabincell{c}{\textit{Multilingual}\\\textit{Tasks}}} & Multi-IF & 31.3 & 68.3 & \textbf{74.8} & \underline{72.2} \\
+% & INCLUDE & 68.0 & 69.7 & \underline{71.7} & \textbf{71.9} \\
+% & MMMLU {\tiny{14 languages}} & \underline{78.6} & \textbf{80.9} & 77.9 & 78.4 \\
+% & MT-AIME2024 & 44.6 & 68.0 & \underline{73.3} & \textbf{73.9} \\
+% & PolyMath & 35.1 & \underline{45.9} & 45.8 & \textbf{46.1} \\
+% & MLogiQA & 63.3 & \textbf{75.5} & \underline{71.1} & 70.1 \\
+% \bottomrule
+% \end{tabular}
+% }
+% \vspace{1mm}
+% \end{table}
+
+% \begin{table}[tbp]
+% \centering
+% \caption{\textbf{Comparison among Qwen3-30B-A3B / Qwen3-14B (Non-thinking) and other non-reasoning baselines. The highest and second-best scores are shown in \textbf{bold} and \underline{underlined}, respectively.}}
+% \vspace{-1mm}
+% \label{tab:instruct-30A3-nothink}
+% \adjustbox{center=\textwidth}{
+% \small
+% \setlength{\tabcolsep}{3pt} %
+% \begin{tabular}{@{}clccccc@{}}
+% \toprule
+% & & \textbf{Phi-4} & \tabincell{c}{\textbf{Gemma-3}\\\textbf{-27B-IT}} & \tabincell{c}{\textbf{Qwen2.5-32B}\\\textbf{-Instruct}} & \textbf{Qwen3-14B} & \textbf{Qwen3-30B-A3B} \\
+% \midrule
+% & Architecture & Dense & Dense & Dense & Dense & MoE \\
+% & \# Activated Params & 14B & 27B & 32B & 14B & 3B \\
+% & \# Total Params & 14B & 27B & 32B & 14B & 30B \\
+% \midrule
+% \multirow{4}{*}{\tabincell{c}{\textit{General}\\\textit{Tasks}}} & MMLU-Redux & \textbf{85.3} & 82.6 & 83.9 & 82.0 & \underline{84.1} \\
+% & GPQA-Diamond & \textbf{56.1} & 42.4 & 49.5 & \underline{54.8} & \underline{54.8} \\
+% & C-Eval & 66.9 & 66.6 & 80.6 & \underline{81.0} & \textbf{82.9} \\
+% & LiveBench {\tiny{2024-11-25}} & 41.6 & 49.2 & 50.0 & \textbf{59.6} & \underline{59.4} \\
+% \midrule
+% \multirow{5}{*}{\tabincell{c}{\textit{Alignment}\\\textit{Tasks}}} & IFEval {\tiny{strict prompt}} & 62.1 & 80.6 & 79.5 & \textbf{84.8} & \underline{83.7} \\
+% & Arena-Hard & 75.4 & \underline{86.8} & 74.5 & 86.3 & \textbf{88.0} \\
+% & AlignBench v1.1 & 7.61 & 7.80 & 7.71 & \underline{8.52} & \textbf{8.55} \\
+% & Creative Writing v3 & 51.2 & \textbf{82.0} & 54.6 & \underline{73.1} & 68.1 \\
+% & WritingBench & 5.73 & \underline{7.22} & 5.90 & \textbf{7.24} & \underline{7.22} \\
+% \midrule
+% \multirow{5}{*}{\tabincell{c}{\textit{Math \& Text}\\\textit{Reasoning}}} & MATH-500 & 80.8 & \textbf{90.0} & 84.6 & \textbf{90.0} & \underline{89.8} \\
+% & AIME'24 & 22.9 & \underline{32.6} & 18.8 & 31.7 & \textbf{32.8} \\
+% & AIME'25 & 17.3 & \textbf{24.0} & 12.8 & \underline{23.3} & 21.6 \\
+% & ZebraLogic & 32.3 & 24.6 & 26.1 & \underline{33.0} & \textbf{33.2} \\
+% & AutoLogi & 66.2 & 64.2 & 65.5 & \textbf{82.0} & \underline{81.5} \\
+% \midrule
+% \multirow{3}{*}{\tabincell{c}{\textit{Agent \&}\\\textit{Coding}}} & BFCL v3 & 47.0 & 59.1 & \textbf{62.8} & \underline{61.5} & 58.6 \\
+% & LiveCodeBench v5 & 25.2 & 26.9 & 26.4 & \underline{29.0} & \textbf{29.8} \\
+% & CodeForces {\tiny{(Rating / Percentile)}} & \textbf{1280 / 65.3\%} & 1063 / 49.3\% & 903 / 38.2\% & 1200 / 58.6\% & \underline{1267 / 64.1\%} \\
+% \midrule
+% \multirow{6}{*}{\tabincell{c}{\textit{Multilingual}\\\textit{Tasks}}} & Multi-IF & 49.5 & 69.8 & 63.2 & \textbf{72.9} & \underline{70.8} \\
+% & INCLUDE & 65.3 & \textbf{71.4} & 67.5 & \underline{67.8} & \underline{67.8} \\
+% & MMMLU {\tiny{14 languages}} & \underline{74.7} & \textbf{76.1} & 74.2 & 72.6 & 73.8 \\
+% & MT-AIME2024 & 13.1 & 23.0 & 15.3 & \underline{23.2} & \textbf{24.6} \\
+% & PolyMath & 17.4 & 20.3 & 18.3 & \underline{22.0} & \textbf{23.3} \\
+% & MLogiQA & 53.1 & \underline{58.5} & 58.0 & \textbf{58.9} & 53.3 \\
+% \bottomrule
+% \end{tabular}
+% }
+% \end{table}

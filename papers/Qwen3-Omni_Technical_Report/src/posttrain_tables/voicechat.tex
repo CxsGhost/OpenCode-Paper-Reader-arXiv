@@ -1,0 +1,36 @@
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{graphicx}
+\begin{table}[H]
+\centering
+\caption{\textbf{Voice interaction and audio reasoning performance for Audio$\to$Text tasks, comparing Qwen3-Omni with the baselines. The highest scores are shown in bold.}}
+\label{tab:audio_voicebench}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+ &
+  \begin{tabular}[c]{@{}c@{}}\textbf{GPT-4o} \\ \textbf{-Audio}\end{tabular} &
+\begin{tabular}[c]{@{}c@{}}\textbf{Gemini-2.5} \\ \textbf{-Flash}\end{tabular} &
+\begin{tabular}[c]{@{}c@{}}\textbf{Gemini-2.5} \\ \textbf{-Pro}\end{tabular} &
+\begin{tabular}[c]{@{}c@{}}\textbf{Qwen2.5} \\ \textbf{-Omni}\end{tabular} &
+\begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-Omni} \\ \textbf{ -30B-A3B-Instruct}\end{tabular} &
+\begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-Omni} \\ \textbf{-30B-A3B-Thinking}\end{tabular} &
+\begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-Omni} \\ \textbf{-Flash-Instruct}\end{tabular} &
+\begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-Omni} \\ \textbf{-Flash-Thinking}\end{tabular} \\ \midrule
+\multicolumn{9}{c}{\textit{VoiceBench}}                                                                             \\ \midrule
+AlpacaEval     & 95.6 & 96.1 & 94.3          & 89.9 & 94.8          & 96.4 & 95.4          & \textbf{96.8} \\
+CommonEval     & 89.8 & 88.3 & 88.4          & 76.7 & 90.8          & 90.5 & \textbf{91.0} & 90.9          \\
+WildVoice      & 91.6 & 92.1 & 93.4          & 77.7 & 91.6          & 90.5 & \textbf{92.3} & 90.9          \\
+SD-QA          & 75.5 & 84.5 & \textbf{90.1} & 56.4 & 76.9          & 78.1 & 76.8          & 78.5          \\
+MMSU           & 80.3 & 66.1 & 71.1          & 61.7 & 68.1          & 83.0 & 68.4          & \textbf{84.3} \\
+OpenBookQA     & 89.2 & 56.9 & 92.3          & 80.9 & 89.7          & 94.3 & 91.4          & \textbf{95.0} \\
+BBH            & 84.1 & 83.9 & \textbf{92.6} & 66.7 & 80.4          & 88.9 & 80.6          & 89.6          \\
+IFEval         & 76.0 & 83.8 & \textbf{85.7} & 53.5 & 77.8          & 80.6 & 75.2          & 80.8          \\
+AdvBench       & 98.7 & 98.9 & 98.1          & 99.2 & \textbf{99.3} & 97.2 & \textbf{99.4} & 98.9          \\
+Overall        & 86.8 & 83.4 & \textbf{89.6} & 73.6 & 85.5          & 88.8 & 85.6          & 89.5          \\ \midrule
+\multicolumn{9}{c}{\textit{Audio Reasoning}}                                                                        \\ \midrule
+MMAU-v05.15.25 & 62.5 & 71.8 & 77.4          & 65.5 & 77.5          & 75.4 & \textbf{77.6} & 76.5          \\
+MMSU           & 56.4 & 70.2 & \textbf{77.7} & 62.6 & 69.0          & 70.2 & 69.1          & 71.3          \\ \bottomrule
+\end{tabular}%
+}
+\end{table}

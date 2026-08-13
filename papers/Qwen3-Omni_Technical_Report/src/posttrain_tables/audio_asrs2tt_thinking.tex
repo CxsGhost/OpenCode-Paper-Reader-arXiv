@@ -1,0 +1,45 @@
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{graphicx}
+\begin{table}[H]
+\centering
+\caption{\textbf{Transcription performance for Audio$\to$Text tasks (ASR \& S2TT), comparing Qwen3-Omni-Thinking with the baselines. The highest scores are shown in bold.}}
+\label{tab:audio_asr_thinking}
+\resizebox{\textwidth}{!}{%
+\begin{threeparttable}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+ & \begin{tabular}[c]{@{}c@{}}\textbf{Seed}\\ \textbf{-ASR}\end{tabular} 
+& \begin{tabular}[c]{@{}c@{}}\textbf{Voxtral}\\ \textbf{-Mini}\end{tabular} 
+& \begin{tabular}[c]{@{}c@{}}\textbf{Voxtral}\\ \textbf{-Small}\end{tabular} 
+& \begin{tabular}[c]{@{}c@{}}\textbf{GPT-4o}\\ \textbf{-Transcribe}\end{tabular} 
+& \begin{tabular}[c]{@{}c@{}}\textbf{Gemini-2.5}\\ \textbf{-Pro}\end{tabular} 
+& \begin{tabular}[c]{@{}c@{}}\textbf{Qwen2.5}\\ \textbf{-Omni}\end{tabular} 
+& \begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-Omni}\\ \textbf{-30B-A3B-Thinking}\end{tabular} 
+& \begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-Omni}\\ \textbf{-Flash-Thinking}\end{tabular} \\ \midrule
+\multicolumn{9}{c}{\textit{EN \& ZH ASR (wer)}} \\ \midrule
+\begin{tabular}[c]{@{}l@{}}Wenetspeech\\ \textit{net}|\textit{meeting}\end{tabular} & 4.66 | 5.69 & 24.30|31.53 & 20.33|26.08 & 15.30|32.27 & 14.43|13.47 & 5.91|7.65 & 6.16|8.17 & 6.85|8.42 \\
+\begin{tabular}[c]{@{}l@{}}Librispeech\\ \textit{clean} | \textit{other}\end{tabular} & 1.58 | 2.84 & 1.88|4.12 & 1.56|3.30 & 1.39|3.75 & 2.89|3.56 & 1.74|3.45 & 2.22|4.38 & 1.82|4.01 \\
+CV15-en & - & 9.47 & 7.79 & 10.01 & 9.89 & 7.61 & 10.44 & 10.52 \\
+CV15-zh & - & 24.67 & 19.30 & 9.84 & 8.00 & 5.13 & 6.25 & 6.61 \\
+Fleurs-en & 3.40 & 3.96 & 3.77 & 3.32 & 2.94 & 3.77 & 3.75 & 3.67 \\
+Fleurs-zh & 2.69 & 12.22 & 7.98 & 2.44 & 2.71 & 2.54 & 2.73 & 2.57 \\ \midrule
+\multicolumn{9}{c}{\textit{Multilingual ASR (wer)}} \\ \midrule
+\begin{tabular}[c]{@{}l@{}}Fleurs-avg\\ (19 lang)\tnote{a}\end{tabular} & - & 15.67 & 8.09 & 4.48 & 5.55 & 14.04 & 8.63 & 8.88 \\ \midrule
+\multicolumn{9}{c}{\textit{Lyric ASR (wer)}} \\ \midrule
+MIR-1K (vocal-only)\tnote{b} & 6.45 & 23.33 & 18.73 & 11.87 & 9.85 & 8.15 & 11.15 & 10.47 \\
+Opencpop-test & 2.98 & 31.01 & 16.06 & 7.93 & 6.49 & 2.84 & 6.11 & 4.52  \\ \midrule
+\multicolumn{9}{c}{\textit{S2TT (BLEU)}} \\ \midrule
+Fleurs-en2xx\tnote{c} & - & 30.35 & 37.85 & - & \textbf{39.25} & 29.22 & 36.24 & 36.04  \\
+Fleurs-xx2en & - & 27.54 & 32.81 & - & \textbf{35.41} & 28.61 & 30.50 & 30.22 \\
+Fleurs-zh2xx & - & 17.03 & 22.05 & - & \textbf{26.63} & 17.97 & 23.74 & 23.77  \\
+Fleurs-xx2zh & - & 28.75 & 34.82 & - & \textbf{37.50} & 27.68 & 34.51 & 34.49 \\ \bottomrule\hline
+\end{tabular}%
+\begin{tablenotes} 
+    \item[a] These 19 languages include Arabic, Cantonese, Chinese, Dutch, English, French, German, Indonesian, Italian, Japanese, Korean, Malay, Portuguese, Russian, Spanish, Thai, Turkish, Urdu, Vietnamese.
+    \item[b] Transcription is converted into Simplified Chinese.
+    \item[c] The results encompass translations across 15 languages: Arabic, Cantonese, Chinese, English, French, German, Indonesian, Italian, Japanese, Korean, Portuguese, Russian, Spanish, Thai, Vietnamese. For notation, ``en2xx'' denotes translation from English into each of the other 14 target languages, where ``xx'' ranges over the remaining language codes.
+\end{tablenotes}
+\end{threeparttable}
+}
+\end{table}

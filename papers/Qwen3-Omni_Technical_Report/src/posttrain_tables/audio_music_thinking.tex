@@ -1,0 +1,68 @@
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{graphicx}
+\begin{table}[H]
+\centering
+\caption{\textbf{Music understanding performance for Audio$\to$Text tasks, comparing Qwen3-Omni-Thinking with baselines. The highest scores are shown in bold.}}
+\label{tab:audio_music_thinking}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ &
+  \begin{tabular}[c]{@{}c@{}}\textbf{Best Specialist} \\ \textbf{Models}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{GPT-4o} \\ \textbf{-Audio}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{Gemini-2.5} \\ \textbf{-Pro}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{Qwen2.5} \\ \textbf{-Omni}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-Omni} \\ \textbf{-30B-A3B-Thinking}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{Qwen3-Omni} \\ \textbf{-Flash-Thinking}\end{tabular} \\ \midrule
+RUL-MuchoMusic &
+  \begin{tabular}[c]{@{}c@{}}47.6 (Audio Flamingo 3)\\ \citep{goel2025audio}\end{tabular} &
+  36.1 &
+  \textbf{49.4} &
+  47.3 &
+  48.3 &
+  48.4 \\
+\begin{tabular}[c]{@{}l@{}}GTZAN\\ \textit{Acc.} \end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}87.9 (CLaMP 3)\\ \citep{wu2025clamp}\end{tabular} &
+  76.5 &
+  81.0 &
+  81.7 &
+  \textbf{89.0} & \textbf{89.0} \\
+\begin{tabular}[c]{@{}l@{}}MTG Genre\\ \textit{Micro F1}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{35.8} (MuQ-MuLan)\\ \citep{zhu2025muq}\end{tabular} &
+  25.3 &
+  32.6 &
+  32.5 &
+  32.5 &
+  33.0 \\
+\begin{tabular}[c]{@{}l@{}}MTG Mood/Theme\\ \textit{Micro F1}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}10.9 (MuQ-MuLan)\\ \citep{zhu2025muq}\end{tabular} &
+  11.3 &
+  14.1 &
+  8.9 &
+  14.3 &
+  \textbf{15.4} \\
+\begin{tabular}[c]{@{}l@{}}MTG Instrument\\ \textit{Micro F1}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{39.8} (MuQ-MuLan)\\ \citep{zhu2025muq}\end{tabular} &
+  34.2 &
+  33.0 &
+  22.6 &
+  36.4 &
+  36.4 \\
+\begin{tabular}[c]{@{}l@{}}MTG Top50\\ \textit{Micro F1}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{33.2} (MuQ-MuLan)\\ \citep{zhu2025muq}\end{tabular} &
+  25.0 &
+  26.1 &
+  21.6 &
+  29.1 &
+  29.3 \\
+\begin{tabular}[c]{@{}l@{}}MagnaTagATune\\ \textit{Micro F1}\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}\textbf{41.6} (MuQ)\\ \citep{zhu2025muq}\end{tabular} &
+  29.2 &
+  28.1 &
+  30.1 &
+  32.2 &
+  32.6 \\ \bottomrule
+\end{tabular}%
+}
+\end{table}

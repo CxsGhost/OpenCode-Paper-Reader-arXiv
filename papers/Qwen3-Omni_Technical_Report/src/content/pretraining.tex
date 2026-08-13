@@ -1,0 +1,38 @@
+\section{Pretraining}
+\begin{table}[htbp]
+\centering
+\caption{\textbf{Languages and dialects support of Qwen3-Omni-30B-A3B.}}
+\vspace{-1mm}
+\begin{tabular}{lccc}
+\toprule
+Modality         & \# Langs      & Languages   
+\\\midrule
+Text  & 119         & See Qwen3 for the full list.        \\
+Speech Input & 19    & ar, de, en, es, fr, id, it, ja, ko, ms, nl, pt, ru, th, tr, ur, vi, yue, zh           \\
+Speech Output       & 10   & de, en, es, fr, it, ja, ko, pt, ru, zh          \\
+\bottomrule
+\end{tabular}
+\end{table}
+\label{table:languages}
+\method is pre-trained on a diverse dataset that encompasses multiple languages and dialects as shown in Table~\ref{table:languages} and modalities, including image-text, video-text, audio-text, video-audio, video-audio-text, and pure text corpora. Unlike Qwen2.5-Omni, which uses a single prompt for each task, we employ a wider range of natural language prompts to enhance both the generalization ability and instruction-following capabilities. To achieve robust performance across all modalities, our training strategy incorporates both unimodal and cross-modal data from the early pretraining stage.
+% To ensure that joint multimodal training achieves state-of-the-art performance across all modalities, we incorporate both unimodal and cross-modal data during the early stages of text pretraining. 
+
+% \method consists of three training stages. 
+The pre-training of \method is structured into three distinct stages. In the first stage, we lock the LLM parameters and focus on training the vision and audio encoders, utilizing a vast corpus of audio-text and image-text pairs to enhance semantic understanding within the LLM. In the second stage, we unfreeze all parameters and train with a wider range of multimodal data for more comprehensive learning. In the final stage, we use data with a sequence length of 32,768 to enhance the model's ability to understand complex long-sequence data:
+
+
+\begin{enumerate}[label=(\arabic*)]
+    \item \textbf{Encoder Alignment Stage (S1)}: During the initial pretraining phase, the LLM component of \method is initialized with parameters from Qwen3~\citep{qwen3}, while the vision encoder is adopted from Qwen3-VL, and the audio encoder is initialized with AuT. The two encoders are trained separately on the fixed LLM, with both initially focusing on training their respective adapters before training the encoders. We abandon the stage used in~\cite{qwen2.5vl, qwen2.5omni} where the encoder and adapter are trained jointly while keeping the LLM frozen, because this approach may cause the encoder to compensate for the limitations of the frozen LLM, which can lead to degraded perception capabilities.
+    \item \textbf{General Stage (S2)}: The second phase of pretraining utilizes a large-scale dataset containing approximately 2 trillion tokens, with the following distribution across modalities: text (0.57 trillion), audio (0.77 trillion), image (0.82 trillion), video (0.05 trillion), and video-audio (0.05 trillion). During this stage, the introduction of more diverse multimodal data and tasks enhances the model’s understanding and interaction capabilities in auditory, visual, textual, and audiovisual information.
+    \item \textbf{Long Context Stage (S3)}: In the final pre-training phase, we increased the maximum token length from 8,192 to 32,768 and also raised the proportion of long audio and long video in the training data. Experimental results indicate that these adjustments lead to significant improvements in the model's ability to understand long sequence data.
+\end{enumerate}
+
+
+
+
+
+
+
+
+
+
