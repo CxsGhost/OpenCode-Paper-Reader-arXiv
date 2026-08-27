@@ -1,0 +1,48 @@
+\section{Post-training}\label{sec:post}
+\subsection{Data Format}
+\begin{tcolorbox}[colback=black!5!white,colframe=black!75!black,title=The Dataset Format Example of ChatML]
+\textcolor{blue}{<|im\_start|>}user
+
+<|vision\_start|>Video.mp4 [Two people are talking in the video]<|vision\_end|>What are the people in the video saying?\textcolor{blue}{<|im\_end|>}
+
+\textcolor{blue}{<|im\_start|>}assistant
+
+\textcolor{blue}{Both pictures are of SpongeBob SquarePants.The person in the red clothes says, "Hello, how's the weather today?" The person in the black clothes responds, "Hello, the weather is quite nice today."<|im\_end|>}
+
+\textcolor{blue}{<|im\_start|>}user
+
+<|vision\_start|>Video.mp4 [A person in the video is saying, "Please describe the person in front of you."]<|vision\_end|>\textcolor{blue}{<|im\_end|>}
+
+\textcolor{blue}{<|im\_start|>}assistant
+
+\textcolor{blue}{The person in front of you is wearing glasses and a brown jacket over a blue shirt. They appear to be speaking or reacting to something, as their mouth is open and they seem engaged. The background shows a room with a wall-mounted air conditioner, a clothing rack with various garments hanging on it, and a large screen displaying an image of a cityscape at night. The lighting in the room is warm and cozy.<|im\_end|>}
+\end{tcolorbox}
+
+\subsection{Thinker}
+During the post-training phase, we employ instruction-following data with ChatML~\citep{chatml} format for instruction-finetuning. Our dataset incorporates pure text-based dialogue data, visual-modality conversation data, audio-modality conversation data and mix-modality conversation data. 
+
+\subsection{Talker}
+We introduced a three-stage training process for Talker, allowing \method to generate text and speech responses simultaneously. In the first stage, we train Talker to learn context continuation. The second stage utilized DPO~\citep{rafailov2024direct} to enhance the stability of speech generation. In the third stage, we applied multi-speaker instruction fine-tuning to improve the naturalness and controllability of the speech responses.
+
+During the In-Context Learning (ICL) training phase, in addition to utilizing text supervision similar to that of Thinker, we perform a speech continuation task through next-token prediction, leveraging an extensive dataset of dialogues that incorporate multimodal contexts and spoken responses. Talker learns to establish a monotonic mapping from semantic representation to speech, while also acquiring the ability to express speech with diverse attributes that are contextually appropriate, such as prosody, emotion, and accent. Additionally, we implement timbre disentanglement techniques to prevent the model from associating specific voices with infrequent textual patterns.
+
+\begin{equation}
+    \mathcal{L}_{\text{DPO}}(\mathcal{P}_\theta; \mathcal{P}_{\text{ref}}) = -\mathbb{E}_{(\bm{x}, \bm{y_w}, \bm{y_l}) \sim \mathcal{D}} \left[ \log \sigma \left( \beta \log \frac{\mathcal{P}_\theta(\bm{y_w} \mid \bm{x})}{\mathcal{P}_{\text{ref}}(\bm{y_w} \mid \bm{x})} - \beta \log \frac{\mathcal{P}_\theta(\bm{y_l} \mid \bm{x})}{\mathcal{P}_{\text{ref}}(\bm{y_l} \mid \bm{x})} \right) \right].
+\end{equation}
+
+To broaden the coverage of speakers and scenarios, the pretraining data inevitably contains label noise and pronunciation errors, leading to model hallucinations. 
+To mitigate this issue, we introduce a reinforcement learning phase to improve the stability of speech generation.  Specifically, for each request and response text paired with the reference speech, we build a dataset $\mathcal{D}$ with the triplet data $(\bm{x}, \bm{y_w}, \bm{y_l})$, where $\bm{x}$ is the input sequence with input text, and $\bm{y_w}$ and $\bm{y_l}$ are the good and bad generated speech sequences respectively. We rank these samples based on their reward scores associated with word error rate~(WER) and the punctuation pause error rate.
+
+Lastly, we performed speaker fine-tuning on the aforementioned base model, enabling Talker to adopt specific voices and improve its naturalness. %produce style-controllable responses. 
+%We employed highly expressive data from multiple speakers, assigning a unique index token to each speaker and substituting the <|talker\_bos|> tokens accordingly. The experimental results showed that the speaker fine-tuned model could more precisely capture the nuanced prosodic styles of target speakers while preserving the foundational stability provided by the base model.
+%To further improve Talker's controllability, we integrated additional instructed dialogue data, enabling \method to comprehend user intentions and flexibly manage various aspects of speech responses, such as rate, style, emotion, dialect, and role-playing.
+
+
+
+
+
+
+
+
+
+

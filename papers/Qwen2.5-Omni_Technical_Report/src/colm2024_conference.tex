@@ -1,0 +1,114 @@
+\documentclass{article} %
+\usepackage{colm2024_conference}
+
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{wrapfig}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{colortbl}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\definecolor{lightgray}{rgb}{0.9,0.9,0.9}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{url}
+\usepackage{multirow}
+\usepackage{colortbl}
+\usepackage{tabularx}
+\usepackage{blindtext}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18} 
+\usepackage{tikz}
+\usetikzlibrary{er,positioning,bayesnet}
+\usepackage{makecell}
+\usepackage{tipa}
+\usepackage{siunitx}
+\usepackage{nicefrac}
+\usepackage{tocloft}
+\usepackage{listings}
+\usepackage[raster,skins]{tcolorbox} %
+\usepackage{xltabular}
+\usepackage{adjustbox}
+\usepackage{xurl}
+% \usepackage{tcolorbox}
+\usepackage{xcolor}
+% \usepackage[most]{tcolorbox}
+\input{math_commands.tex}
+
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+
+\title{Qwen2.5-Omni Technical Report}
+
+
+
+\author{
+\bf Qwen Team
+}
+
+
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+\newcommand{\method}{Qwen2.5-Omni\xspace}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+In this report, we present \method, an end-to-end multimodal model designed to perceive diverse modalities, including text, images, audio, and video, while simultaneously generating text and natural speech responses in a streaming manner. 
+To enable the streaming of multimodal information inputs,  both audio and visual encoders utilize a block-wise processing approach. This strategy effectively decouples the handling of long sequences of multimodal data, assigning the perceptual responsibilities to the multimodal encoder and entrusting the modeling of extended sequences to a large language model. Such a division of labor enhances the fusion of different modalities via the shared attention mechanism. 
+To synchronize the timestamps of video inputs with audio, we organize the audio and video sequentially in an interleaved manner and propose a novel position embedding approach, named \textbf{TMRoPE}~(\textbf{T}ime-aligned \textbf{M}ultimodal \textbf{RoPE}).
+To concurrently generate text and speech while avoiding interference between the two modalities, we propose \textbf{Thinker-Talker} architecture. In this framework, Thinker functions as a large language model tasked with text generation, while Talker is a dual-track autoregressive model that directly utilizes the hidden representations from the Thinker to produce audio tokens as output. Both the Thinker and Talker models are designed to be trained and inferred in an end-to-end manner. 
+For decoding audio tokens in a streaming manner, we introduce a sliding-window DiT that restricts the receptive field, aiming to reduce the initial package delay.
+\method~is comparable with similarly sized Qwen2.5-VL and outperforms Qwen2-Audio. Furthermore, \method~achieves state-of-the-art performance on multimodal benchmarks like Omni-Bench. Notably, \method~'s performance in end-to-end speech instruction following is comparable to its capabilities with text inputs, as evidenced by benchmarks such as MMLU and GSM8K. As for speech generation, \method's streaming Talker outperforms most existing streaming and non-streaming alternatives in robustness and naturalness.
+
+% It is the first open-source model capable of end-to-end understanding of audio instructions in audio-to-text tasks, providing performance equivalent to text intelligence. According to benchmarks such as MMLU and GSM8K, the audio instruction input of \method~demonstrates intelligence comparable to that of the Qwen2 with direct text input. For speech generation, \method's streaming Talker also outperform most streaming or non-streaming conterparts in robustness and naturalness. %\method~bridges various modalities, functionally akin to a human without tools, capable of comprehending any input signals and expressing itself through both written and spoken language. \method~is open-sourced.
+
+\end{abstract}
+
+% \vfill
+
+% \begin{figure}[hbp]
+%     \centering
+%     \includegraphics[width=0.92\textwidth]{figures/main.pdf}
+%     \caption{In the iterative development of the Qwen series, data scaling has played a crucial role. Qwen~2.5, which leverages 18 trillion tokens for pre-training, has demonstrated the most advanced capabilities within the Qwen series, especially in terms of domain expertise, underscoring the importance of scale together with mixture in enhancing the model's capabilities.}
+%     \label{fig:intro}
+% \end{figure}
+
+% \vfill
+
+% \newpage
+
+
+\begin{figure}[tbh]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/qwen_omni.png}
+    \caption{\method~is a unified end-to-end model capable of processing multiple modalities, such as text, audio, image and video, and generating real-time text or speech response. Based on these features, \method~supports a wide range of tasks, including but not limited to voice dialogue, video dialogue, and video reasoning.}
+    \label{fig:ovewview_arch}
+\end{figure}
+
+
+\input{content/intro.tex}
+\input{content/arch.tex}
+\input{content/pretraining}
+\input{content/posttraining}
+\input{content/experiments.tex}
+\input{content/conclusion.tex}
+\input{content/authors.tex}
+
+\bibliography{biblio}
+\bibliographystyle{colm2024_conference}
+
+
+\end{document}

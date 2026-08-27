@@ -1,0 +1,532 @@
+
+
+
+
+\section{Evaluation}
+\label{sec:experiment}
+We conduct comprehensive evaluation of \method. The model is divided into two main categories: understanding~(X$\to$Text) and speech generation~(X$\to$Speech). 
+
+\subsection{Evaluation of X$\to$Text}
+In this section, we evaluate \method's ability to comprehend various multimodal inputs (text, audio, image, and video) and generate textual responses.
+
+\paragraph{Text$\to$Text} Our evaluation of \method on text $\to$ text primarily focuses on general evaluation, mathematics \& science ability and coding ability. Specifically, we utilize MMLU-Pro~\citep{mmlupro}, MMLU-redux~\citep{mmluredux} and Livebench0803~\citep{livebench} for general evaluation, GPQA~\citep{gpqa}, GSM8K~\citep{gsm8k} and MATH~\citep{math} for mathematics \& science, HumanEval~\citep{humaneval}, MBPP~\citep{mbpp}, MultiPL-E~\citep{multiple} and LiveCodeBench 2305-2409~\citep{livecodebench} for coding.
+% The evaluation of \method for
+% We use MMLU-Pro~\citep{mmlupro}, MMLU-redux~\citep{mmluredux} and Livebench0803~\citep{livebench} for general evaluation, 
+% \begin{itemize}
+%     \item \textbf{General Tasks.} MMLU-Pro~\citep{mmlupro}, MMLU-redux~\citep{mmluredux} and Livebench0803~\citep{livebench}.
+%     \item \textbf{Mathematics \& Science Tasks.} GPQA~\citep{gpqa}, GSM8K~\citep{gsm8k} and MATH~\citep{math}.
+%     \item \textbf{Coding Tasks.} HumanEval~\citep{humaneval}, MBPP~\citep{mbpp}, MultiPL-E~\citep{multiple} (Python, C++, JAVA, PHP, TypeScript, C\#, Bash, JavaScript) and LiveCodeBench 2305-2409~\citep{livecodebench}.
+%     \item \textbf{Alignment Tasks.} IFEval~\citep{ifeval}.
+% \end{itemize}
+
+\paragraph{Audio$\to$Text} The evaluation of \method for audio $\to$ text includes audio understanding, audio reasoning, and voice-chatting. Specifically, we perform a comprehensive evaluation on Automatic Speech Recognition (ASR), Speech-to-Text Translation (S2TT), Speech Entity Recognition (SER), Vocal Sound classification (VSC) and Music, which assesses the performance of \method on a broad range of audio understanding tasks. We utilize MMAU~\citep{sakshi2024mmaumassivemultitaskaudio} for audio reasoning tasks, VoiceBench~\citep{chen2024voicebench} and a self-curated speech-instruction benchmark for voice-chatting tasks.
+
+%, and a self-curated speech-query benchmark
+% OCRBench~\citep{liu2024ocrbenchhiddenmysteryocr}, 
+% InfoVQA~\citep{Mathew2021InfographicVQA}, 
+\paragraph{Image$\to$Text} The evaluation of \method for image $\to$ text primarily emphasizes the performance
+in college-level problems, math, general visual question answering and OCR-related tasks. Specifically, we utilize MMMU~\citep{yue2023mmmu} and MMMU-Pro~\citep{mmmupro} for college-level problems evaluation, MathVista~\citep{mathvista} and MathVision~\citep{mathvision} for math. For general visual question answering, we evaluate the performance on benchmark datasets such as MMBench-V1.1~\citep{MMBench}, MMVet~\citep{yu2024mm}, MMStar~\citep{chen2024we}, MME~\citep{fu2023mme}, MuirBench~\citep{wang2024muirbenchcomprehensivebenchmarkrobust}, CRPE~\citep{wang2024allseeingprojectv2general}, RealWorldQA~\citep{X.AI.}, 
+MMERealWorld~\citep{mme-realworld}, and MM-MT-Bench~\citep{agrawal2024pixtral12b}. 
+Additionally, we evaluate \method on various OCR benchmarks, such as AI2D~\citep{kembhavi2016diagram}, TextVQA~\citep{textvqa}, DocVQA~\citep{docvqa}, ChartQA~\citep{masry2022chartqa}, and OCRBench\_v2~\citep{fu2024ocrbenchv2improvedbenchmark}. Furthermore, we also evaluate the visual grounding capability of our model on the referring expression comprehension benchmarks~\citep{kazemzadeh-etal-2014-referitgame, mao2016generationcomprehensionunambiguousobject}, object detection in the wild~\citep{li2022groundedlanguageimagepretraining} and a self-curated point grounding benchmark. 
+
+
+\paragraph{Video~(w/o Audio)$\to$Text} We assess our model on several representative video understanding tasks like Video-MME~\citep{fu2024video},
+MVBench~\citep{li2024mvbench}, and EgoSchema~\citep{mangalam2023egoschema}.
+
+\paragraph{Multimodality$\to$Text}
+We demonstrate the ability of our model for mixed-modality (image, audio and text) prompts on OmniBench~\citep{li2024omnibench}.
+
+
+\subsubsection{Performance of Text$\to$Text}
+We compare \method with other leading large language model of similar size (7B). As shown in Table \ref{tab:pure-text}, the performance of \method generally falls between Qwen2-7B and Qwen2.5-7B. Our model outperforms Qwen2-7B on most benchmarks, such as MMLU-Pro, MMLU-redux, MATH, GSM8K, MBPP, MultiPL-E and LiveCodeBench, which demonstrates the exceptional capabilities of our model for Text$\to$Text.
+
+\begin{table}[htbp]
+\centering
+
+\caption{\textbf{Text $\to$ Text performance of 7B+ pure text models and \method}}
+\label{tab:pure-text}
+\small
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Datasets} & \textbf{Gemma2-9B} & \textbf{Llama3.1-8B} & \textbf{Qwen2-7B} & \textbf{Qwen2.5-7B} & \textbf{\method-7B} \\
+\midrule
+\multicolumn{6}{c}{\textit{General Tasks}} \\
+\midrule
+MMLU-Pro & 52.1 & 48.3 & 44.1 & \textbf{56.3} & 47.0 \\
+MMLU-redux & 72.8 & 67.2 & 67.3 & \textbf{75.4} & 71.0 \\
+LiveBench$_{\text{0831}}$ & 30.6 & 26.7 & 29.2 &\textbf{35.9} & 29.6 \\
+\midrule
+\multicolumn{6}{c}{\textit{Mathematics \& Science Tasks}} \\
+\midrule
+GPQA & 32.8 & 32.8 & 34.3 &\textbf{36.4} & 30.8 \\
+MATH & 44.3 & 51.9 & 52.9 &\textbf{75.5} & 71.5 \\
+GSM8K & 76.7 & 84.5 & 85.7 &\textbf{91.6} & 88.7 \\
+\midrule
+\multicolumn{6}{c}{\textit{Coding Tasks}} \\
+\midrule
+HumanEval & 68.9 & 72.6 &79.9 &\textbf{84.8} &78.7 \\
+MBPP & 74.9 & 69.6 & 67.2 &\textbf{79.2} &73.2 \\
+MultiPL-E & 53.4 & 50.7 & 59.1 &\textbf{70.4} &65.8 \\
+LiveCodeBench$_{\text{2305-2409}}$ & 18.9 & 8.3 &23.9 &\textbf{28.7} & 24.6\\
+% \midrule
+% \multicolumn{6}{c}{\textit{Alignment Tasks}} \\
+% \midrule
+% IFEval & 70.1 &\textbf{75.9} & 54.7 &71.2 & 54.3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsubsection{Performance of Audio$\to$Text}
+We compare \method with other leading specialist or generalist models on diverse audio understanding, audio reasoning, and voice-chatting benchmarks. As shown in Table \ref{tab:audio_analysis_table} and \ref{tab:audio_analysis_table_1}, \method delivers better or comparable performance with other state-of-the-art methods on audio understanding. For instance, it achieves superior ASR and S2TT performance on Fleurs\_zh, CommonVoice\_en, CommonVoice\_zh, CoVoST2\_en-de and CoVoST2\_zh-en test sets, surpassing previous state-of-the-art models like Whisper-large-v3, Qwen2Audio, MinMo and other Omni models. \method also achieves state-of-the-art performance on general audio understanding tasks like music and VSC. Additionally, \method achieves state-of-the-art results on audio reasoning with superior performance on sound, music and speech subsets of MMAU benchmark. These results demonstrate the powerful capabilities of \method in general audio understanding and reasoning.
+
+% Additionally, \method attains a score of 74.12 on average, surpassing all other end-to-end audio language models and omni models of similar size on VoiceBench. This result underscores the outstanding performance of our model in speech interaction.
+Additionally, on VoiceBench, \method achieves an impressive average score of 74.12, surpassing other audio language models and omni models of similar size. This showcases our model's strong capabilities in speech interaction.
+To further explore the performance of diverse speech interaction, we convert text instructions from several pure-text benchmarks into speech and evaluate \method, Qwen2-Audio and Qwen2-7B on the in-house voice-chat benchmark. About 90\% of text-instructions are utilized. We use speech instruction for \method and Qwen2-Audio, and text instruction for Qwen2-7B. 
+As shown in Table \ref{tab:voicechat-in-house}, compared to Qwen2-Audio, \method significantly narrowes the gap with Qwen2-7B, which uses text instructions. This reflects our model's substantial progress in diversified end-to-end speech interaction.
+\begin{table}[htbp]
+\centering
+\caption{\textbf{Audio $\to$ text performance of State-of-the-art and \method}}
+\vspace{-2mm}
+\resizebox{0.8\textwidth}{!}{
+\begin{tabular}{cccc}
+\toprule
+\textbf{Datasets} & \textbf{Model} & \textbf{Performance}
+\\ 
+\midrule \multicolumn{3}{c}{\textit{ASR}} \\ 
+\midrule 
+\multirow{11}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{Librispeech}\\ \textit{dev-clean} | \textit{dev-other} | \\ \textit{test-clean} | \textit{test-other} \end{tabular}}      
+   & SALMONN~\citep{anonymous2023salmonn}  & - | - | 2.1 | 4.9  
+\\ & SpeechVerse~\citep{das2024speechverse}  & - | - | 2.1 | 4.4   
+\\ & Whisper-large-v3~\citep{Whisper} & - | - | 1.8 | 3.6
+\\ & Llama-3-8B~\citep{dubey2024llama} & - | - | - | 3.4
+\\ & Llama-3-70B~\citep{dubey2024llama} & - | - | - | 3.1
+\\ & Seed-ASR-Multilingual~\citep{bai2024seed} & - | - | \textbf{1.6} | \textbf{2.8}
+\\ & MiniCPM-o~\citep{yao2024minicpm} & - | - | 1.7 | -
+\\ & MinMo~\citep{chen2025minmomultimodallargelanguage} & - | - | 1.7 | 3.9
+\\ & Qwen-Audio~\citep{chu2023qwen}  & 1.8 | 4.0 | 2.0 | 4.2   
+\\ & Qwen2-Audio~\citep{qwen2audio} & \textbf{1.3} | \textbf{3.4} | \textbf{1.6} | 3.6 
+\\ & \method-7B & 1.6 | 3.5 | 1.8 | 3.4
+\\ 
+\midrule  \multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{Common Voice 15} \\ \textit{en} | \textit{zh} | \textit{yue} | \textit{fr} \end{tabular}} 
+   & Whisper-large-v3~\citep{Whisper} & 9.3 | 12.8 | 10.9 | 10.8  
+\\ & MinMo~\citep{chen2025minmomultimodallargelanguage} & 7.9 | 6.3 | 6.4 | 8.5
+\\ & Qwen2-Audio~\citep{qwen2audio} & 8.6 | 6.9 | \textbf{5.9} | 9.6 
+\\ & \method-7B & \textbf{7.6} | \textbf{5.2} | 7.3 | \textbf{7.5}
+
+\\ 
+\midrule \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{Fleurs} \\ \textit{zh} | \textit{en} \end{tabular}}        
+   & Whisper-large-v3~\citep{Whisper}  & 7.7 | 4.1
+\\ & Seed-ASR-Multilingual~\citep{bai2024seed} & - | \textbf{3.4}
+\\ & Megrez-3B-Omni~\citep{Megrez-3B-Omni} & 10.8 | -
+\\ & MiniCPM-o~\citep{yao2024minicpm} & 4.4 | -
+\\ & MinMo~\citep{chen2025minmomultimodallargelanguage} & \textbf{3.0} | 3.8
+\\ & Qwen2-Audio~\citep{qwen2audio} & 7.5 | - 
+\\ & \method-7B & \textbf{3.0} | 4.1
+
+\\ 
+\midrule  \multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{Wenetspeech} \\ \textit{test-net} | \textit{test-meeting} \end{tabular}}        
+   & Seed-ASR-Chinese~\citep{bai2024seed} & \textbf{4.7} | \textbf{5.7}
+\\ & Megrez-3B-Omni~\citep{Megrez-3B-Omni} & - | 16.4
+\\ & MiniCPM-o~\citep{yao2024minicpm} & 6.9 | -
+\\ & MinMo~\citep{chen2025minmomultimodallargelanguage} & 6.8 | 7.4
+\\ & \method-7B & 5.9 | 7.7
+
+% \\ 
+% \midrule \multirow{6}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{Aishell2} \\ \textit{Mic} | \textit{iOS} | \textit{Android} \end{tabular}}        
+%    & MMSpeech-base~\citep{mmspeech} & 4.5 | 3.9 | 4.0                
+% \\ & Paraformer-large~\citep{FunASR}  & - | 2.9 | - 
+% \\ & Seed-ASR-Chinese~\citep{bai2024seed} & \textbf{2.3} | \textbf{2.3} | \textbf{2.3}
+% \\ & Qwen-Audio~\citep{chu2023qwen}  & 3.3 | 3.1 | 3.3     
+% \\ & Qwen2-Audio~\citep{chu2024qwen2} & 3.0 | 3.0 | 2.9
+% \\ & \method & 2.6 | 2.6 | 2.7 
+
+\\ 
+\midrule  \multirow{3}{*}{\textbf{Voxpopuli-V1.0-en}}      
+   & Llama-3-8B~\citep{dubey2024llama} & 6.2 
+\\ & Llama-3-70B~\citep{dubey2024llama} & \textbf{5.7}
+\\ & \method-7B & 5.8
+
+% \\ 
+% \midrule  \multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{MLS} \\ \textit{en} | \textit{es} | \textit{fr} | \textit{pt} \end{tabular}} 
+%    & Gemini-1.5 Pro~\citep{team2024gemini} & 4.2 | - | - | -
+% \\ & Seed-ASR-Multilingual~\citep{bai2024seed} & \textbf{4.1} | \textbf{3.8} | \textbf{5.1} | \textbf{5.0} 
+% \\ & \method & 4.9 | 7.1 | 5.4 | 9.5
+
+\\ \midrule \multicolumn{3}{c}{\textit{S2TT}} 
+\\\midrule   \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{CoVoST2} \\ \textit{en-de} | \textit{de-en} | \\ \textit{en-zh} | \textit{zh-en} \end{tabular}} 
+    &SALMONN~\citep{anonymous2023salmonn}    & 18.6 | - | 33.1 | -         
+\\  & SpeechLLaMA~\citep{speechllama} & - | 27.1 | - | 12.3   
+\\  & BLSP~\citep{wang2023blsp}  & 14.1 | - | - | -    
+\\  & MiniCPM-o~\citep{yao2024minicpm} & - | - | \textbf{48.2} | 27.2
+\\  & MinMo~\citep{chen2025minmomultimodallargelanguage} & - | \textbf{39.9} | 46.7 | 26.0
+\\  & Qwen-Audio~\citep{chu2023qwen}  & 25.1 | 33.9 | 41.5 | 15.7   
+\\  & Qwen2-Audio~\citep{qwen2audio}  & 29.9 | 35.2 | 45.2 | 24.4
+\\  & \method-7B &\textbf{30.2} | 37.7 | 41.4 | \textbf{29.4}
+
+% \\ \midrule  \multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{CoVoST2} \\ \textit{es-en} | \textit{fr-en} |  \textit{it-en} |  \end{tabular}}
+%     & SpeechLLaMA~\citep{speechllama} & 27.9 | 25.2 | 25.9 
+% \\  & MinMo~\citep{chen2025minmomultimodallargelanguage} & \textbf{43.3} | \textbf{41.3} | \textbf{40.6}
+% \\  & Qwen-Audio~\citep{chu2023qwen} &39.7 | 38.5 | 36.0         
+% \\  & Qwen2-Audio~\citep{qwen2audio} &40.0 | 38.5 | 36.3
+% \\  & \method &43.0 | 41.0 | 39.4
+
+% \midrule  \multirow{3}{*}{\textbf{Iemocap-Session5}} 
+%    & SDT & \textbf{0.740}
+% \\ & WavFusion & 0.705
+% \\ & \method & 0.714
+
+% \\ \midrule \multicolumn{3}{c}{\textit{SER}} 
+% \\ \midrule \multirow{7}{*}{\textbf{Meld}} 
+%    & WavLM-large~\citep{wavlm}  & 0.542
+% \\ & ELR-GNN & 0.687
+% \\ & SDT & 0.676
+% \\ & WavFusion & 0.669
+% \\ & Qwen-Audio~\citep{chu2023qwen} & \textbf{0.557} 
+% \\ & Qwen2-Audio & {0.553}  
+% \\ & \method & -
+
+ 
+% \\ \midrule \multicolumn{3}{c}{\textit{AAC}} 
+% \\ \midrule  \multirow{3}{*}{\textbf{Clotho}}                    
+%    & Pengi~\citep{Pengi} & 0.416 | 0.126 | 0.271          
+% \\ & Qwen-Audio~\citep{chu2023qwen} & \textbf{0.441} | \textbf{0.136} | \textbf{0.288}         
+% \\ & \method & 0.358 | 0.117 | 0.238 
+\\       
+\bottomrule
+
+\end{tabular}}
+\label{tab:audio_analysis_table}
+\end{table}
+
+\begin{table}[t!]
+\centering
+\caption{\textbf{Audio $\to$ text performance of State-of-the-art and \method}}
+\vspace{-2mm}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{cccc}
+\toprule
+\textbf{Datasets} & \textbf{Model} & \textbf{Performance}
+\\ \midrule \multicolumn{3}{c}{\textit{SER}} 
+\\ \midrule \multirow{7}{*}{\textbf{Meld}} 
+   & WavLM-large~\citep{wavlm}  & 0.542
+%\\ & ELR-GNN~\citep{shou2024efficient} & \textbf{0.687}
+\\ & MiniCPM-o~\citep{yao2024minicpm} & 0.524
+\\ & Qwen-Audio~\citep{chu2023qwen} & 0.557
+\\ & Qwen2-Audio~\citep{qwen2audio} & 0.553  
+\\ & \method-7B & \textbf{0.570}
+
+% \\ \midrule \multicolumn{3}{c}{\textit{MNA}} 
+% \\ \midrule  \multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{Nsynth} \\ \textit{Instrument} | \textit{Sonic} \end{tabular}} 
+%    & Pengi~\citep{Pengi} & 0.501 | 0.386               
+% \\ & Qwen-Audio~\citep{chu2023qwen} & \textbf{0.788} | \textbf{0.474} 
+% \\ & \method & 0.742 | 0.465
+
+\\ \midrule \multicolumn{3}{c}{\textit{VSC}} 
+\\ \midrule  \multirow{5}{*}{\textbf{VocalSound}}     
+   & CLAP~\citep{CLAP} & 0.495                
+\\ & Pengi~\citep{Pengi} & 0.604                
+\\ & Qwen-Audio~\citep{chu2023qwen} & 0.929                 
+\\ & Qwen2-Audio~\citep{qwen2audio} & \textbf{0.939} 
+\\ & \method-7B & \textbf{0.939}
+
+% \\ \midrule \multicolumn{3}{c}{\textit{ASC}} 
+% \\ \midrule \multirow{2}{*}{\textbf{Cochlscene}} 
+%    & Qwen-Audio~\citep{chu2023qwen} & \textbf{0.795} 
+% \\ & \method & 0.755
+% \\
+% \midrule  \multirow{3}{*}{\textbf{Tut2017}} 
+%    & Pengi~\citep{Pengi} & 0.353 
+% \\ & Qwen-Audio~\citep{chu2023qwen} & \textbf{0.649}
+% \\ & \method & 0.607
+
+\\ \midrule \multicolumn{3}{c}{\textit{Music}} 
+\\ \midrule \multirow{2}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{GiantSteps} \\ \textit{Tempo} \end{tabular}}  
+ & LLark-7B~\citep{gardner2023llark} & 0.86
+\\ & \method-7B & \textbf{0.88}
+\\
+\midrule  \multirow{2}{*}{\textbf{MusicCaps}} 
+   & LP-MusicCaps~\citep{doh2023lp} & 0.291 | 0.149 | 0.089 | \textbf{0.061} | \textbf{0.129} | 0.130 
+\\ & \method-7B & \textbf{0.328}  | \textbf{0.162} | \textbf{0.090} | 0.055 | 0.127 | \textbf{0.225} 
+ 
+\\ \midrule \multicolumn{3}{c}{\textit{Audio Reasoning}} 
+\\ \midrule  \multirow{3}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{MMAU} \\ \textit{Sound} | \textit{Music} | \\ \textit{Speech} | \textit{Avg} \end{tabular}} 
+   & Gemini-Pro-V1.5~\citep{team2024gemini} & 56.75 | 49.40 | 58.55 |  54.90
+\\ & Qwen2-Audio~\citep{qwen2audio} & 54.95 | 50.98 | 42.04 | 49.20
+\\ & \method-7B & \textbf{67.87} | \textbf{69.16} | \textbf{59.76} | \textbf{65.60}
+
+\\ \midrule \multicolumn{3}{c}{\textit{Voice Chatting}} 
+\\\midrule \multirow{7}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{VoiceBench} \\ \textit{AlpacaEval} | \textit{CommonEval} | \\ \textit{SD-QA} | \textit{MMSU} \end{tabular}}   
+   %& GPT-4o-Audio~\citep{hurst2024gpt}  & \textbf{4.78} | \textbf{4.49} | \textbf{75.50} | \textbf{80.25} 
+   & Ultravox-v0.4.1-LLaMA-3.1-8B   & \textbf{4.55} | 3.90 | 53.35 | 47.17
+\\ & MERaLiON~\citep{he2024meralion}  & 4.50 | 3.77 | 55.06 | 34.95    
+\\ & Megrez-3B-Omni~\citep{Megrez-3B-Omni} & 3.50 | 2.95 | 25.95 | 27.03
+\\ & Lyra-Base~\citep{zhong2024lyra} & 3.85 | 3.50 | 38.25 | 49.74   
+\\ & MiniCPM-o~\citep{yao2024minicpm} & 4.42 | \textbf{4.15} | 50.72 | 54.78
+\\ & Baichuan-Omni-1.5~\citep{li2025baichuan} & 4.50 | 4.05 | 43.40 | 57.25
+\\ & Qwen2-Audio~\citep{qwen2audio} & 3.74 | 3.43 | 35.71 | 35.72   
+\\ & \method-7B & 4.49 | 3.93 | \textbf{55.71} | \textbf{61.32}
+\\ \midrule \multirow{7}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{VoiceBench} \\ \textit{OpenBookQA} | \textit{IFEval} | \\ \textit{AdvBench} | \textit{Avg}  \end{tabular}}
+   %& GPT-4o-Audio~\citep{hurst2024gpt}  & \textbf{89.23} | \textbf{76.02} | \textbf{98.65} | \textbf{86.42}        
+   & Ultravox-v0.4.1-LLaMA-3.1-8B   & 65.27 | \textbf{66.88} | 98.46 | 71.45
+\\ & MERaLiON~\citep{he2024meralion}  & 27.23 | 62.93 | 94.81 | 62.91    
+\\ & Megrez-3B-Omni~\citep{Megrez-3B-Omni} & 28.35 | 25.71 | 87.69 | 46.25
+\\ & Lyra-Base~\citep{zhong2024lyra} & 72.75 | 36.28 | 59.62 | 57.66
+\\ & MiniCPM-o~\citep{yao2024minicpm} & 78.02 | 49.25 | 97.69 | 71.69
+\\ & Baichuan-Omni-1.5~\citep{li2025baichuan} & 74.51 | 54.54 | 97.31 | 71.14
+\\ & Qwen2-Audio~\citep{qwen2audio} & 49.45 | 26.33 | 96.73 | 55.35  
+\\ & \method-7B & \textbf{81.10} | 52.87 | \textbf{99.42} | \textbf{74.12}
+\\
+\bottomrule
+
+\end{tabular}}
+\label{tab:audio_analysis_table_1}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Performance of \method and other models for Chatting, $^{\ast}$ means that approximately 90\% of text instructions suitable for speech are used.}
+\label{tab:voicechat-in-house}
+\small
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Datasets} & \textbf{Qwen2-7B} (text) & \textbf{Qwen2-Audio} & \textbf{\method-7B} \\
+\midrule
+MMLU$^{\ast}$ & 69.3 & 33.2 & 65.6 \\
+CEval$^{\ast}$ & 78.4 & 38.6 & 61.1 \\
+IFEval$^{\ast}$ & 53.3 & 15.6 & 41.7 \\
+GSM8K$^{\ast}$  & 82.3 & 18.4 & 85.4 \\
+Math23K$^{\ast}$ & 92.3 & 23.0 & 87.1 \\
+Math401$^{\ast}$ & 75.5 & 20.4 & 62.2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% Baichuan-Omni-1.5\citep{li2025baichuan}
+% MiniCPM-o~\citep{yao2024minicpm}
+% Lyra-Base~\citep{zhong2024lyra}
+% Megrez-3B-Omni ~\citep{Megrez-3B-Omni}
+% VITA-1.5 ~\citep{fu2025vita}
+\subsubsection{Performance of Image $\to$ Text}
+To comprehensively evaluate the capabilities on Image $\to$ Text, we compare \method with the recent state-of-the-art large vision language model Qwen2.5-VL-7B and other best-performing omni models. As illustrated in Table \ref{tab:image-benchmark}, \method demonstrates comparable performance to Qwen2.5-VL-7B, and attains better results on MMMU, MathVision, MMBench-V1.1-EN, TextVQA, DocVQA and ChartQA than any other open-sourced omni models.  Additionally, \method also surpasses GPT-4o-mini on most benchmarks. These results reveal the excellent capability of our model on image understanding. 
+
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Image $\to$ Text performance of 7B+ models and \method}}
+\label{tab:image-benchmark}
+\small
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Datasets} & \textbf{GPT-4o-mini} & \textbf{Qwen2.5-VL-7B} & \textbf{Other Best} &\textbf{\method-7B} \\
+\midrule
+\multicolumn{5}{c}{\textit{College-level Problems}} \\
+\midrule
+MMMU\textsubscript{val} & \textbf{60.0} & 58.6 & 53.9~\citep{li2025baichuan} & 59.2 \\
+MMMU-Pro\textsubscript{overall} & 37.6 & \textbf{38.3} & - & 36.6 \\
+\midrule
+\multicolumn{5}{c}{\textit{Mathematical}} \\
+\midrule
+MathVista\textsubscript{testmini} & 52.5 & 68.2 & \textbf{71.9}~\citep{yao2024minicpm} & 67.9 \\
+MathVision\textsubscript{full} & - & \textbf{25.1} & 23.1~\citep{yao2024minicpm}  & 25.0 \\
+\midrule
+\multicolumn{5}{c}{\textit{General Visual Question Answering}} \\
+\midrule
+MMBench-V1.1-EN\textsubscript{test} & 76.0 & \textbf{82.6} & 80.5~\citep{yao2024minicpm} & 81.8 \\
+MMVet\textsubscript{turbo} & 66.9 & 67.1 & \textbf{67.5}~\citep{yao2024minicpm} & 66.8 \\
+MMStar & 54.8 & 63.9 & \textbf{64.0}~\citep{yao2024minicpm} & \textbf{64.0} \\
+MME\textsubscript{sum} & 2003 & 2347 & \textbf{2372}~\citep{yao2024minicpm} & 2340 \\
+MuirBench & - & \textbf{59.6} & - & 59.2 \\
+% BLINK\textsubscript{val} & - & 56.4 & \textbf{56.7}~\citep{yao2024minicpm} & 55.1 \\
+CRPE\textsubscript{relation} & - &76.4 & - & \textbf{76.5} \\
+RealWorldQA\textsubscript{avg} & - &68.5 & \textbf{71.9}~\citep{Megrez-3B-Omni} & 70.3 \\
+MME-RealWorld\textsubscript{en} & - &57.4 & - &\textbf{61.6} \\
+MM-MT-Bench & - & \textbf{6.3} & - & 6.0 \\
+\midrule
+\multicolumn{5}{c}{\textit{OCR-related Tasks}} \\
+\midrule
+AI2D & - & 83.9 & \textbf{85.8}~\citep{yao2024minicpm} & 83.2\\
+TextVQA\textsubscript{val} & - & \textbf{84.9} & 83.2~\citep{li2025baichuan} & 84.4 \\
+DocVQA\textsubscript{test} & - & \textbf{95.7} & 93.5~\citep{yao2024minicpm} & 95.2 \\
+ChartQA\textsubscript{test Avg} & - & \textbf{87.3} &84.9~\citep{li2025baichuan}  &85.3 \\
+% OCRBench & - &864 &\textbf{897}~\citep{yao2024minicpm} & 863 \\
+OCRBench\_V2\textsubscript{en} & - &56.3 & - & \textbf{57.8} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For visual grounding, we compare \method with Qwen2.5-VL-7B and other leading LVLMs including Gemini and Grounding-DINO~\citep{liu2024groundingdinomarryingdino}. As illustrated in Table \ref{tab:image-grounding}, our model outperforms other models across most benchmarks from box-grounding to point-grounding and achieves a good performance of 42.2mAP on open-vocabulary object detection, which reveals the strong visual grounding capability of our model.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Grounding performance of \method and other models}}
+\label{tab:image-grounding}
+\small
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Datasets} & \textbf{Gemini 1.5 Pro} & \textbf{Grounding DINO} & \textbf{Qwen2.5-VL-7B} &\textbf{\method-7B} \\
+\midrule
+Refcoco\textsubscript{val} & 73.2 & \textbf{90.6} & 90.0 & 90.5 \\
+Refcoco\textsubscript{textA} & 72.9 & 93.2 & 92.5 & \textbf{93.5} \\
+Refcoco\textsubscript{textB} & 74.6 & \textbf{88.2} & 85.4 & 86.6 \\
+Refcoco+\textsubscript{val} & 62.5 & \textbf{88.2} & 84.2 & 85.4 \\
+Refcoco+\textsubscript{textA} &63.9 &89.0 & 89.1 & \textbf{91.0} \\
+Refcoco+\textsubscript{textB} &65.0 &75.9 & 76.9 & \textbf{79.3} \\
+Refcocog\textsubscript{val} &75.2 & 86.1 &87.2 & \textbf{87.4} \\
+Refcocog\textsubscript{test} & 76.2 & 87.0 & 87.2 & \textbf{87.9} \\
+ODinW & 36.7 & \textbf{55.0} & 37.3 & 42.2 \\
+PointGrounding & - & - & \textbf{67.3} & 66.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+\subsubsection{Performance of Video $\to$ Text}
+Similar to Image$\to$Text, we compare \method with Qwen2.5-VL-7B and other omni models. As shown in Table \ref{tab:video-benchmark}, \method outperforms all other state-of-the-art open-sourced omni models and GPT-4o-Mini, and attains better or competitive results compared to Qwen2.5-VL-7B, which demonstrates the superior performance on video understanding.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Video $\to$ text performance of 7B+ models and \method}}
+\label{tab:video-benchmark}
+\small
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Datasets} & \textbf{GPT-4o-mini} & \textbf{Qwen2.5-VL-7B} & \textbf{Other Best} &\textbf{\method-7B} \\
+\midrule
+\multicolumn{5}{c}{\textit{Video Understanding}} \\
+\midrule
+Video-MME\textsubscript{w/o sub} & 64.8 & \textbf{65.1} & 63.9~\citep{yao2024minicpm} & 64.3 \\
+Video-MME\textsubscript{w sub} & - & 71.6 & 67.9~\citep{yao2024minicpm} & \textbf{72.4} \\
+MVBench & - & 69.6 & 67.2~\citep{zhong2024lyra} &\textbf{70.3} \\
+EgoSchema\textsubscript{test} & - &65.0 & 63.2~\citep{zhong2024lyra} &\textbf{68.6} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Performance of Multimodality$\to$Text}
+As shown in Table \ref{tab:omnibench}, \method achieves state-of-the-art performance on OmniBench, surpassing other Omni models by a large margin, which demonstrates the superiority of our model in multimodality understanding.
+
+\begin{table}[t!]
+\centering
+\caption{Multimodality $\to$ Text performance of State-of-the-art and \method}
+\label{tab:omnibench}
+\vspace{-2mm}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{cccc}
+\toprule
+\textbf{Datasets} & \textbf{Model} & \textbf{Performance}  
+\\ \midrule \multicolumn{3}{c}{\textit{Multimodal Understanding}} 
+\\\midrule \multirow{8}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{OmniBench} \\ \textit{Speech} | \textit{Sound Event} | \\ \textit{Music} | \textit{Avg} \end{tabular}}   
+   & Gemini-1.5-Pro~\citep{team2024gemini}  & 42.67\% | 42.26\% | 46.23\% | 42.91\% 
+% \\ &Reka-core-20240501 &31.52\% | 26.04\% | 33.02\% | 30.39\%
+\\ &MIO-Instruct~\citep{wang2024mio} (7B) & 36.96\% | 33.58\% | 11.32\% | 33.80\%
+\\ &AnyGPT (7B)~\citep{zhan2024anygpt}  & 17.77\% | 20.75\% | 13.21\% | 18.04\%
+\\ &video-SALMONN (13B)~\citep{sun2024video} &34.11\% | 31.70\% | \textbf{56.60}\% | 35.64\%
+\\ &UnifiedIO2-xlarge (3.2B)~\citep{lu2024unified} &39.56\% | 36.98\% | 29.25\% | 38.00\%
+\\ &UnifiedIO2-xxlarge (6.8B)~\citep{lu2024unified} &34.24\% | 36.98\% | 24.53\% | 33.98\%
+\\ &MiniCPM-o~\citep{yao2024minicpm} & - | - | - | 40.5\%
+\\ &Baichuan-Omni-1.5~\citep{li2025baichuan} & - | - | - |  42.9\%
+\\ &\method-7B & \textbf{55.25}\% | \textbf{60.00}\% | 52.83\% | \textbf{56.13}\%
+\\
+\bottomrule
+
+\end{tabular}}
+\label{tab:omnibench}
+\end{table}
+
+\subsection{Evaluation of X$\to$Speech}
+In this section, we evaluate the speech generation capabilities of \method. Due to the lack of relevant assessments, the evaluation of speech generation focuses primarily speech generation given texts, similarity to text-to-speech (TTS), on two aspects: Zero-shot and Single-Speaker speech generation capabilities.
+
+\begin{itemize}
+    \item \textbf{Zero-Shot Speech Generation} We assessed the content consistency (WER) and speaker similarity (SIM) of our model in zero-shot speech generation on SEED~\citep{seedtts}.
+    \item \textbf{Single-Speaker Speech Generation} We assessed the stability of our speaker fine-tuned model on the SEED~\citep{seedtts}, and evaluated the subjective naturalness (NMOS) of the generated speech on a self-created dataset.
+\end{itemize}
+
+
+
+
+\begin{table}[t!]
+\centering
+\caption{Zero-Shot Speech Generation}
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}cll@{}}
+\toprule
+\textbf{Datasets} & \textbf{Model} & \textbf{Performance} \\
+\midrule
+\multicolumn{3}{c}{\textit{Content Consistency}} \\
+\midrule 
+\multirow{9}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{SEED} \\ \textit{test-zh} | \textit{test-en} | \\ \textit{test-hard} \end{tabular}}   
+   & Seed-TTS\textsubscript{ICL}~\citep{seedtts} & 1.11 | 2.24 | 7.58 \\ 
+   & Seed-TTS\textsubscript{RL}~\citep{seedtts}  & \textbf{1.00} | 1.94 | \textbf{6.42} \\ 
+   & MaskGCT~\citep{maskgct}                     & 2.27 | 2.62 | 10.27 \\ 
+   & E2 TTS~\citep{e2tts}                        & 1.97 | 2.19 | - \\ 
+   & F5-TTS~\citep{f5tts}                        & 1.56 | \textbf{1.83} | 8.67 \\ 
+   & CosyVoice 2~\citep{cosyvoice2}              & 1.45 | 2.57 | 6.83 \\
+   & CosyVoice 2-S~\citep{cosyvoice2}            & 1.45 | 2.38 | 8.08 \\
+   & \method-7B\textsubscript{ICL}                & 1.70 | 2.72 | 7.97 \\
+   & \method-7B\textsubscript{RL}                 & 1.42 | 2.33 | 6.54 \\
+\midrule
+\multicolumn{3}{c}{\textit{Speaker Similarity}} \\
+\midrule 
+\multirow{9}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{SEED} \\ \textit{test-zh} | \textit{test-en} | \\ \textit{test-hard} \end{tabular}}   
+   & Seed-TTS\textsubscript{ICL}~\citep{seedtts} & 0.796 | 0.762 | 0.776 \\ 
+   & Seed-TTS\textsubscript{RL}~\citep{seedtts}  & \textbf{0.801} | \textbf{0.766} | \textbf{0.782} \\ 
+   & MaskGCT~\citep{maskgct}                     & 0.774 | 0.714 | 0.748 \\ 
+   & E2 TTS~\citep{e2tts}                        & 0.730 | 0.710 | - \\ 
+   & F5-TTS~\citep{f5tts}                        & 0.741 | 0.647 | 0.713 \\ 
+   & CosyVoice 2~\citep{cosyvoice2}              & 0.748 | 0.652 | 0.724 \\
+   & CosyVoice 2-S~\citep{cosyvoice2}            & 0.753 | 0.654 | 0.732 \\
+   & \method-7B\textsubscript{ICL}                & 0.752 | 0.632 | 0.747 \\
+   & \method-7B\textsubscript{RL}                 & 0.754 | 0.641 | 0.752 \\
+\bottomrule
+\end{tabular}
+\label{tab:zero_shot_speech_generation_table}
+\end{table}
+
+
+
+
+\begin{table}[t!]
+\centering
+\caption{Single-Speaker Speech Generation}
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}clc@{}}
+\toprule
+\textbf{Datasets} & \textbf{Model} & \textbf{Performance} \\
+\midrule
+\multicolumn{3}{c}{\textit{Content Consistency}} \\
+\midrule 
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{SEED} \\ \textit{test-zh} | \textit{test-en} | \\ \textit{test-hard} \end{tabular}} 
+   & Human                                & \textbf{1.25} | 2.14 | - \\
+   & \method\textsubscript{RL}          & 1.30 | 2.33 | 6.54 \\
+   & \method\textsubscript{Speaker A}   & 1.29 | 1.86 | 6.59 \\
+   & \method\textsubscript{Speaker B}   & 1.37 | 1.89 | 7.25 \\
+   & \method\textsubscript{Speaker C}   & 1.30 | 2.13 | \textbf{6.43} \\
+   & \method\textsubscript{Speaker D}   & 1.28 | \textbf{1.83} | 7.16 \\
+\midrule
+\multicolumn{3}{c}{\textit{Naturalness}} \\
+\midrule 
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}\textbf{NMOS} \\ \textit{zh} | \textit{en} \end{tabular}} 
+   & Human                                & \textbf{4.51} | -     \\
+   & \method\textsubscript{Speaker A}   & 4.46 | 4.51 \\
+   & \method\textsubscript{Speaker B}   & \textbf{4.51} | \textbf{4.62} \\
+   & \method\textsubscript{Speaker C}   & 4.50 | 4.60 \\
+   & \method\textsubscript{Speaker D}   & 4.48 | 4.58 \\
+\bottomrule
+\end{tabular}
+\label{tab:zero_shot_speech_generation_table}
+\end{table}
+
+\subsubsection{Evaluation of Zero-Shot Speech Generation.}
+We compared the \method with state-of-the-art zero-shot TTS systems. As shown in Table 9, \method demonstrates highly competitive performance, highlighting its robust speech understanding and generation capabilities developed through in-context learning (ICL). Additionally, after reinforcement learning (RL) optimization, \method showed significant improvements in generation stability, with marked reductions in attention misalignment, pronunciation errors, and inappropriate pauses on the challenging test-hard dataset.
+
+\subsubsection{Evaluation of Single-Speaker Speech Generation.}
+We compared the \method model before and after speaker fine-tuning, as well as with human recordings. As shown in Table 10, the speaker-finetuned \method more precisely captured the nuanced prosodic styles of the target speakers while preserving the foundational stability provided by the base model, achieving performance that approaches human-level quality across both subjective and objective metrics.
