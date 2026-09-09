@@ -1,0 +1,39 @@
+\begin{table}[t]
+    \centering
+    \caption{
+        Results on SpokenQA and VoiceBench, with systems grouped by interaction regime.
+        Baseline numbers are taken from Audio-Interaction~\cite{AudioInteractionModel}.
+        SpokenQA columns and SD-QA report accuracy (\%); AlpacaEval is rated on a 1--5 scale,
+        and higher is better throughout. Within each group, \textbf{bold} marks the best and
+        \underline{underline} the second-best value of each column.
+    }
+    \label{tab:voicechat_main}
+    \small
+    \setlength{\tabcolsep}{6pt}
+    \renewcommand{\arraystretch}{1.10}
+    \adjustbox{max width=\textwidth}{%
+    \begin{tabular}{lccccc}
+        \toprule
+        \multirow{2}{*}{\textbf{Model}}
+        & \multirow{2}{*}{\textbf{Size}}
+        & \multicolumn{2}{c}{\textbf{SpokenQA}}
+        & \multicolumn{2}{c}{\textbf{VoiceBench}} \\
+        \cmidrule(lr){3-4} \cmidrule(lr){5-6}
+        & & Llama Q. & Web Q. & AlpacaEval & SD-QA \\
+        \midrule
+        \multicolumn{6}{l}{\emph{Turn-based models}} \\
+        Freeze-Omni~\cite{freezeomni2024}         & 7B & 72.00 & 44.73 & 4.14 & \underline{50.16} \\
+        Baichuan-Omni-1.5~\cite{baichuanomni15}   & 7B & \textbf{78.50} & \underline{59.10} & \textbf{4.50} & 43.40 \\
+        Qwen2-Audio~\cite{qwen2audio}             & 7B & 69.67 & 45.20 & 3.74 & 35.71 \\
+        Qwen2.5-Omni~\cite{qwen25omni}            & 3B & 66.00 & 27.95 & 4.32 & 49.37 \\
+        Qwen2.5-Omni~\cite{qwen25omni}            & 7B & \underline{75.33} & \textbf{62.80} & \underline{4.49} & \textbf{55.71} \\
+        Phi-4-multimodal~\cite{phi4mm2025}        & 5.6B & 60.20 & 26.60 & 3.81 & 39.78 \\
+        \midrule
+        \multicolumn{6}{l}{\emph{Full-duplex streaming models}} \\
+        Moshi~\cite{defossez2024moshi}            & 7B & 62.20 & 26.30 & 2.01 & 15.01 \\
+        Audio-Interaction~\cite{AudioInteractionModel} & 3B & \underline{67.31} & \underline{54.34} & \textbf{4.28} & \textbf{52.14} \\
+        \textbf{Gander}                           & 9B & \textbf{75.60} & \textbf{59.30} & \underline{3.96} & \underline{46.84} \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table}

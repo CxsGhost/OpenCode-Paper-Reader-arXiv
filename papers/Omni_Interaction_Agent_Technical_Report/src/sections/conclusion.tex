@@ -1,0 +1,22 @@
+\section{Conclusion and Future Work}
+
+
+In this work, we present Gander, a fully \textbf{\textit{end-to-end}} and \textbf{\textit{scalable architecture}} built upon a Brain–Cerebellum framework and a streaming chunk-based paradigm. Gander natively unifies Omni understanding, realtime interaction, and long horizon agentic execution. As an early exploration of this paradigm, Gander highlights several open challenges for future research.
+
+\begin{itemize}
+
+\item \textbf{Data and Model Scaling.} Our experiments show that agent invocation and conversational behavior remain sensitive to training data distribution, especially in complex omni scenarios. \textit{Scaling data and model capacity is critical to improving the robustness and generalization of interactive and agentic capabilities}. We will further study systematic scaling in our industrial foundation model Hy-Realtime.
+
+\item \textbf{Stable Post Training.} The current Gander model has not yet been extensively optimized with on-policy distillation~\cite{xopd,x3opd} (OPD) or reinforcement learning~\cite{shao2024deepseekmath,chen2026wavalign,ji2025wavreward,dualreasoner} (RL) for long horizon Omni Interaction Agent scenarios. Effective reward design, credit assignment, and optimization stability remain open challenges, particularly under joint multimodal interaction and agentic execution. The Brain–Cerebellum architecture further introduces new considerations for coordinating local interaction quality with global task objectives, motivating the development of more stable and scalable post-training methods.
+
+ 
+\item \textbf{Brain–Cerebellum Architectural Exploration.} The Brain–Cerebellum framework enables low latency streaming interaction and long horizon reasoning. The current design primarily relies on ASR derived signals for communication between the two components. Future work should explore richer and more structured bidirectional communication, including improved information transfer from the Brain to the Cerebellum and more effective feedback from the Cerebellum to the Brain, to better coordinate realtime interaction and long horizon reasoning.
+
+\item \textbf{Memory and Long Context Management.} Omni agentic interaction involves long multimodal histories, tool calls, and evolving task states, posing challenges for long horizon context and memory management~\cite{xie2026voicemem}. Developing efficient mechanisms for retaining and retrieving task-relevant information over extended interactions is an important direction for future work.
+
+\item \textbf{Evaluation.} Existing benchmarks largely evaluate omni understanding, duplex interaction, and agentic execution in isolation, leaving the unified omni interaction agent setting insufficiently evaluated. In addition, existing benchmarks do not adequately capture Brain–Cerebellum collaboration, including inter component communication and coordination. A unified evaluation framework for omni interaction agents is still largely missing.
+
+
+\end{itemize}
+
+Overall, Gander provides an initial foundation for a unified omni interaction agent architecture. Further progress toward reliable long horizon deployment depends on advances in scaling, post training, Brain–Cerebellum coordination, memory, and evaluation, especially for sustained realtime interaction and complex task execution.

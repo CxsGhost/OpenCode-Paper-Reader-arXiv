@@ -1,0 +1,89 @@
+\input{paper_template}
+
+\input{sections/math_commands}
+\input{sections/mypackage}
+
+
+\title{Omni Interaction Agent Technical Report}
+
+
+ % Technical Report
+
+
+\makeatletter
+\def\AB@authnote#1{}
+\def\AB@affilnote#1{}
+\renewcommand\AB@affilsepx{\protect\\ \protect\Affilfont}
+\makeatother
+
+
+% \author{
+% Tencent Hunyuan Speech Team
+% }
+
+
+
+
+
+\author{
+Orantqing$^{*1}$ \quad Shengpeng Ji$^{*\dagger1}$ \quad Junlong Tong$^{*1,3}$ \quad Jialong Zuo$^{*1}$ \\ Dongjie Fu$^{1,2}$ \quad Di Cao$^1$ \quad Yangzhuo Li \quad Shangda Wu$^1$ \quad Franz \quad Evan \quad Theron Veyra \quad Changhao Pan$^2$ \quad Jingyu Lu$^2$ \quad Dongchao Yang$^4$ \quad Zhifei Xie$^5$ \quad Yang Tan \quad Xiaoyu Shen  \quad Xiaoda Yang$^2$ \quad Wenfu Wang$^1$ \quad Teddysun$^1$ \quad Steveyves$^1$ \quad Zhou Zhao$^2$ \quad Bryanytian$^1$ 
+}
+
+
+\affil{$^1$Hunyuan Speech Team, Tencent; \quad $^2$Zhejiang University; \quad $^3$Shanghai Jiao Tong University}
+\affil{$^4$The Chinese University of Hong Kong; \quad $^5$Nanyang Technological University}
+
+
+% \footnotetext{
+% $^*$Equal contribution.\quad
+% $^\dagger$Corresponding author. 
+% Email: \texttt{orantqing@gmail.com, shengpengji@zju.edu.cn}
+% }
+
+\footnotetext{\mbox{$^*$Equal contribution.\quad $^\dagger$Corresponding author.\quad Email: \texttt{orantqing@gmail.com, shengpengji@zju.edu.cn}}}
+
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\begin{document}
+
+\maketitle
+
+\vspace{-1em}
+
+% \begin{center}
+%     \begin{tabular}{c l}
+%         \raisebox{-0.15\height}{\includegraphics[height=17pt]{figures/shengpeng/log4.png}} &
+%         \href{https://Omni-Interaction-Gander.github.io/Omni-Interaction-Agent}{https://Omni-Interaction-Gander.github.io/Omni-Interaction-Agent}
+%         \\[6pt]
+%         \raisebox{-0.15\height}{\includegraphics[height=16pt]{figures/shengpeng/github.png}}       &
+%         \href{https://github.com/Omni-Interaction-Gander/Omni-Interaction-Agent}{https://github.com/Omni-Interaction-Gander/Omni-Interaction-Agent}
+%     \end{tabular}
+% \end{center}
+
+
+\begin{center}
+    \begin{tabular}{c l}
+        \raisebox{-0.15\height}{\includegraphics[height=17pt]{figures/shengpeng/log4.png}} &
+        \textbf{Project Page: }\href{https://Omni-Interaction-Gander.github.io/Omni-Interaction-Agent}{https://Omni-Interaction-Gander.github.io/Omni-Interaction-Agent}
+        \\[6pt]
+        \raisebox{-0.15\height}{\includegraphics[height=16pt]{figures/shengpeng/github.png}} &
+        \textbf{Code: }\href{https://github.com/Omni-Interaction-Gander/Omni-Interaction-Agent}{https://github.com/Omni-Interaction-Gander/Omni-Interaction-Agent}
+    \end{tabular}
+\end{center}
+
+\input{sections/abstract}
+\input{sections/introduction}
+\input{sections/relatedworks_v3}
+\input{sections/bench}
+\input{sections/Data_Training}
+\input{sections/experiment}
+\input{sections/conclusion}
+
+\bibliography{ref}
+
+
+\input{sections/appendix}
+
+\end{document}

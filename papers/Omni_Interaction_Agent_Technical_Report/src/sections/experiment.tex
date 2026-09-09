@@ -1,0 +1,377 @@
+\section{Experiments}
+\label{sec:main_results}
+
+We evaluate Gander along the three axes that its architecture is designed to serve:
+full-duplex interaction with tool use, spoken conversational ability, and omni understanding
+over audio-visual streams. The three differ in how much of the system they exercise, from
+full-duplex interaction, which engages it completely, to omni understanding, which reduces it
+to the front cerebellum answering in text. Read together they therefore also serve a diagnostic
+purpose: they separate what the interaction-oriented training buys from what it costs, and
+localize the remaining failures to specific components rather than to the architecture as a
+whole. Because the settings differ in scoring protocol and in which components participate,
+their scores are not commensurable and we report them separately.
+
+\subsection{Evaluation Setup}
+\label{sec:eval_setup}
+
+\paragraph{Model under evaluation.}
+All results are obtained from a single Gander checkpoint, with the Talker and the streaming
+speech decoder attached wherever speech output is required. Decoding parameters and the streaming
+unit format are identical across evaluations, and the front cerebellum's system prompt is
+byte-identical to the one used during training, with no benchmark-specific tuning. Where the back
+brain participates, it is instantiated training-free through the Codex worker provider of
+Section~\ref{sec:e_bench}, driven by GPT-5.6, and may call only the tools the benchmark exposes.
+
+\paragraph{Full-duplex interaction.}
+We use Full-Duplex-Bench~v3~\cite{fullduplexbench_v3}, which places a spoken assistant in
+tool-augmented service scenarios containing natural disfluencies, and evaluate all 100
+scenarios. It reports tool-selection F1 (ToolSel), argument correctness (ArgAcc), whether the
+spoken reply satisfies the user's intent (RespQual), a strict binary Pass@1 requiring the tool
+multiset to be exactly correct with every argument right, and three interaction metrics: the
+fractions of turns taken at an appropriate moment (Take-turn), begun before the user has
+finished (Interrupt), and prefaced by a conversational placeholder (Filler). The last comes from
+the suite's LLM-based latency analysis and is defined over the 91 of 100 scenarios that take the
+turn without interrupting and for which that analysis returns a verdict. We run the released
+scoring scripts unmodified, with the GPT-4o judge used by the baseline protocol, and evaluate
+the deployed stack end to end: audio enters the Thinker, the Talker and speech decoder
+synthesize a reply, and scoring reads an ASR transcript of that audio, so all reported numbers
+include real speech-synthesis and recognition error. One asymmetry required
+correction. The benchmark's system prompt instructs baselines to execute tools immediately
+rather than ask clarifying questions, but the back brain, being an external agent, never
+receives it; we therefore place a contract file carrying the same requirement in its working
+directory so that both sides operate under equivalent instructions, leaving the front
+cerebellum's prompt untouched. To separate the two tiers we additionally report a
+back-brain-only condition that bypasses the front cerebellum and the audio path, driving the
+same agent and tool server from the transcript of the user turn. Lacking an audio timeline, it
+supports none of the three interaction metrics, so we leave those blank rather than report a
+zero or a degenerate one.
+
+\paragraph{Spoken conversation.}
+We evaluate on the SpokenQA subsets Llama Questions and Web Questions and on the VoiceBench
+subsets AlpacaEval and SD-QA~\cite{voicebench2025}, totalling 2{,}052 utterances, and adopt
+the baseline table of Audio-Interaction~\cite{AudioInteractionModel} for comparison. Speech
+enters the Thinker directly and the response it produces is scored as text; open-ended
+responses are rated by a GPT-4o judge following the baseline protocol. Since the compared
+systems differ in whether they must commit to their output while the user is still speaking, we
+group them by interaction regime and read the comparison primarily within the full-duplex
+group.
+
+\paragraph{Omni understanding.}
+We evaluate on WorldSense~\cite{worldsense2025} and Daily-Omni~\cite{dailyomni2025}, comprising
+4{,}369 multiple-choice questions. Prompts and the two-stage answer-extraction procedure
+follow the upstream harnesses, answers are graded by exact letter matching with no LLM judge,
+and questions whose answer cannot be extracted are counted as incorrect rather than discarded.
+Decoding is greedy, so the evaluation is deterministic. This setting is turn-based: the whole
+question is available before decoding begins, no speech is synthesized, and the back
+brain is not involved, so it measures the front cerebellum's perceptual and reasoning ability
+rather than its interaction behavior. To quantify how much the model actually integrates
+across modalities, we additionally run each question under three input conditions, presenting
+audio and video jointly, video only, and audio only, for 13{,}107 inferences in total.
+
+\subsection{Full-Duplex Interaction}
+\label{sec:result_duplex}
+
+\input{tables/exp_duplex.tex}
+
+Gander sets the best turn-taking behavior in the table. It takes the floor at an appropriate
+moment in all 100 scenarios, matched only by the cascaded pipeline, and begins speaking
+prematurely in just 8.0\% of turns, against 13.5\% for GPT-Realtime and 47.9\% for the weakest
+baseline. This is the axis a full-duplex architecture exists to win, and Gander wins it outright
+against six commercial and open systems while running a 9B model. On the four task-accuracy
+metrics it trails, though by a narrow margin at the lower end of the table: Pass@1 is 0.400
+against 0.410 for the weakest baseline and 0.600 for the strongest, with ToolSel and ArgAcc at
+0.759 and 0.503 against that same baseline's 0.794 and 0.513.
+
+The two timing metrics must be read jointly, because a system can trivially suppress
+interruptions by waiting longer, at the cost of missing its turn altogether. Both failure modes
+appear in the table: Gemini~Live~3.1 keeps interruptions to 19.2\% but answers in only 78.0\% of
+scenarios, while the cascaded pipeline buys a perfect turn-take rate with a 33.0\% interruption
+rate, the signature of an external endpointer committing to an utterance boundary from acoustics
+alone, before the semantics that would reveal the user is mid-thought are available. Gander
+concedes neither, which supports predicting the interaction decision before any content is
+generated: the decision is conditioned on the same evolving representation that will produce the
+response, so it can be deferred until the utterance is semantically complete rather than merely
+acoustically quiet. Its 51.6\% filler rate is the one interaction metric on which it does not
+lead. Filler marks the interval between taking the floor and delivering the answer, so unlike the
+other two it does not describe when the model chooses to speak; for a system that cannot fall
+silent while a delegated task runs, holding the floor is the appropriate behavior, and the rate
+reflects how often work is handed to the back brain rather than a defect in interaction timing.
+
+The accuracy gap is best read against the last row, which reports the back brain driven directly
+from the user transcript. In that text-mediated regime, where the cascaded pipeline is the
+appropriate comparison, it reaches Pass@1 0.520 against 0.450 and RespQual 0.740 against 0.600,
+while its ToolSel of 0.934 exceeds every other system in the table, GPT-Realtime's 0.876
+included. The execution tier is therefore not the limiting factor: the same agent and the same
+tool set score above every baseline on tool selection once the front cerebellum and the speech
+channel are removed from the path. Two effects separate that row from the end-to-end system.
+The composite must decide for itself when to delegate, and it is scored on an ASR transcript of
+synthesized speech rather than on text, which the RespQual drop from 0.740 to 0.490 is consistent
+with. These runs do not separate the two, but both are properties of the training format and the
+deployment path rather than of the architecture, and so are addressable by revising the recipe
+rather than the system design.
+
+\subsection{Spoken Conversation}
+\label{sec:result_voicechat}
+
+\input{tables/exp_voicechat.tex}
+
+Gander leads the full-duplex group on both knowledge-oriented subsets of
+Table~\ref{tab:voicechat_main}, reaching 75.60 and 59.30 on SpokenQA, ahead of Audio-Interaction
+by 8.29 and 4.96 points and of Moshi by more than thirteen and thirty-three, and places second in
+the group on the two VoiceBench subsets, 0.32 below Audio-Interaction on AlpacaEval and 5.30 below
+it on SD-QA. We read the comparison within groups because the regimes are not equally
+constrained: a turn-based model receives the utterance in full and may allocate arbitrary
+computation before emitting anything, whereas a full-duplex model consumes it on a fixed
+frame-level schedule and must additionally judge, at every step, whether the utterance is
+finished. No metric here exercises that extra decision, which the preceding subsection measures
+directly.
+
+The result also holds against the turn-based systems. Across the full field of nine, none of
+which operates under the streaming constraint, Gander's SpokenQA scores still place second on
+both subsets, 2.90 points behind Baichuan-Omni-1.5 on Llama Questions and 3.50 behind
+Qwen2.5-Omni-7B on Web Questions, while AlpacaEval and SD-QA place sixth and fifth. That a
+frame-synchronous model matches turn-based ones on spoken factual question answering is the main
+point of the table: the streaming formulation does not by itself cost the knowledge retained in
+the language backbone. The two weaker columns indicate what interaction training does not supply,
+being an open-ended generation task rated for overall response quality and a subset stressing
+accented speech. Interaction supervision consists overwhelmingly of short conversational turns
+emitted a few tokens at a time, so it neither rewards extended discursive composition nor
+broadens acoustic coverage beyond the base model's; the first is addressable by adding long-form
+response supervision, the second by widening the accent distribution of the speech data.
+
+The back brain remained available throughout this evaluation but was never invoked on any of the
+2{,}052 samples, so every score in Table~\ref{tab:voicechat_main} is the front cerebellum acting
+alone. That is the intended behavior: the routing policy escalates long-horizon tool work, which
+the preceding subsection exercises, and not self-contained question answering. Such selectivity is
+what makes a two-tier design more than an added latency cost, since indiscriminate escalation
+would forfeit the compact tier's latency advantage. The corollary is that this table says nothing
+about back-brain execution quality.
+
+\subsection{Omni Understanding}
+\label{sec:result_omni}
+
+\input{tables/exp_omni.tex}
+
+Gander retains competitive omni understanding despite training exclusively for interaction,
+reaching 49.62 on WorldSense and 78.53 on Daily-Omni in Table~\ref{tab:omni_main}. On Daily-Omni
+it stays within 1.67 points of its MiniCPM-o~4.5 initialization while remaining ahead of
+Qwen3-Omni's 70.70. Since that initialization is itself the strongest of the three published
+systems on both benchmarks, the comparison functions as a regression test against the model we
+started from rather than a ranking against external baselines, and the retention is the notable
+part, given that no part of the interaction corpus is video question-answering supervision. Two
+facts bound the WorldSense regression of 6.08 points. The vision tower is bit-for-bit unchanged,
+frozen throughout training and absent from the resulting checkpoint, so none of the regression can
+be attributed to degraded visual encoding; and the video material in the interaction corpus
+consists largely of irrelevant-context distractors that teach the model to ignore unrelated visual
+events. What the table measures is therefore the base model's visual representation combined with
+Gander's post-training answering behavior.
+
+The asymmetry between the two benchmarks shows that interaction training preserves precisely the
+capability it exercises. A uniform loss of language ability would depress both scores similarly;
+instead Daily-Omni falls by less than two points while WorldSense falls by more than six, and the
+two differ in what they demand, Daily-Omni testing temporal reasoning over audio-visual alignment
+and WorldSense probing fine-grained perceptual attributes such as counting and localization. What
+the corpus rewards, reasoning over a jointly evolving stream, is retained almost in full; what it
+never rewards, attribute-level inspection of a static clip, is where the cost falls. We state this
+as the present trade-off rather than explain it away.
+
+The ablation in Table~\ref{tab:omni_ablation} confirms that the model genuinely fuses the two
+streams rather than leaning on a dominant one. Presenting both together outperforms the better
+single stream by 5.01 points on WorldSense and 19.13 on Daily-Omni, and neither benchmark is
+carried by one modality: video and audio alone land within 1.3 points of each other on WorldSense
+and within 1.6 on Daily-Omni, so the joint condition is not simply tracking whichever stream is
+stronger. The size of the gain follows what each benchmark demands. Daily-Omni tests temporal
+reasoning over audio-visual alignment, where neither stream is sufficient alone, and gains 19.13
+points; WorldSense probes fine-grained perceptual attributes that are often available from a single
+modality, and gains 5.01. A model merely concatenating features would show no such dependence on
+the task's alignment demands.
+
+
+
+
+
+
+
+
+
+% \subsection{Training Setup}
+% \label{sec:training_setup}
+
+% We initialize the front cerebellum from MiniCPM-o~4.5 and optimize it in two sequential stages: Thinker training and Talker training.
+
+% \paragraph{Training data.}
+% As summarized in Table~\ref{tab:thinker_training_data}, the Thinker
+% was trained on 2,660,301 examples covering spoken full-duplex
+% interaction, native video interaction, agent and tool use,
+% tool-assisted reasoning, and simultaneous speech translation.
+% The foundational-dialogue and basic-capability data were internally
+% constructed. Within the agent and tool-use data, 52,186 tool-routing
+% synthesis examples were internal.
+
+% \paragraph{Streaming format.}
+% All training examples are organized into fixed one-second streaming units. Within each unit, video frames and microphone audio are serialized first, followed by optional typed user input or tool results, the interaction decision or tool action, and assistant text. The Thinker predicts exactly one action for each unit: \texttt{listen}, \texttt{speak}, \texttt{interrupt}, or a complete structured tool call. A \texttt{speak} unit contains at most eight lexical text tokens and is aligned with 50 S3 speech tokens. Typed queries are inserted only once, at the unit in which they arrive, after the corresponding audio-visual observations.
+
+% Audio is sampled at \(16\,\mathrm{kHz}\). The first frontend chunk spans \(1{,}035\,\mathrm{ms}\), while subsequent chunks advance by \(1\,\mathrm{s}\) with a \(20\,\mathrm{ms}\) right-context guard. Sequences longer than 16,384 model tokens are removed rather than truncated. For long-context training, we use a causal 4-D attention mask that retains at most 128 preceding units and 1,500 preceding-context tokens.
+
+% The reported non-benchmark portion of the training corpus contains 2,660,301 examples from 95 manifests. At the manifest-row level, 44.81\% of the examples are spoken full-duplex interactions, 41.22\% are native video interactions, 13.25\% are agent and tool-use interactions, and 0.71\% are simultaneous speech-translation examples. Benchmark-oriented manifests are excluded from these statistics, while augmented and irrelevant-video variants are counted as separate examples. All configured rows are used once during the Thinker epoch. Training sources are interleaved using smooth weighted fair queuing, with source weights proportional to source size when no explicit weight is specified. Rows are deterministically shuffled with random seed 42. We further apply data-type-specific audio augmentation, including ambient noise, babble, transient sounds, device coloration, room acoustics, and echo. Video augmentation preserves the internal timeline, while endpoint idle augmentation adds one to three silent units with probability 0.25, increased to 0.70 for video examples.
+
+% \paragraph{Thinker training.}
+% During the first stage, we freeze the vision encoder, visual resampler, audio encoder, and all speech-generation modules, and optimize only the LLM and audio projection layer. This results in 8.210B trainable parameters out of 9.024B instantiated parameters, corresponding to 90.98\% of the model.
+
+% The Thinker is trained for one epoch, corresponding to 8,407 optimization steps, on 40 nodes with 8 GPUs per node. We use a micro-batch size of one per GPU, no gradient accumulation, and a global batch size of 320 examples. Training is performed in BF16 using AdamW with
+% \(\beta_1=0.9\), \(\beta_2=0.999\), and \(\epsilon=10^{-8}\).
+% The learning rates are \(2\times10^{-6}\) for the LLM and
+% \(1\times10^{-5}\) for the audio projection layer. We apply a 3\% linear warmup followed by linear learning-rate decay, set weight decay to zero, and clip the gradient norm at 1.0. The training objective is
+% \begin{equation}
+%     \mathcal{L}_{\mathrm{Thinker}}
+%     =
+%     \mathcal{L}_{\mathrm{text}}
+%     +
+%     1.5\,\mathcal{L}_{\mathrm{control}},
+% \end{equation}
+%  Gradient checkpointing and DeepSpeed ZeRO-2 are used to reduce memory consumption.
+
+% \paragraph{Talker training.}
+% In the second stage, we load the final Thinker checkpoint and keep both the LLM and audio projection layer frozen. Only the TTS projector and TTS decoder are optimized, resulting in 319.4M trainable parameters. The Talker is trained on 494,654 examples.
+
+% We train the Talker for two epochs, corresponding to 1,802 optimization steps, using 320 GPUs, a global batch size of 320 examples, and BF16 precision. Both the TTS projector and decoder use a learning rate of \(2\times10^{-5}\), with a 3\% warmup followed by linear decay. We set weight decay to 0.01 and clip the gradient norm at 1.0. Speech targets are loaded from a precomputed S3-code cache, and the hidden states produced by the Thinker are detached so that no gradient is propagated into the Thinker. 
+% The per-unit alignment remains eight text tokens to 50 S3 speech tokens. Talker training also uses DeepSpeed ZeRO-2.
+
+% All experiments are implemented with PyTorch~2.6.0, CUDA~12.4, Transformers~4.51.0, and DeepSpeed~0.19.2.
+
+
+
+
+% \subsection{Evaluation Setup}
+% \label{sec:evaluation_setup}
+
+
+
+% \subsection{Main Result}
+% \label{sec:result}
+
+
+% \input{tables/main_results.tex}
+
+% \subsection{Evaluation Setup}
+
+% \textbf{Models.} We evaluate $11$ frontier LLMs, choosing a representative model from each developer at the time of our experiments: GPT-5.5, Opus-4.8, Grok-4.5, GLM-5.2, Qwen-3.7-Max, Hy3, Seed-2.1-Pro, Gemini-3.5-Flash, MiniMax-M3, Kimi-K3, DeepSeek-V4-Pro and Muse-Spark-1.1\footnote{Due to Meta's strict content moderation, Muse-Spark-1.1 results are reported only in Appendix~\ref{subsec:muse_spark_1.1}, Table~\ref{tab:muse_spark}.}. Each model is run as an agent with their highest available thinking effort using a shared harness which exposes each domain's MCP tools and manages the multi-turn interaction loop. 
+
+% \textbf{Experiment and metrics.} Each task is attempted in three independent trials, with every trial starting from a fresh, isolated copy of the domain database to prevent cross-trial interference. A trial succeeds only if the agent's final database state exactly matches the ground-truth diff under our deterministic rule-based verifier; otherwise, it receives no partial credit. We report three metrics of increasing strictness. \emph{Avg@3} is the per-trial success rate averaged over all tasks and trials, measuring typical performance on average. \emph{Pass@3} counts a task as solved if at least one of its three trials succeeds. \emph{Pass$^3$} requires all three trials to succeed, measuring reliability; the gap between Pass@3 and Pass$^3$ reveals how consistently a model reproduces the correct state change.
+
+% \textbf{Efficiency measures.} Beyond accuracy, we record the number of tool calls, number of agent action turns, and input/output tokens average across tasks
+% for evaluating interaction cost and characterizing agent efficiency.
+% We evaluate all models under both the base \texttt{E-Bench}, where solvers access only domain-specific MCP tools, and \texttt{E-Bench}-Code, which additionally provides \verb|exec_code|.
+
+
+% \subsection{Main Results}
+
+% Table~\ref{tab:ebench_cli_comparison} reports the performance of all evaluated models on \texttt{E-Bench}, ranked by Avg@3, together with \texttt{E-Bench}-Code results tested under the code-execution setting. 
+% Figure~\ref{fig:ebench_cli_by_domain} and Figure~\ref{fig:ebench_cli_by_domain_toolcalls} compare the per-domain Avg@3 and the per-domain interaction cost (number of MCP tool calls and agent action turns) for each model under these two settings.
+
+% \begin{figure}[t]
+% \centering
+%     \includegraphics[width=\textwidth]{figures/domain_bars.pdf}
+%     \caption{
+%     Per-domain Avg@3 (\%) for the $11$ evaluated models. 
+%     Models are ordered by \texttt{E-Bench} Avg@3.
+%     }
+%     \label{fig:ebench_cli_by_domain}
+% \end{figure}
+
+% \begin{figure}[t]
+% \centering
+%     \includegraphics[width=\textwidth]{figures/domain_bars_toolcalls.pdf}
+%     \caption{
+%     Per-domain MCP tool calls per task (top row) and number of turns per task (bottom row) for the $11$ evaluated models. 
+%     Models are ordered by \texttt{E-Bench} Avg@3.
+%     }
+%     \label{fig:ebench_cli_by_domain_toolcalls}
+% \end{figure}
+
+% \subsubsection{\texttt{E-Bench}}
+
+% \textbf{Multi-step tool use remains far from solved.}
+% Even the strongest agents leave substantial headroom on \texttt{E-Bench}. Kimi-K3 achieves the highest Avg@3 at $73.79\%$, followed by GPT-5.5, Opus-4.8, and Grok-4.5, all of which exceed $66\%$, while no other model exceeds $53\%$.
+% Also, across all $11$ models, Avg@3 averages only $54.56\%$. This indicates that a typical agent fails on nearly half of the tasks in a single attempt.
+
+% \textbf{Reliability remains the central bottleneck.}
+% The gap between Pass@3, Avg@3, and Pass$^3$ shows that many agents succeed only intermittently, with substantially higher Pass@3 compared to Pass$^3$. Even top models are non-robust: Kimi-K3 drops from $87.62\%$ Pass@3 to $58.82\%$ Pass$^3$, and GPT-5.5 drops from $82.97\%$ to $57.59\%$. For weaker models, reliability nearly collapses. As \texttt{E-Bench} requires exact state changes with no partial credit, such instability is practically significant: agents that solve tasks only occasionally are not yet dependable for modifying live product state.
+
+% \subsubsection{\texttt{E-Bench}-Code}
+% \textbf{Code execution raises the performance of all models, but reliability remains limited.}
+% Granting agents \texttt{exec\_code} in \texttt{E-Bench}-Code improves Avg@3 for all evaluated models, whether the model is strong or not. The gains are substantial: Opus-4.8 rises from $68.78\%$ to $81.11\%$, taking the top spot over Kimi-K3 and GPT-5.5; Gemini-3.5-Flash climbs from $42.62\%$ to $62.54\%$---a striking $46.7\%$ relative improvement; weaker models like DeepSeek-V4-Pro also gain a $38.32\%$ relative improvement.%
+% However, even with code execution, the best Pass$^3$ (Opus-4.8) remains below $70\%$ and the worst is only $21.13\%$, leaving substantial room for reliability improvement.
+
+% \textbf{Code execution reshuffles the leaderboard benefiting stronger code users.}
+% Models whose rankings rise on the leaderboard tend to be those that exploit \verb|exec_code| effectively: Gemini-3.5-Flash from $9^{th}$ to $6^{th}$, while Opus-4.8 (a known strong coder) takes the top position instead of the third place it holds in \texttt{E-Bench}. These models route a large fraction of their interaction through code (e.g., $95\%$ for Gemini-3.5-Flash and $93\%$ for Opus-4.8), replacing many individual tool calls with compact programs (i.e., often calling domain-specific functions inside \texttt{exec\_code}, rather than direct calling their corresponding MCP tools). We analyze this behavior further in Section~\ref{subsec:code_help_for_task_of_different_difficulty}.
+
+% \textbf{Code execution improves accuracy while cutting cost.}
+% The performance gains from \verb|exec_code| come with markedly \emph{lower} interaction cost. As shown in Figure~\ref{fig:ebench_cli_by_domain_toolcalls}, enabling \texttt{exec\_code} reduces the average number of MCP tool calls per task from $60.42$ to $15.86$ (a $73.8\%$ drop) and agent turns from $14.87$ to $9.87$ (a $33.6\%$ drop), averaged over $11$ models and three domains.
+% As stated in the previous section, the reduction comes from a single \verb|exec_code| block folding multi-turn domain-function calls into one top-level action.
+% Together with the Avg@3 gains in Figure~\ref{fig:ebench_cli_by_domain}, this shows that \texttt{exec\_code} enables models to solve more tasks while reaching solutions at lower cost. Further analysis of how these improvements are distributed across tasks appears in Section~\ref{subsec:code_help_for_task_of_different_difficulty}.
+
+% \subsection{How Does Difficulty Vary Across Domains? Per-domain Analysis}
+
+% We further analyze each domain separately. Figure~\ref{fig:ebench_cli_by_domain} plots per-model Avg@3 across the three domains.
+
+% \textbf{Domain difficulty and code-execution gains are both uneven.}
+% Figure~\ref{fig:ebench_cli_by_domain} shows that \emph{Honor of Kings} is the most challenging domain, while \emph{QQ Music} is the easiest. Under \texttt{E-Bench}, average Avg@3 is $43.64\%$, $58.87\%$, and $61.39\%$ for \emph{Honor of Kings}, \emph{Tencent Meeting}, and \emph{QQ Music}, respectively. With \texttt{E-Bench}-Code, these rise to $52.36\%$, $67.78\%$, and $71.94\%$. \emph{QQ Music} benefits most from code execution, gaining $10.55$ points on average, compared with $8.72$ and $8.91$ points for \emph{Honor of Kings} and \emph{Tencent Meeting}. This matches its capability mix: \emph{QQ Music} contains more tasks requiring retrieval and aggregation of large amounts of data (e.g. \emph{Full-Data Acquisition} and \emph{Aggregation and Computation} tasks), and fewer tasks requiring reasoning for decision making (e.g. \emph{Precise Boundary Judgment} tasks), which \verb|exec_code| can accelerate (Section~\ref{subsec:code_help_for_category}).
+
+% \textbf{Most model rankings vary across domains.}
+% Across domains and settings, Kimi-K3, GPT-5.5, and Opus-4.8 form the frontier tier, with Grok-4.5 as a strong second tier. However, rankings are highly domain-sensitive. For example, Grok-4.5 is the best base-\texttt{E-Bench} model on \emph{QQ Music} but only mid-pack on \emph{Honor of Kings}.
+% Below the frontier, models cluster closely and reorder substantially across domains.
+% Rankings also shift by setting, as \texttt{exec\_code} disproportionately benefits strong code users. 
+% These results show that robust multi-step tool-use evaluation requires coverage across diverse domains rather than focusing on a single domain.
+
+
+% \subsection{Where Does Code Execution Help? Per-Capability Analysis}\label{subsec:code_help_for_category}
+
+% \input{tables/exec_code_lift.tex}
+
+
+% To further identify where \texttt{exec\_code} helps, Table~\ref{tab:exec_code_lift} decomposes the Avg@3 gain from adding \texttt{exec\_code} by capability, averaged over the $11$ evaluated models. 
+
+% \textbf{Code execution helps computation more than reasoning.}
+% As shown in Table~\ref{tab:exec_code_lift}, the largest gains from \texttt{exec\_code} appear in mechanically intensive capabilities: \emph{Multi-Condition Filtering}, \emph{Full-Data Acquisition}, and \emph{Aggregation and Computation}, 
+% with highest absolute and relative Avg@3 improvements at the same time.
+% These tasks require exhaustive retrieval, exact filtering, aggregation, and intermediate-result tracking, which code can handle reliably through loops and iterations. In contrast, gains are smaller for \emph{Cross-Step Dependency} and \emph{Precise Boundary Judgment},
+% as these capabilities depend more on selecting the right entities, dependencies, thresholds, or action order. Thus, \texttt{exec\_code} primarily offloads computation rather than reasoning and decision making, explaining both its large average gains and the remaining headroom in \texttt{E-Bench}-Code.
+
+
+% \subsection{When Do Models Choose to Code? Per-Task Analysis}\label{subsec:code_help_for_task_of_different_difficulty}
+
+% \begin{figure}[htbp]
+% \centering
+%     \includegraphics[width=\textwidth]{figures/exec_code_coverage.pdf}
+%     \caption{
+%         Comparison of task outcomes under \texttt{E-Bench}-Code, grouped by whether \emph{all} trials used \texttt{exec\_code} (all-C), \emph{none} used \texttt{exec\_code} (no-C), or usage was mixed across trials (partial). 
+%         Results are first averaged across trials and then across tasks.
+%         Results for three models are shown, with paired \texttt{E-Bench} results included as references.
+%     }
+%     \label{fig:exec_code_coverage}
+% \end{figure}
+
+% Another interesting observation is that, even when \texttt{exec\_code} is available under \texttt{E-Bench}-Code, many models still solve some of the tasks without using it, either consistently or sporadically across trials. Figure~\ref{fig:exec_code_coverage} groups tasks by \texttt{exec\_code} usage across three trials: all trials use it (all-C), no trials use it (no-C), or usage is mixed (partial). For these groups, we compare task-averaged performance (Avg@3), MCP tool calls, and agent action turns, with paired \texttt{E-Bench} results as references. For clarity, we show results for three representative models here and others in the Appendix~\ref{subsec:appendix_code_help_for_task_of_different_difficulty}.
+
+% \textbf{Code execution rescues hard tasks while reducing interaction cost.}
+% Tasks where models consistently avoid \texttt{exec\_code} (no-C) are relatively easy, often requiring the fewest MCP tool calls and shortest interaction turns. Accordingly, the two settings behave nearly identically on no-C tasks: tool calls and turns remain essentially unchanged, and Avg@3 fluctuates only slightly. In contrast, tasks where models consistently use \texttt{exec\_code} (all-C) are the most demanding, and \texttt{exec\_code} yields large performance gains while substantially reducing both MCP calls and agent turns, bringing costs close to those of no-C tasks. Mixed-usage tasks show the same trend: Avg@3 improves from $52.53\%$ to $57.70\%$, while MCP calls drop from $32.68$ to $24.34$ on average. Overall, \texttt{exec\_code} is used selectively on demanding, tool-heavy tasks, where it batches multi-step, often parallel, domain-specific tool calls into shorter execution traces controlled by more precise code.
+
+% This finding further explains the source of the substantial gains in performance and the reductions in interaction cost shown in Figure~\ref{fig:ebench_cli_by_domain} and Figure~\ref{fig:ebench_cli_by_domain_toolcalls}.
+
+
+
+
+% \subsection{Does Spending More Help? Performance versus Interaction Cost}
+% \label{subsec:pass1_vs_cost}
+
+
+% A natural question is whether agents that fail simply need to \emph{try harder}---issue more tool calls or consume more context.
+% Figure~\ref{fig:pass1_vs_cost} in the Appendix~\ref{subsec:apendix_pass1_vs_cost} plots Avg@3 against three per-task cost measures (i.e., task-average number of MCP tool calls, number of turns, and total tokens), with one point per <model, domain>.
+
+% \textbf{Harder tasks require more interaction.}
+% Under \texttt{E-Bench}, each action is an ordinary domain-tool call, and Avg@3 is moderately positively correlated with the number of tool calls across the $33$ <model,domain> pairs (Pearson $r=+0.57$). The correlation is even stronger within some domains ($r=+0.86$, $+0.61$, and $+0.89$ for \emph{Honor of Kings}, \emph{Tencent Meeting}, and \emph{QQ Music}, respectively). This matches the benchmark's intended \emph{information gap}: solvers must gather hidden information through multi-step, often parallel, tool use before committing state-changing actions. In this base setting, a low call count often indicates premature action rather than efficiency. Turns and total token consumption are also weakly positively correlated with success ($r=+0.39$ and $r=+0.38$), consistent with harder tasks requiring more interaction and deliberation.
+
+% In \texttt{E-Bench}-Code, by contrast, Avg@3 is weakly negatively correlated with the number of LLM-emitted tool calls across the same $33$ pairs (Pearson $r=-0.36$), with a much stronger negative correlation in \emph{QQ Music} ($r=-0.87$) and weaker ones in \emph{Tencent Meeting} and \emph{Honor of Kings} ($r=-0.57$ and $r=-0.36$). Because models can capability many domain-specific function calls into a single \texttt{exec\_code} block, fewer emitted tool calls do not imply less work. Rather, the result suggests that with code execution, it is possible to lower costs while preserving or improving performance (Avg@3). Additional analysis is provided in Appendix~\ref{subsec:apendix_pass1_vs_cost}.
+
+% More detailed analyses of efficiency and API cost (Figure~\ref{fig:price_vs_performance}) are provided in Appendix~\ref{sec:appendix_results}.

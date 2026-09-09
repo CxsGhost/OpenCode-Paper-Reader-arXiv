@@ -1,0 +1,608 @@
+% \subsection{Dataset Pipeline} \label{subsec:e_bench_cli}
+% \subsection{Training Data and Construction Pipelines} \label{subsec:Data_pipeline}
+\section{Data Construction Pipeline}
+
+Training Gander requires substantially different data from conventional turn-based omni models. \textit{Beyond general speech and multimodal understanding, the model must learn when to listen or speak, how to react to continuously evolving audio-visual context, how to coordinate with the back brain during long horizon agentic tasks, and how to maintain reliable interaction under complex real-world conditions.} To this end, we construct a large scale corpus comprising realtime speech interaction, audio-visual interaction, and agentic interaction data. We additionally incorporate robustness oriented and negative supervision data covering challenging acoustic and conversational conditions, multi-party scenarios, and cases where the model should remain silent or suppress unnecessary responses, improving its reliability under realistic interaction settings. The detailed composition and distribution of Gander's training data are summarized in Table~\ref{tab:gander_training_data}. The corpus is organized into four data families: speech interaction data, audio-visual interaction data, agentic interaction data, and robustness and negative data. We describe the composition and construction of each family in turn below.
+
+
+
+
+% \begin{table*}[t]
+%     \centering
+%     \caption{
+%         Detailed distribution of the Gander's training corpus.
+%     }
+%     \label{tab:gander_training_data}
+%     \small
+%     \setlength{\tabcolsep}{4pt}
+%     \renewcommand{\arraystretch}{1.10}
+
+%     \begin{tabularx}{\textwidth}{
+%         @{}
+%         >{\raggedright\arraybackslash}m{2.25cm}
+%         >{\raggedright\arraybackslash}p{4.2cm}
+%         r
+%         r
+%         >{\raggedright\arraybackslash}X
+%         @{}
+%     }
+%         \toprule
+%         \textbf{Data family}
+%         & \textbf{Fine-grained category}
+%         & \textbf{Examples}
+%         & \textbf{Fraction}
+%         & \textbf{Main supervision} \\
+%         \midrule
+
+%         % ============================================================
+%         % Speech Interaction
+%         % ============================================================
+%         \multirow[c]{5}{=}{
+%             \textbf{Speech Interaction}
+%         }
+%         &
+%         Foundational dialogue
+%         &
+%         539.4K
+%         &
+%         20.00\%
+%         &
+%         General spoken dialogue.
+%         \\
+
+%         \cmidrule(lr){2-5}
+
+%         &
+%         Basic capabilities
+%         &
+%         26.9K
+%         &
+%         1.00\%
+%         &
+%         Basic conversational data covering math, instruction following, and logic.
+%         \\
+
+%         \cmidrule(lr){2-5}
+
+%         &
+%         InteractionSpeech
+%         &
+%         260.8K
+%         &
+%         9.67\%
+%         &
+%         Full-duplex turn-taking, interruption, and multi turn interaction.
+%         \\
+
+%         \cmidrule(lr){2-5}
+
+%         &
+%         Spoken question answering
+%         &
+%         165.1K
+%         &
+%         6.12\%
+%         &
+%         Short form spoken question answering.
+%         \\
+
+%         \cmidrule(lr){2-5}
+
+%         &
+%         Simultaneous speech translation
+%         &
+%         19.0K
+%         &
+%         0.70\%
+%         &
+%         Incremental bilingual speech translation.
+%         \\
+
+%         \midrule
+
+%         % ============================================================
+%         % Audio-Visual Interaction
+%         % ============================================================
+%         \textbf{Audio--Visual Interaction}
+%         &
+%         \begin{tabular}[t]{@{}l@{}}
+%             Streaming video QA \\
+%             Streaming video narration \\
+%             Proactive visual response
+%         \end{tabular}
+%         &
+%         1.1M
+%         &
+%         40.66\%
+%         &
+%         Streaming video QA, event grounding, narration,
+%         and realtime visual interaction.
+%         \\
+
+%         \midrule
+
+%         % ============================================================
+%         % Agentic Interaction
+%         % ============================================================
+%         \multirow[c]{3}{=}{
+%             \textbf{Agentic Interaction}
+%         }
+%         &
+%         Audio agentic interaction
+%         &
+%         320.2K
+%         &
+%         11.87\%
+%         &
+%         Speech-driven task delegation and lifecycle interaction.
+%         \\
+
+%         \cmidrule(lr){2-5}
+
+%         &
+%         Omni agentic interaction
+%         &
+%         36.0K
+%         &
+%         1.33\%
+%         &
+%         GUI based multimodal agent interaction.
+%         \\
+
+%         \cmidrule(lr){2-5}
+
+%         &
+%         Tool assisted reasoning
+%         &
+%         3.4K
+%         &
+%         0.13\%
+%         &
+%         Tool-grounded reasoning over spoken STEM tasks.
+%         \\
+
+%         \midrule
+
+%         % ============================================================
+%         % Robustness and Negative Data
+%         % ============================================================
+%         \multirow[c]{4}{=}{
+%             \textbf{Robustness and Negative Data}
+%         }
+%         &
+%         Irrelevant video robustness
+%         &
+%         116.2K
+%         &
+%         4.31\%
+%         &
+%         Robustness to irrelevant visual context.
+%         \\
+
+%         \cmidrule(lr){2-5}
+
+%         &
+%         No command environments
+%         &
+%         40.0K
+%         &
+%         1.48\%
+%         &
+%         Silence under non directed environmental input.
+%         \\
+
+%         \cmidrule(lr){2-5}
+
+%         &
+%         Anti interference
+%         &
+%         64.7K
+%         &
+%         2.40\%
+%         &
+%         Robustness to noise and overlapping distractors.
+%         \\
+
+%         \cmidrule(lr){2-5}
+
+%         &
+%         Multi party interaction
+%         &
+%         8.8K
+%         &
+%         0.33\%
+%         &
+%         Speaker and addressee tracking.
+%         \\
+
+%         \midrule
+
+%         \multicolumn{2}{l}{\textbf{Total}}
+%         &
+%         \textbf{2.7M}
+%         &
+%         \textbf{100.00\%}
+%         &
+%          \\
+
+%         \bottomrule
+%     \end{tabularx}
+% \end{table*}
+
+
+
+% \begin{figure}[t]
+% \centering
+% % \vspace{-1.2em}
+%         \includegraphics[width=0.98\textwidth]{figures/pipeline1.pdf}
+% \caption{Construction pipelines for agentic interaction data. Audio-agent data are generated from hierarchically sampled task and interaction patterns, while omni-agent data originate from action-aligned video and GUI trajectories with structured descriptions. Both pipelines jointly synthesize TTS-based user queries, front-brain responses, and back brain execution trajectories, followed by automatic evaluation and filtering.}
+% \label{fig:agentic_data_pipeline}
+% \end{figure}
+
+
+% \paragraph{Speech Interaction Data.}
+% Speech interaction data establish the \textit{basic capabilities} required for realtime spoken interaction, accounting for approximately 37\% of Gander's training corpus. 
+% The corpus covers foundational dialogue, spoken instruction following and question answering, full-duplex interaction, and simultaneous speech translation.
+% In addition to the basic semantic understanding and response generation, the data supervise interaction behavior over continuously arriving speech, including turn-taking, interruption, overlapping speech, and response timing.
+% This enables the model to determine when to listen, respond, continue speaking, or yield the conversational floor as the interaction evolves.
+
+% \subsection{Interaction Data Construction}
+
+\subsection{Speech Interaction Data}
+% Speech interaction data establish the \textit{basic capabilities} required for realtime spoken interaction, accounting for approximately 37\% of Gander's training corpus. 
+% The corpus covers general dialogue, spoken instruction following and question answering, full-duplex interaction, and simultaneous speech translation.
+% In addition to the basic semantic understanding and response generation, the data supervise interaction behavior over continuously arriving speech, including turn-taking, interruption, overlapping speech, and response timing.
+% This enables the model to determine when to listen, continue speaking, or yield the conversational floor as the interaction evolves. The full-duplex portion of this corpus, denoted \textit{InteractionSpeech}, is produced by a dedicated pipeline that synthesizes interaction behavior explicitly~\cite{interactspeech}, rather than inheriting it from turn-based corpora in which interruption and overlap are absent by construction.
+
+Speech interaction data establish the \textit{basic capabilities} required for realtime spoken interaction and account for approximately 37\% of Gander's training corpus.
+The corpus spans general dialogue, spoken instruction following and question answering, full-duplex interaction, and simultaneous speech translation.
+Beyond semantic understanding and response generation, it supervises interaction behavior over continuously arriving speech, including turn-taking, interruption, overlapping speech, and response timing, thereby teaching the model when to listen, when to continue speaking, and when to yield the conversational floor as the interaction unfolds.
+The full-duplex portion of this corpus denoted \textit{InteractionSpeech}, is produced by a dedicated pipeline that synthesizes interaction behavior explicitly~\cite{interactspeech}, rather than inheriting it from turn-based corpora in which interruption and overlap are absent by construction. This pipeline proceeds in four stages which described in turn below: we first collect dialogue content from two complementary \textit{sources}, then annotate the two \textit{interaction events} that define duplex behavior, \textit{render} the result to audio on an explicit timeline, and finally apply \textit{quality control} to the synthesized dialogues.
+
+
+
+
+% \textit{Dialogue sources.} Content is drawn from two complementary sources. The first is topic-seed synthesis: 11.2K scene--topic seeds spanning 45 everyday and task-oriented scenarios, including education, healthcare, travel, financial and public services, and customer support, are expanded by DeepSeek-V4-Pro~\cite{xu2026deepseek} into multi-turn spoken dialogues. Generation is constrained to 8--18 turns and at most 96 seconds of aggregate speaking time, keeping the resulting sequences within the streaming context of the front cerebellum and preventing the model from being trained predominantly on unnaturally long monologues. The second source rewrites existing multi-turn dialogues into duplex form, covering both real assistant interaction logs and public conversational corpora. Since such data are written to be read rather than spoken, they first pass a spoken-suitability filter that removes turns dominated by markdown structure, code, URLs, or mathematical notation, together with turns whose length or information density is implausible in speech; this filter rejects the majority of candidate dialogues, while the retained ones preserve authentic user intent and phrasing as interaction events are injected during rewriting. Each dialogue is further conditioned on one of five interaction profiles: constraint clarification, process control, user correction, failed service entry, and safety or urgency stop. This ensures that interruptions arise from diverse communicative motivations rather than from a single recurring pattern. English data are obtained both by direct generation and by translating validated Chinese dialogues; in the latter case only the marked dialogue text is translated, after which all derived fields are re-parsed under English tokenization, so that interruption points are re-selected according to English word order instead of being transferred from Chinese.
+
+\textbf{Dialogue sources.} Content is drawn from two complementary sources. 1) The first is synthesis from topic seeds. We curate 11.2K scene and topic seeds spanning 45 everyday and task oriented scenarios, including education, healthcare, travel, financial and public services, and customer support, and expand each seed into a multi turn spoken dialogue with DeepSeek-V4-Pro~\cite{xu2026deepseek}. Generation is constrained to between 8 and 18 turns and at most 96 seconds of aggregate speaking time, which keeps every sequence within the streaming context of the front cerebellum and prevents the model from being trained predominantly on unnaturally long monologues. 2) The second source converts existing multi turn dialogues into duplex form, drawing on both real assistant interaction logs and public conversational corpora. Because such material is written to be read rather than spoken, every candidate first passes a spoken suitability filter that discards turns dominated by markdown structure, code, URLs, or mathematical notation, as well as turns whose length or information density would be implausible in speech. The filter rejects the majority of candidate dialogues; those retained preserve authentic user intent and phrasing, into which interaction events are subsequently injected. Each dialogue is further conditioned on one of five interaction profiles, namely constraint clarification, process control, user correction, failed service entry, and safety or urgency stop, ensuring that interruptions arise from diverse communicative motivations rather than from a single recurring pattern. English data are obtained both by direct generation and by translating validated Chinese dialogues. In the latter case only the marked dialogue text is translated, after which all derived fields are parsed again under English tokenization, so that interruption points are selected according to English word order rather than transferred from Chinese.
+
+\begin{table*}[t]
+    \centering
+    \caption{
+        Detailed distribution of the Gander's training corpus.
+    }
+    \label{tab:gander_training_data}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \renewcommand{\arraystretch}{1.10}
+
+    \begin{tabularx}{\textwidth}{
+        @{}
+        >{\raggedright\arraybackslash}m{2.25cm}
+        >{\raggedright\arraybackslash}p{4.2cm}
+        r
+        r
+        >{\raggedright\arraybackslash}X
+        @{}
+    }
+        \toprule
+        \textbf{Data family}
+        & \textbf{Fine-grained category}
+        & \textbf{Examples}
+        & \textbf{Fraction}
+        & \textbf{Main supervision} \\
+        \midrule
+
+        % ============================================================
+        % Speech Interaction
+        % ============================================================
+        \multirow[c]{5}{=}{
+            \textbf{Speech Interaction}
+        }
+        &
+        Foundational dialogue
+        &
+        539.4K
+        &
+        20.00\%
+        &
+        General spoken dialogue.
+        \\
+
+        \cmidrule(lr){2-5}
+
+        &
+        Basic capabilities
+        &
+        26.9K
+        &
+        1.00\%
+        &
+        Basic conversational data covering math, instruction following, and logic.
+        \\
+
+        \cmidrule(lr){2-5}
+
+        &
+        InteractionSpeech
+        &
+        260.8K
+        &
+        9.67\%
+        &
+        Full-duplex turn-taking, interruption, and multi turn interaction.
+        \\
+
+        \cmidrule(lr){2-5}
+
+        &
+        Spoken question answering
+        &
+        165.1K
+        &
+        6.12\%
+        &
+        Short form spoken question answering.
+        \\
+
+        \cmidrule(lr){2-5}
+
+        &
+        Simultaneous speech translation
+        &
+        19.0K
+        &
+        0.70\%
+        &
+        Incremental bilingual speech translation.
+        \\
+
+        \midrule
+
+        % ============================================================
+        % Audio-Visual Interaction
+        % ============================================================
+        \textbf{Audio--Visual Interaction}
+        &
+        \begin{tabular}[t]{@{}l@{}}
+            Streaming video QA \\
+            Streaming video narration \\
+            Proactive visual response
+        \end{tabular}
+        &
+        1.1M
+        &
+        40.66\%
+        &
+        Streaming video QA, event grounding, narration,
+        and realtime visual interaction.
+        \\
+
+        \midrule
+
+        % ============================================================
+        % Agentic Interaction
+        % ============================================================
+        \multirow[c]{3}{=}{
+            \textbf{Agentic Interaction}
+        }
+        &
+        Audio agentic interaction
+        &
+        320.2K
+        &
+        11.87\%
+        &
+        Speech-driven task delegation and lifecycle interaction.
+        \\
+
+        \cmidrule(lr){2-5}
+
+        &
+        Omni agentic interaction
+        &
+        36.0K
+        &
+        1.33\%
+        &
+        GUI based multimodal agent interaction.
+        \\
+
+        \cmidrule(lr){2-5}
+
+        &
+        Tool assisted reasoning
+        &
+        3.4K
+        &
+        0.13\%
+        &
+        Tool-grounded reasoning over spoken STEM tasks.
+        \\
+
+        \midrule
+
+        % ============================================================
+        % Robustness and Negative Data
+        % ============================================================
+        \multirow[c]{4}{=}{
+            \textbf{Robustness and Negative Data}
+        }
+        &
+        Irrelevant video robustness
+        &
+        116.2K
+        &
+        4.31\%
+        &
+        Robustness to irrelevant visual context.
+        \\
+
+        \cmidrule(lr){2-5}
+
+        &
+        No command environments
+        &
+        40.0K
+        &
+        1.48\%
+        &
+        Silence under non directed environmental input.
+        \\
+
+        \cmidrule(lr){2-5}
+
+        &
+        Anti interference
+        &
+        64.7K
+        &
+        2.40\%
+        &
+        Robustness to noise and overlapping distractors.
+        \\
+
+        \cmidrule(lr){2-5}
+
+        &
+        Multi party interaction
+        &
+        8.8K
+        &
+        0.33\%
+        &
+        Speaker and addressee tracking.
+        \\
+
+        \midrule
+
+        \multicolumn{2}{l}{\textbf{Total}}
+        &
+        \textbf{2.7M}
+        &
+        \textbf{100.00\%}
+        &
+         \\
+
+        \bottomrule
+    \end{tabularx}
+\end{table*}
+
+
+
+
+\textbf{Interaction events.} Two events are annotated. In a \textit{competitive interruption}, the user barges in before the assistant finishes, and the assistant's remaining words form a hidden continuation that temporally overlaps the incoming user speech but is never heard by the user. In a \textit{supportive backchannel}, the user emits a brief acknowledgment while the assistant retains the floor and continues without pausing. The hidden continuation is retained as text but excluded from synthesis, so that the model observes exactly the acoustic evidence available to a real listener, and the subsequent user turn is verified not to reuse information it could not have heard. The distinction between the two events is enforced rather than assumed: a turn is accepted as a backchannel only if it is embedded within the interlocutor's ongoing utterance, falls below a short-length threshold of eight characters in Chinese or six words in English, and either matches the lexicon or is explicitly marked during generation. Candidates carrying interrogative, requestive, or negative-stance cues are demoted to ordinary turns, preventing genuine floor-taking utterances from being mislabeled as acknowledgments. Backchannel realizations are sampled from a bilingual lexicon of 266 Chinese and 170 English expressions, organized into 11 intent categories and conditioned on conversational context, which avoids the repetitive acknowledgments typical of small fixed word lists.
+
+% \textbf{Rendering and timing.} Only the user channel is rendered to audio, using voice-cloning TTS~\cite{cosyvoice3,hu2026qwen3} over a multi-speaker pool; assistant turns remain textual and occupy the timeline as duration placeholders. Every turn carries a global onset, duration, and overlap interval, so that interruption and backchannel timing become explicit supervision rather than an artifact of concatenation. To avoid unstable synthesis, no paralinguistic tokens are emitted: the only retained markers are the interruption marker, which defines the overlap region, and the backchannel marker, which is stripped before synthesis.
+
+% \textbf{Quality control.} Filtering proceeds in two stages. A rule-based gate first removes dialogues whose interruption points are linguistically implausible, whose overlapping segments are degenerate, whose interrupting turns leak content the user could not have heard, or whose interaction is left unresolved. Surviving samples are then scored by an LLM judge along naturalness, assistant coherence, interruption plausibility, and backchannel plausibility, and are retained only when they pass a threshold on every applicable dimension; the rewriting path additionally applies LLM-based repair and curation of interaction and semantic quality. The resulting 260.8K dialogues place interruption onsets broadly across the interrupted turn rather than concentrating near its end, and the majority of barge-ins begin directly with content rather than with a discourse marker, which prevents the model from associating interruption with a small set of stereotyped lexical cues.
+
+% \textbf{Rendering and timing.} Only the user channel is rendered to audio, using voice cloning TTS~\cite{cosyvoice3,hu2026qwen3} over a pool of speakers, while assistant turns remain textual and occupy the timeline as duration placeholders. Every turn is assigned a global onset, a duration, and an overlap interval, so that the timing of interruptions and backchannels constitutes explicit supervision rather than an incidental artifact of concatenation. To avoid unstable synthesis, we emit no paralinguistic tokens and retain only two markers: the interruption marker, which delimits the overlap region, and the backchannel marker, which is stripped before synthesis.
+
+% \textbf{Quality control.} Filtering proceeds in two stages. A rule based gate first discards dialogues whose interruption points are linguistically implausible, whose overlapping segments are degenerate, whose interrupting turns leak content the user could not have heard, or whose interaction is left unresolved. Surviving samples are then rated by an LLM judge along four dimensions, namely naturalness, assistant coherence, interruption plausibility, and backchannel plausibility, and are retained only if they exceed a threshold on every applicable dimension. Dialogues obtained by rewriting undergo a further round of LLM based repair and curation targeting interaction and semantic quality. The resulting 260.8K dialogues distribute interruption onsets broadly across the interrupted turn rather than concentrating them near its end, and the majority of barge-ins begin directly with content rather than with a discourse marker, which prevents the model from associating interruption with a small set of stereotyped lexical cues.
+
+
+\textbf{Rendering and timing.} Only the user channel is rendered to audio, using voice cloning TTS~\cite{cosyvoice3,hu2026qwen3} over a pool of speakers, while assistant turns remain textual and occupy the timeline as duration placeholders. Every turn is assigned a global onset, a duration, and an overlap interval, so that the timing of interruptions and backchannels constitutes explicit supervision rather than an incidental artifact of concatenation. To avoid unstable synthesis, we emit no paralinguistic tokens and retain only two markers: the interruption marker, which delimits the overlap region, and the backchannel marker, which is stripped before synthesis.
+
+\textbf{Quality control.} Filtering proceeds in two stages. A rule based gate first discards dialogues whose interruption points are linguistically implausible, whose overlapping segments are degenerate, whose interrupting turns leak content the user could not have heard, or whose interaction is left unresolved. Surviving samples are then rated by an LLM judge along four dimensions, namely naturalness, assistant coherence, interruption plausibility, and backchannel plausibility, and are retained only if they exceed a threshold on every applicable dimension. Dialogues obtained by rewriting undergo a further round of LLM based repair and curation targeting interaction and semantic quality. The resulting 260.8K dialogues distribute interruption onsets broadly across the interrupted turn rather than concentrating them near its end, and the majority of barge-ins begin directly with content rather than with a discourse marker, which prevents the model from associating interruption with a small set of stereotyped lexical cues.
+
+
+
+
+
+% These data are constructed from ..., combining existing speech corpora with synthetically generated interaction trajectories to cover both conventional spoken tasks and realtime interaction behaviors.
+
+
+\begin{figure}[t]
+\centering
+% \vspace{-1.2em}
+        \includegraphics[width=0.98\textwidth]{figures/pipeline.pdf}
+\caption{Construction pipelines for agentic interaction data. Agent data are generated from hierarchically sampled task and interaction patterns, while omni-agent data originate from action-aligned video and GUI trajectories with structured descriptions. Both pipelines jointly synthesize user audio queries, front cerebellum responses, and back brain execution trajectories, followed by automatic evaluation and filtering.}
+\label{fig:agentic_data_pipeline}
+\end{figure}
+
+
+
+
+
+
+\subsection{Audio-Visual Interaction Data}
+Audio-visual interaction data extend realtime interaction from speech only conversations to continuously evolving multimodal environments, accounting for approximately 40\% of Gander's training corpus. 
+The video interaction data are collected from JoyAI-VL~\cite{yao2026joyai}, LiveCC~\cite{chen2025live}, and Streamo~\cite{xia2026streaming}, and organized into three task categories: streaming video question answering, streaming video narration, and proactive visual response. All samples first undergo quality assessment and filtering, followed by temporal alignment refinement using Qwen3.5-297B-A17B~\cite{qwen3_5} to construct time-aligned targets and correct inaccurate alignments in the original data. This process yields approximately 1.1M high quality audio-visual interaction pairs. The target responses are further rewritten with DeepSeek-V4-Pro~\cite{xu2026deepseek} to normalize response lengths to an average rate of 8 tokens per second, balancing response informativeness and speech latency, while user utterances are synthesized into speech using Qwen3-TTS~\cite{hu2026qwen3}. The resulting data train the model to continuously integrate incoming visual evidence with the ongoing interaction, track evolving events and state changes, and ground its responses in information available up to the current moment, enabling timely responses when relevant visual events emerge.
+% The corpus covers streaming video question answering, streaming video narration, and proactive visual response, providing supervision for incremental visual understanding and temporally grounded interaction. The model is trained to continuously integrate incoming visual evidence with the ongoing conversational context, track events and state changes over time, and ground its responses in information observed up to the current moment. Such supervision enables the model not only to understand evolving visual content, but also to determine when a visual event warrants a response as the interaction unfolds.
+
+
+
+
+
+
+
+\subsection{Agentic Interaction Data}
+While the preceding data primarily focus on direct user interaction with the front cerebellum, agentic interaction data extend this setting to coordinated interaction among the\textit{ user, front cerebellum, and back brain}.
+The agentic interaction corpus consists of three categories: audio agentic interaction, omni agentic interaction, and a small set of tool assisted reasoning data. The first two categories focus on long horizon agentic interaction, where the front cerebellum maintains continuous interaction with the user while coordinating with the back brain throughout asynchronous task execution. Tool assisted reasoning provides auxiliary supervision for tool grounded reasoning over spoken tasks. Unlike conventional tool use examples that primarily capture isolated tool invocation or task completion, these interaction trajectories interleave multi-turn user interaction with evolving backend states, execution progress, and intermediate results. They span the full task lifecycle, including task initiation, follow up requests, constraint updates, clarification, progress inquiries, cancellation, and final result delivery. The construction of audio agentic and omni agentic interaction data is described below, with their pipelines illustrated in Figure~\ref{fig:agentic_data_pipeline}. 
+
+Audio-agentic interaction data are constructed through a seed-driven trajectory synthesis pipeline. Structured task seeds are first sampled at multiple levels, including task class, domain, category, and task family, together with diverse query and interaction patterns. The task space covers representative backend-agent workflows such as execution, information search, and search-then-execute, while the interaction patterns characterize how users may interact with an ongoing task. The back brain operates as an independent task executor, while the supervision focuses on how the front cerebellum communicates and coordinates around evolving task states. 
+Given each seed, spoken user requests and corresponding interaction trajectories among the user, front cerebellum, and back brain are synthesized using DeepSeek-V4-Pro to capture the information exchange throughout task execution.
+% Given each seed, spoken user requests and corresponding interaction trajectories among the user, front cerebellum, and back brain are synthesized to capture the information exchange throughout task execution. 
+The resulting trajectories are evaluated and filtered for task consistency, interaction validity, and overall quality.
+
+Omni-agentic interaction extends such coordination to visually grounded tasks, where the front cerebellum must continuously track evolving visual states while interacting with both the user and the back brain. The underlying GUI and video trajectories are assembled from three complementary sources: crawled interaction trajectories, existing GUI datasets~\cite{wang2026opencua}, and GUI trajectories generated with Codex, yielding approximately 36K examples in total. These trajectories contain temporally ordered observations and actions, which are converted by Qwen3.5-297B-A17B into structured descriptions of environment states, task progress, and interaction context. DeepSeek-V4-Pro is used to synthesize spoken user requests and corresponding interactions among the user, front cerebellum, and back brain, grounded in the observed visual states. These trajectories require the front cerebellum to follow evolving interface or scene states, communicate with the user, and remain synchronized with backend actions and intermediate results. Finally, the synthesized trajectories are evaluated and filtered for temporal consistency, task validity, and interaction quality.
+
+\subsection{Robustness and Negative Data}
+Reliable realtime interaction requires not only appropriate responses to valid user requests, but also robust response control under irrelevant, noisy, and multi-party conversational conditions.
+Accordingly, robustness-oriented and negative supervision covers four settings: irrelevant visual context, no-command environments, acoustic and conversational interference, and multi-party interaction.
+Irrelevant-video negative samples are constructed by pairing web-crawled videos with unrelated user instructions, while anti-interference and multi-party examples are sourced from high-quality Hy-Realtime production data.
+Irrelevant-video and no-command examples encourage the model to ignore unrelated events and remain silent when no valid user request is present.
+Anti-interference data improve robustness to noise and overlapping distractors, while multi-party interaction data support speaker and addressee tracking to determine whether an utterance is directed toward the assistant.
+Together, these data reduce spurious responses and improve interaction reliability in complex real-world environments.
+
+
+
+
+% \subsection{Front Cerebellum Training}
+% \label{sec:training_setup}
+% % \subsection{Training Setup}
+% % \label{sec:training_setup}
+
+% We initialize the front cerebellum from MiniCPM-o 4.5 and optimize it in two sequential stages: Thinker training and Talker training.
+
+% % \paragraph{Training data.}
+% % As summarized in Table~\ref{tab:thinker_training_data}, the Thinker
+% % was trained on 2,660,301 examples covering spoken full-duplex
+% % interaction, native video interaction, agent and tool use,
+% % tool-assisted reasoning, and simultaneous speech translation.
+% % The foundational-dialogue and basic-capability data were internally
+% % constructed. Within the agent and tool-use data, 52,186 tool-routing
+% % synthesis examples were internal.
+
+% \paragraph{Streaming format.}
+% All training examples are organized into fixed one-second streaming units. Within each unit, video frames and microphone audio are serialized first, followed by optional typed user input or tool results, the interaction decision or tool action, and assistant text. The Thinker predicts exactly one action for each unit: \texttt{listen}, \texttt{speak}, \texttt{interrupt}, or a complete structured tool call. A \texttt{speak} unit contains at most eight lexical text tokens and is aligned with 50 S3 speech tokens. Typed queries are inserted only once, at the unit in which they arrive, after the corresponding audio-visual observations.
+
+% Audio is sampled at \(16\,\mathrm{kHz}\). The first frontend chunk spans \(1{,}035\,\mathrm{ms}\), while subsequent chunks advance by \(1\,\mathrm{s}\) with a \(20\,\mathrm{ms}\) right-context guard. Sequences longer than 16,384 model tokens are removed rather than truncated. For long-context training, we use a causal 4-D attention mask that retains at most 128 preceding units and 1,500 preceding-context tokens.
+
+% % The reported non-benchmark portion of the training corpus contains 2,660,301 examples from 95 manifests. At the manifest-row level, 44.81\% of the examples are spoken full-duplex interactions, 41.22\% are native video interactions, 13.25\% are agent and tool-use interactions, and 0.71\% are simultaneous speech-translation examples. Benchmark-oriented manifests are excluded from these statistics, while augmented and irrelevant-video variants are counted as separate examples. All configured rows are used once during the Thinker epoch. Training sources are interleaved using smooth weighted fair queuing, with source weights proportional to source size when no explicit weight is specified. Rows are deterministically shuffled with random seed 42. 
+% We further apply data-type-specific audio augmentation, including ambient noise, babble, transient sounds, device coloration, room acoustics, and echo. Video augmentation preserves the internal timeline, while endpoint idle augmentation adds one to three silent units with probability 0.25, increased to 0.70 for video examples.
+
+% \paragraph{Thinker training.}
+% During the first stage, we freeze the vision encoder, visual resampler, audio encoder, and all speech-generation modules, and optimize only the LLM and audio projection layer. This results in 8.210B trainable parameters out of 9.024B instantiated parameters, corresponding to 90.98\% of the model.
+
+% The Thinker is trained for one epoch, corresponding to 8,407 optimization steps, on 40 nodes with 8 GPUs per node. We use a micro-batch size of one per GPU, no gradient accumulation, and a global batch size of 320 examples. Training is performed in BF16 using AdamW with
+% \(\beta_1=0.9\), \(\beta_2=0.999\), and \(\epsilon=10^{-8}\).
+% The learning rates are \(2\times10^{-6}\) for the LLM and
+% \(1\times10^{-5}\) for the audio projection layer. We apply a 3\% linear warmup followed by linear learning-rate decay, set weight decay to zero, and clip the gradient norm at 1.0. The training objective is
+% \begin{equation}
+%     \mathcal{L}_{\mathrm{Thinker}}
+%     =
+%     \mathcal{L}_{\mathrm{text}}
+%     +
+%     1.5\,\mathcal{L}_{\mathrm{control}},
+% \end{equation}
+%  Gradient checkpointing and DeepSpeed ZeRO-2 are used to reduce memory consumption.
+
+% \paragraph{Talker training.}
+% In the second stage, we load the final Thinker checkpoint and keep both the LLM and audio projection layer frozen. Only the TTS projector and TTS decoder are optimized, resulting in 319.4M trainable parameters. The Talker is trained on 494,654 examples.
+
+% We train the Talker for two epochs, corresponding to 1,802 optimization steps, using 320 GPUs, a global batch size of 320 examples, and BF16 precision. Both the TTS projector and decoder use a learning rate of \(2\times10^{-5}\), with a 3\% warmup followed by linear decay. We set weight decay to 0.01 and clip the gradient norm at 1.0. Speech targets are loaded from a precomputed S3-code cache, and the hidden states produced by the Thinker are detached so that no gradient is propagated into the Thinker. 
+% The per-unit alignment remains eight text tokens to 50 S3 speech tokens. Talker training also uses DeepSpeed ZeRO-2.
+
+% All experiments are implemented with PyTorch~2.6.0, CUDA~12.4, Transformers~4.51.0, and DeepSpeed~0.19.2.

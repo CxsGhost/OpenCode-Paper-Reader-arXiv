@@ -1,0 +1,50 @@
+\begin{table}[t]
+    \centering
+    \caption{
+        Omni understanding accuracy (\%) on WorldSense ($n$=3{,}172) and Daily-Omni
+        ($n$=1{,}197). Baseline numbers are the officially reported
+        ones~\cite{cui2026minicpm}; MiniCPM-o~4.5 is Gander's base model. Gander is evaluated
+        in the audio-visual condition.
+    }
+    \label{tab:omni_main}
+    \small
+    \setlength{\tabcolsep}{6pt}
+    \renewcommand{\arraystretch}{1.10}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Model}
+        & \textbf{WorldSense}
+        & \textbf{Daily-Omni} \\
+        \midrule
+        Gemini 2.5 Flash   & 52.60 & 79.30 \\
+        Qwen3-Omni         & 54.00 & 70.70 \\
+        MiniCPM-o 4.5      & \textbf{55.70} & \textbf{80.20} \\
+        \midrule
+        \textbf{Gander}    & 49.62 & 78.53 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[t]
+    \centering
+    \caption{
+        Modality ablation on the same question sets, each condition presenting only the
+        indicated input streams. Fusion gain is
+        $\text{AV}-\max(\text{Video},\text{Audio})$.
+    }
+    \label{tab:omni_ablation}
+    \small
+    \setlength{\tabcolsep}{6pt}
+    \renewcommand{\arraystretch}{1.10}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Benchmark} & \textbf{AV} & \textbf{Video} & \textbf{Audio}
+        & \textbf{Fusion gain} \\
+        \midrule
+        WorldSense & 49.62 & 44.61 & 43.32 & $+5.01$ \\
+        Daily-Omni & 78.53 & 59.40 & 57.81 & $+19.13$ \\
+        \midrule
+        Overall    & 57.54 & 48.66 & 47.29 & $+8.88$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}

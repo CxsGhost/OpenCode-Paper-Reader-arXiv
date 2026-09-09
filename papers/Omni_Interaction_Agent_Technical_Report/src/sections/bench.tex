@@ -1,0 +1,275 @@
+\section{Gander: Omni Interaction Agent} \label{sec:e_bench}
+
+% \begin{figure}[!t]
+%     \centering
+%     \includegraphics[width=\textwidth]{sections/appendix/trajectory_cases/tencent_meeting.png}
+%     \caption{Hy3 trajectory on the Tencent Meeting case. The model successfully coordinates participant selection, schedule search, room reservation, meeting creation, calendar updates, and group creation.}
+%     \label{fig:trajectory-tencent-meeting}
+% \end{figure}
+
+\subsection{Overview} \label{subsec:e_bench_overview}
+
+
+% Gander is an end-to-end Omni Interaction Agent architecturally composed of \textbf{\textit{the front Cerebellum, the Agent Orchestration Runtime, and the back Brain}}. The front Cerebellum is a realtime, full duplex multimodal model based on a Thinker-Talker architecture, responsible for continuous multimodal perception and interactive communication. The back Brain is a general purpose task execution agent that requires no task specific training, instantiated by general purpose agents such as Claude Code and Codex. The Agent Orchestration Runtime serves as the coordination layer between the front Cerebellum and back Brain, jointly managing realtime multimodal inference and the orchestration of asynchronous background tasks. Through this division of responsibilities, the three components collectively support both continuous realtime interaction and complex long horizon task execution. We detail their respective architectures and interactions below.
+
+
+% The remainder of this section is organized as follows. Section~\ref{subsec:env-construction} describes the interaction between the Brain and Cerebellum, including \textbf{front Cerebellum} activation and input transmission, the \textbf{intermediate Agent Orchestration Runtime}, and the propagation of responses from the \textbf{back Brain}. Section~\ref{subsec:task-construction} details the front Cerebellum architecture, including its Thinker-Talker design and streaming chunk-flattening mechanism for omni interaction. Section~\ref{subsec:e_bench_cli} presents multi stage training pipeline and the corresponding training data in Gander.
+
+
+Gander is an end-to-end omni interaction agent architecturally composed of \textbf{\textit{the front cerebellum, the agent orchestration runtime, and the back brain}}. The front cerebellum is a realtime, full duplex multimodal model based on a thinker-talker architecture, responsible for continuous multimodal perception and interactive communication. The back brain is a general purpose task execution agent that requires no task specific training, instantiated by general purpose agents such as claude code and codex. The agent orchestration runtime serves as the coordination layer between the front cerebellum and back brain, jointly managing realtime multimodal inference and the orchestration of asynchronous background tasks. Through this division of responsibilities, the three components collectively support both continuous realtime interaction and complex long horizon task execution. We detail their respective architectures and interactions below.
+
+The remainder of this section is organized as follows. Section~\ref{subsec:env-construction} describes the interaction between the brain and cerebellum, including \textbf{\textit{front cerebellum}} activation and input transmission, the \textbf{\textit{intermediate agent orchestration runtime}}, and the propagation of responses from the \textbf{\textit{back brain}}. Section~\ref{subsec:task-construction} details the front cerebellum architecture, including its Thinker-Talker design and streaming chunk flattening mechanism for omni interaction. 
+% Section~\ref{subsec:Data_pipeline} presents multi stage training pipeline and the corresponding training data in Gander.
+
+
+
+\subsection{Cerebellum-Brain Collaborative Framework} \label{subsec:env-construction}
+
+
+
+\begin{figure}[t]
+\centering
+% \vspace{-1.2em}
+    \includegraphics[width=0.98\textwidth]{figures/shengpeng/gender_arc.pdf}
+\caption{
+Gander consists of three components: the front cerebellum, the agent orchestration runtime, and the back brain. The front cerebellum handles realtime user interaction, while the back brain performs complex reasoning and long horizon workflow execution. The agent orchestration runtime serves as the coordination layer for realtime multimodal inference and asynchronous background task orchestration.
+}
+\label{fig1:shengpengpic2}
+% \vspace{-0.5em}
+\end{figure}
+
+Gander employs a decoupled, two tier agent architecture consisting of a front cerebellum and a back brain. As shown in Figure~\ref{fig1:shengpengpic2}, the front cerebellum is instantiated as a realtime, full-duplex omni model that serves as the primary interface \textbf{for continuous interaction, processing streaming speech, camera, and screen inputs and autoregressively determining interaction actions, including listening, speaking, brief feedback, interruption, and tool invocation}. The back brain is instantiated as a general purpose task execution agent for information retrieval, code and file manipulation, document processing, and other long horizon tasks. The intermediate agent orchestration runtime provides the execution substrate that coordinates the two layers, supporting unified realtime multimodal inference and asynchronous background task orchestration, and constitutes an integral component of the overall agent harness. We next characterize \underline{\textit{the information flow across these components}} from three complementary perspectives.
+
+
+\subsubsection{Front Cerebellum Activation and Summarization}
+
+
+
+The front cerebellum is itself a realtime omni interaction model, broadly analogous to systems such as GPT-Realtime~\cite{openai_gpt_live_system_card_2026} and Seed-Realtime~\cite{seedrealtime2026}, and can independently handle routine conversational exchanges, information seeking interactions, and simple search based tasks. Within the dual brain architecture, \textbf{\textit{it additionally assumes the role of task routing and back brain invocation}}. Based on the current interaction context, the front cerebellum dynamically determines whether a request can be resolved locally or requires delegation to the back brain. Simple conversational and short horizon tasks are handled directly by the front cerebellum, whereas complex workflows involving multi step reasoning, external tool use, or long horizon execution are delegated to the back brain.
+
+
+In Gander, this delegation mechanism is formalized through structured tool calls that expose the front cerebellum's task-level decisions to the agent orchestration runtime. Specifically, the front cerebellum emits tool invocations enclosed by dedicated special tokens:
+
+\begin{toolcall}
+<tool_call> {"name": "tool_state", "arguments": {"key": "value"}} </tool_call>
+\end{toolcall}
+
+
+
+\begin{figure}[t]
+\centering
+% \vspace{-1.2em}
+    \includegraphics[width=0.98\textwidth]{figures/shengpeng/case-v5.pdf}
+\caption{
+An example workflow illustrating cerebellum brain interaction, where users can engage in realtime conversation or modify previously assigned tasks while the back brain is executing ongoing workflows.
+}
+\label{fig1:shengpengpic3}
+% \vspace{-0.5em}
+\end{figure}
+
+
+The interface defines three primary operations: \textbf{\textit{\underline{task$\_$start}, \underline{task$\_$send}, and \underline{task$\_$resolve}}}, corresponding to task creation, incremental task interaction, and deterministic \textbf{\textit{\underline{tool$\_$state}}} control respectively in the above tool calls. The three tool states are defined as follows.
+
+
+\begin{itemize}
+    \item \textbf{\textit{task$\_$start.}} It initializes a new background task and associates it with the current user turn. The provided task description or name serves as the task identifier for subsequent lifecycle management, tracking, and interaction.
+
+    \item \textbf{\textit{task$\_$send.}} It routes subsequent user inputs to an existing task, enabling incremental task specification and dynamic task refinement. It is invoked when the user provides additional information, revises a prior request, or otherwise modifies an ongoing task. The operation supports two routing modes: 1) \texttt{main}, which steers the primary task by incorporating the new input into its active execution context; 2) \texttt{fork}, which instantiates a read only auxiliary inquiry without altering the state or execution trajectory of the primary task.
+
+    \item \textbf{\textit{task$\_$resolve.}} It provides deterministic control over the task lifecycle through four resolution actions: \texttt{cancel}, \texttt{allow$\_$once}, \texttt{allow$\_$session}, and \texttt{deny}. \texttt{cancel} terminates the active primary task; \texttt{allow$\_$once} authorizes the current operation on a one time basis; \texttt{allow$\_$session} extends the authorization to the duration of the current task session; and \texttt{deny} rejects the requested operation and blocks its execution. This interface enables the front cerebellum to express task level control decisions in a structured and explicit form, while the agent orchestration runtime deterministically enforces the associated state transitions and execution semantics.
+\end{itemize}
+
+
+In Figure~\ref{fig1:shengpengpic3}, the front cerebellum and back brain workflow is illustrated through a representative use case. Here, $T$ denotes a task, while $E$ denotes the back brain execution. The front cerebellum initiates a back brain tool call via \textbf{\textit{task$\_$start.}} During back brain execution, users can engage in conversation with the front cerebellum or modify previously issued tasks through \textbf{\textit{task$\_$send.}}
+
+For the various tool calling scenarios triggered by the front cerebellum described above, the front cerebellum forwards the transcribed text of the audio query together with the relevant final frames of the input video, to the intermediate agent orchestration runtime as the input to the back brain. This design presents several open design considerations, including whether the front cerebellum should perform additional reasoning based on the transcribed query before passing it to the subsequent stage, and whether a trainable back brain could directly receive the user's complete multimodal input stream in real time. In Gander, we adopt the most straightforward approach, directly using the transcribed query and the relevant final video frames as the input to the back brain.
+
+Within the two-brain architecture, the front cerebellum is also responsible for \textbf{summarizing the results} returned by the back brain and generating the final response to the user. This involves different scenarios, such as whether the summary should be based on the back brain's intermediate execution states or its final result. We treat this as a data scaling design choice, determined by the training data and target interaction scenarios. To preserve the interactive nature of omni interaction, the synthesized response is optimized for natural conversational spoken language delivery, rather than being formulated solely as a textual task completion response.
+
+% \begin{figure}[t]
+% \centering
+% % \vspace{-1.2em}
+%     \includegraphics[width=0.98\textwidth]{figures/shengpeng/case-v5.pdf}
+% \caption{
+% An example workflow illustrating cerebellim brain interaction, where users can engage in realtime conversation or modify previously assigned tasks while the back brain is executing ongoing workflows.
+% }
+% \label{fig1:shengpengpic3}
+% % \vspace{-0.5em}
+% \end{figure}
+
+
+\subsubsection{Agent Orchestration Runtime}
+The agent orchestration runtime primarily serves as the coordination layer between the front cerebellum and the back brain. By providing a unified interface for realtime multimodal data transport and backend task orchestration, the runtime effectively turns the omni interaction agent into a unified harness for interactive task execution. For realtime interaction, \textbf{\textit{it manages audio and visual stream ingestion, incremental inference scheduling, serialization of model invocations, static prefix caching, and source aware rate limiting with persistent state across different visual inputs}}. The runtime also binds the \textbf{\textit{task$\_$start}}, \textbf{\textit{task$\_$send}}, and \textbf{\textit{task$\_$resolve}} operations issued by the front cerebellum to the final user turn confirmed at the transport layer, ensuring that task objectives are consistently grounded in authenticated user input rather than tool parameters independently generated by the front cerebellum.
+
+
+The agent orchestration runtime supports two control modes: \texttt{lean} and \texttt{coordinator}. 
+
+
+$(1)$ In the \texttt{lean} mode, the runtime directly executes the task actions classified by the front cerebellum and uses the original user turn as the instruction to the back brain. This results in a shorter control path, lower additional latency, greater determinism, and fewer potential model failure points, making it suitable for scenarios in which the front cerebellum provides reliable task routing. Its limitation is that task configuration is largely determined at deployment time, making it difficult to dynamically adapt the reasoning intensity, supervision policy, or notification granularity to the semantics of individual tasks. In addition, routine intermediate events are more likely to be propagated directly through the delivery pipeline.
+
+$(2)$ The \texttt{coordinator} mode introduces an independent control plane model between the front cerebellum and the gateway. Conditioned on trusted user requests and bounded system state, the \texttt{coordinator} generates execution directives that specify the reasoning intensity, questioning policy, permission policy, and result delivery strategy. This design decouples complex task planning and supervision decisions from the realtime front cerebellum, at the cost of additional model invocations, latency, computational overhead, and nondeterminism. The \texttt{coordinator} only produces a declarative control plan and does not execute user tasks or access files, shell, or network resources. Its output is subsequently subjected to structured validation by the gateway (the core control component of the runtime) against the current task state, provider capabilities, permission boundaries, and deployment configuration. In the current implementation, the \texttt{coordinator} is primarily involved in \textbf{\textit{task$\_$start}}, whereas \textbf{\textit{task$\_$send}} and \textbf{\textit{task$\_$resolve}} are handled directly by the gateway.
+
+
+% \begin{table}[h]
+% \centering
+% \caption{Core entities managed by the gateway in the agent orchestration runtime.}
+% \label{tab:runtime_entities}
+% \begin{tabular}{ll}
+% \toprule
+% \textbf{Entity} & \textbf{Description} \\
+% \midrule
+% \textit{Project} & A persistent container for a long-lived task or workflow. \\
+% \textit{Task} & A logical unit of work representing a user's intended objective. \\
+% \textit{Run} & A concrete execution instance of a task. \\
+% \textit{WorkerEvent} & An event emitted by a worker during task execution. \\
+% \textit{Delivery} & The mechanism and record through which task results are delivered to the user. \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
+
+
+The Gateway serves as the persistent orchestration core of the Runtime. As shown in Table~\ref{tab:runtime_entities}, it organizes backend execution around five persistent entities, namely \textit{Project}, \textit{Task}, \textit{Run}, \textit{WorkerEvent}, and \textit{Delivery}. It manages task state transitions, worker scheduling, workspace isolation, concurrency control, permission handling, and result delivery. Different back brains are integrated through a unified \textit{Worker Provider} interface, with each \textit{Provider} declaring its supported capabilities, including native steering, read only side queries, user interaction, cross process recovery, supported input modalities, context acquisition mechanisms, and parallel execution. The current default back brain is implemented using the Codex app server, with each task lineage associated with a persistent Codex thread that can be incrementally updated throughout execution. User follow up instructions can be injected directly into the active thread, whereas read only side queries are executed in isolated forks to preserve the state of the primary thread and workspace.
+
+
+
+\begin{table}[t]
+\centering
+\caption{Core entities managed by the gateway in the agent orchestration runtime.}
+\label{tab:runtime_entities}
+\begin{tabular}{ll}
+\toprule
+\textbf{Entity} & \textbf{Description} \\
+\midrule
+\textit{Project} & A persistent container for a long-lived task or workflow. \\
+\textit{Task} & A logical unit of work representing a user's intended objective. \\
+\textit{Run} & A concrete execution instance of a task. \\
+\textit{WorkerEvent} & An event emitted by a worker during task execution. \\
+\textit{Delivery} & The mechanism and record through which task results are delivered to the user. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\subsubsection{Training Free Back Brain}
+
+
+The back brain is a training free and general purpose task execution agent, instantiated by systems such as Codex or Claude Code. It is responsible for long horizon reasoning and sustained task execution, including information retrieval, code and file manipulation, document processing, and other tool mediated workflows. In addition to its native file, command line, and retrieval tools, the back brain can invoke three runtime specific interfaces: 1) \texttt{context$\_$fetch}, which retrieves realtime task context, events, and artifacts from the current task lineage based on references, roles, event types, time ranges, and character budgets; 2) \texttt{memory$\_$search}, which retrieves persistent multimodal memories across sessions; 3) \texttt{share}, which returns verified important findings, intermediate progress, or corrective information to the realtime front cerebellum.
+
+
+\subsection{Streaming Thinker-Talker Architecture} \label{subsec:task-construction}
+
+\begin{figure}[t]
+\centering
+% \vspace{-1.2em}
+    \includegraphics[width=0.98\textwidth]{figures/shengpeng/interaction-v7.pdf}
+\caption{
+Detailed architecture of the front cerebellum. The front cerebellum adopts a classic thinker-talker design that ingests streaming audio-visual input and produces both text and speech. The LLM flattens inputs and outputs into a unified chunk stream, predicting a control token within each chunk to decide its interaction behavior, and maintains a lightweight context via a sliding window.
+}
+\label{fig1:shengpengpic4}
+% \vspace{-0.5em}
+\end{figure}
+
+
+In this section, we detail Gander's front cerebellum and its omni interaction capabilities. As illustrated in Figure~\ref{fig1:shengpengpic4}, the front cerebellum builds on a thinker-talker architecture~\cite{cui2026minicpm} that receives streaming audio and video input and 
+generates both textual and audio output. Building on this design, we introduce a streaming chunk flattening mechanism for end-to-end interaction, which flattens perceptual inputs and generated outputs into a unified chunk stream and enables the model to dynamically determine whether to listen or speak at each chunk.
+
+
+
+\subsubsection{Omni Perception} \label{jsp:1}
+
+The front cerebellum senses its environment through two modality encoders that run concurrently, one over the visual stream and one over the acoustic stream, and projects their outputs into the token space of the LLM backbone so that all perceptual evidence is registered on the shared interaction timeline. Neither encoder waits for a complete clip or utterance before yielding representations. Both operate incrementally over fixed duration windows, so that visual and auditory observations are continuously refreshed and exposed to the backbone at every step of the streaming exchange rather than only at turn boundaries. We describe the two perception pathways below.
+
+\vspace{-0.5cm}
+
+\paragraph{Visual perception.} To ingest frames of arbitrary aspect ratio and resolution while keeping the token budget affordable under realtime constraints, the visual pathway follows an any resolution partitioning scheme~\cite{llavauhd}: each frame is first decomposed into a set of slices, every slice is independently encoded by a SigLIP vision transformer~\cite{siglip}, and the resulting patch features are then condensed by a query based resampler~\cite{minicpmv} into a small, fixed number of visual tokens per slice. This yields roughly a $16\times$ reduction relative to the raw patch grid, markedly more aggressive than the $4\times$ compression adopted in many prior omni models, and substantially lowers the per-frame cost of continuous perception. Since full-duplex interaction imposes a stringent latency profile in which frames arrive densely and must be consumed within tight time windows, the cerebellum operates at a compact resolution of up to $448\times448$, which keeps the per-frame token count small enough to sustain continuous perception in real time.
+
+
+\vspace{-0.5cm}
+
+\paragraph{Acoustic perception.} The acoustic stream, which conveys both the ambient scene and user speech, is processed by a streaming and chunk wise speech encoder~\cite{whisper} that emits a dense sequence of frame level features on the order of $50$ frames per second. Passing this rate directly to the backbone would inflate the sequence length and undermine the efficiency that realtime operation demands; we therefore interpose a lightweight MLP projector that applies a $5\times$ temporal downsampling, lowering the effective audio token rate to roughly $10$ tokens per second before the features enter the backbone. This compression retains the phonetic and prosodic cues required for accurate spoken-language understanding while keeping the audio stream commensurate with the backbone's decoding throughput, so that neither modality monopolizes the shared per window budget.
+
+
+Taken together, the two pathways supply the backbone with a compact, time-synchronized view of the surrounding scene at every window. These aligned visual and audio token streams are subsequently interleaved with the model's own outputs through the mechanism detailed in Section~\ref{jsp:2}, which is precisely what enables the front cerebellum to decide, chunk by chunk, whether to continue listening or to begin speaking.
+
+\subsubsection{Streaming Chunk Flattening} \label{jsp:2}
+
+
+To let the front cerebellum perceive and respond within a single autoregressive process, we adopt a flattened interaction formulation in the spirit of recent interaction models~\cite{thinkingmachines2026interactionmodels}, in which all modalities and both input and output are serialized into one causal token stream along a shared temporal axis. Under this view, the user request is no longer a privileged conversational role that gates generation. Instead, incoming speech and vision are treated as part of a continuously observed world state, and the model is situated in an always on environment where \textbf{it must decide not only what to produce but also whether and when to produce it in every chunk}.
+
+Concretely, we partition the continuous interaction into fixed windows of one second and assemble one chunk per window. Each chunk is the flattened concatenation of three time-aligned segments: the encoded audio and visual tokens observed during that one-second window, a predicted control token, and the $N$ text tokens the model chooses to emit in response, where $N$ is determined by the model and may be zero. The interaction is then serialized by concatenating consecutive chunks into a single sequence that is consumed by a standard causal language backbone. Within each chunk, the model first attends to the newly arrived perceptual tokens and only then generates its output, so that every emitted token is conditioned on the most recent observation. Because the model reaches a decision once per window, proactive behavior arises naturally from the same mechanism and no external voice activity detection module is required to trigger responses. Marking the boundaries between the perceptual segment and the generated segment explicitly further helps the model distinguish observed inputs from its own outputs and stabilizes streaming decoding.
+
+We manage context through a fixed budget of $128$ chunks, corresponding to a rolling temporal receptive field of roughly two minutes of interaction. As the dialogue proceeds, this window advances in a sliding manner: once the budget is reached, the oldest chunks are evicted as new ones are appended, so the effective context length stays bounded while the model retains the most recent and interactionally relevant history. This keeps per step inference cost stable over arbitrarily long sessions and prevents unbounded growth of the flattened sequence.
+
+The control token predicted at the head of each chunk's output segment governs the interaction and takes one of three values. 1) A \texttt{listen} token indicates that the model chooses to remain silent for the current window and continue observing, in which case the output segment carries no text and the chunk simply advances perception. 2) A \texttt{speak} token commits the model to generating spoken content in the current window, so that the subsequent $N$ text tokens are produced and passed downstream for speech synthesis. 3) An \texttt{interrupt} token allows the model to halt an ongoing utterance when the evolving context warrants it, for instance when the user begins speaking or the scene changes in a way that makes the in progress response stale. Predicting this discrete control decision before any content is generated decouples the question of whether to speak from the question of what to say, which we find yields more stable full-duplex behavior than entangling the two in a single prediction step.
+
+
+
+\subsubsection{Speech Generation} \label{jsp:3}
+Rather than having the LLM backbone emit acoustic units directly, the front cerebellum decouples semantic planning from acoustic realization and delegates waveform production to a pair of lightweight speech decoders. Forcing a language backbone to autoregress over speech tokens, which are typically emitted at a far higher frame rate than text, both inflates the number of decoding steps per second and tends to erode the model's core linguistic competence~\cite{xie2024miniomni2}. By keeping the backbone in the text domain and offloading acoustic modeling to compact downstream modules, the cerebellum sustains realtime spoken interaction at roughly the cadence of human speech while preserving the reasoning and instruction following behavior of the backbone. The generation pipeline proceeds in two stages: a speech token decoder that produces discrete speech units, followed by a streaming flow matching decoder that renders those units into an audio waveform.
+
+\vspace{-0.5cm}
+
+\paragraph{Speech token generation.} Natural speech requires not only correct pronunciation but also prosody, emphasis, and speaking style that are consistent with the surrounding context and the user's request. We take the final layer hidden state in the backbone, reshape it through a projection layer, and inject it with text token into a small autoregressive speech token decoder that emits the corresponding discrete speech tokens~\cite{du2024cosyvoice1}. Because prosodic and stylistic decisions are effectively pre-encoded in the backbone's hidden states, the speech decoder is relieved of high-level planning and can devote its limited capacity to fine-grained acoustic modeling. The discrete units themselves follow the supervised semantic token formulation of recent scalable speech synthesizers~\cite{du2024cosyvoice2}, which yields a single codebook, low bitrate representation that is well matched to autoregressive prediction. To keep the spoken output tightly coupled to the concurrently observed environment, the input text tokens and the output speech tokens are not generated in separate passes but interleaved along the shared timeline, following the time-aligned scheme described in Section~\ref{jsp:2}.
+
+\vspace{-0.5cm}
+
+\paragraph{Waveform synthesis.} The discrete speech tokens are converted into a continuous waveform by a streaming flow matching decoder~\cite{du2024cosyvoice2,cosyvoice3}. Conditioned on the reference audio carried in the multimodal system prompt, the decoder reconstructs the target mel-spectrogram from the semantic tokens through a conditional flow matching objective and then renders it to audio, which also endows the cerebellum with zero-shot voice control: the timbre and vocal identity of the synthesized speech are determined by the reference rather than fixed at training time. Critically, the decoder operates in a chunk-wise, causal manner so that waveform chunks are emitted incrementally as speech tokens arrive, rather than waiting for the full utterance to be decoded. This streaming design keeps the end-to-end latency of speech output low and allows the audio stream to be produced and played back continuously, which is a prerequisite for the full-duplex interaction the front cerebellum is designed to support.
+
+
+
+
+
+
+
+% Because \verb|E-Bench| withholds the code-execution capability from the solver, a \emph{tool gap} remains between the strong task generator and the solver (Section~\ref{subsec:task-construction}).
+% Our extension \verb|E-Bench|-Code partially closes it by granting the solver the generator's \verb|exec_code| tool, with which the agent writes Python that calls the domain-specific MCP tools as inner-functions---paginating, aggregating, and performing set operations programmatically instead of manually orchestrating long call sequences.
+% All else is held fixed (tasks, tools, database copies, and the state-diff evaluator), so any performance difference is attributable to this interface.
+
+% Importantly, \verb|E-Bench|-Code closes the \emph{tool gap} but not the \emph{information gap}: \verb|exec_code| exposes only the business-level domain-specific APIs, not \verb|query_sql| or raw database access, so agents must still discover hidden targets through the observable environment.
+% The two settings thus isolate complementary abilities: \verb|E-Bench| tests manual coordination over extremely long multi-step tool-call sequences, whereas \verb|E-Bench|-Code tests whether agents extract the relevant information. Comparing them reveals how much difficulty stems from orchestration mechanics versus reasoning about what to retrieve.
+
+
+% \begin{itemize}
+%     \item \emph{Honor of Kings}: A MOBA game platform covering player social interactions, team management, room-based matchmaking, and match review. Agents can query the current user's players, heroes, ranks, friends, teams, rooms, and match records, and perform actions such as adding friends, managing blacklists, creating or dissolving rooms, sending or responding to room invitations, approving team applications, favoriting matches, and purchasing heroes.
+%     \item \emph{QQ Music}: A music platform covering content search, user preferences, and playlist management. Agents can search and inspect songs, artists, albums, playlists, comments, and listening histories, and perform actions such as creating or deleting playlists, adding or removing songs, favoriting songs, and following artists for the current user.
+%     \item \emph{Tencent Meeting}: An enterprise collaboration platform covering organizational structure, group chats, meetings, meeting-room bookings, and employee schedules. Agents can query employees, departments, group chats, meetings, meeting rooms, and schedules, and perform actions such as creating meetings, booking meeting rooms, creating schedules, canceling meetings, managing group-chat members, and transferring employees across departments for the current employee.
+% \end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

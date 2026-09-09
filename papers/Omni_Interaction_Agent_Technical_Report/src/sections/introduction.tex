@@ -1,0 +1,100 @@
+
+
+
+
+\section{Introduction}
+
+
+
+Large Language Models (LLMs) are rapidly evolving from passive language interfaces for question answering and conversation~\cite{yang2025qwen3} into general purpose agents capable of autonomously accomplishing complex tasks~\cite{yao2022react, singh2025openai, anthropic2024claude}. By integrating tool use, environmental interaction, and multi step planning and execution, LLM-based agents~\cite{glm5,kimik3} can go beyond generating textual responses to actively perceive, reason about, and act upon external environments. This emerging agentic paradigm has substantially broadened the role of LLMs, enabling applications ranging from coding and tool-assisted problem solving to complex workflow automation.
+
+
+\begin{figure}[htbp]
+\centering
+\vspace{-1.2em}
+    \includegraphics[width=0.98\textwidth]{figures/omni_pic.pdf}
+\caption{
+Gander is an end-to-end model that unifies omni communication, realtime interactive engagement across diverse and complex scenarios, and agentic execution of multi step tasks in workflow oriented environments.
+}
+\label{fig1:example}
+\vspace{-0.5em}
+\end{figure}
+
+
+Despite the rapid advancement of agentic capabilities, human–AI interaction remains largely confined to \textbf{text based, turn by turn communication}, where users provide instructions and models respond in discrete interaction cycles. This interaction paradigm is fundamentally different from the fluid and collaborative nature of human–human communication, in which \textbf{participants continuously exchange information across modalities, listen and speak concurrently, observe and present contextual information, and flexibly initiate, interrupt, or redirect an ongoing interaction}. A more natural and effective form of human–AI collaboration therefore requires AI systems to move beyond the conventional request response paradigm and participate in interaction as active, continuously engaged collaborators. Realizing such a paradigm requires the integration of three complementary capabilities: 1) comprehensive \textbf{\textit{multimodal}} perception and understanding across speech, vision, and text; 2) continuous, low-latency, and bidirectional \textbf{\textit{interaction}} that supports natural realtime communication; and 3) strong \textbf{\textit{agentic}} capabilities for contextual reasoning, autonomous planning, tool use, and task execution. Together, these capabilities establish the foundation for next-generation multimodal agents that can continuously perceive, communicate, reason, and act in dynamic environments while collaborating with humans to accomplish complex tasks.
+
+
+Realizing the aforementioned human–AI collaboration raises two fundamental questions. First, can truly interactive omni communication be achieved by composing conventional perception and interaction modules, such as VAD~\cite{xu2026fireredasr2s} and ASR~\cite{whisper,funasr}, or must interactivity itself be an intrinsic capability of the model? Second, can a single model simultaneously provide the low-latency responsiveness required for realtime interaction and the long horizon reasoning required for complex agentic tasks? 
+
+
+To address these questions, we present Gander, an Omni Interaction Agent designed to unify realtime multimodal interaction with agentic intelligence. 1) we argue that robust interactivity cannot be treated as an external orchestration layer. Real world human–AI interaction encompasses a diverse range of dynamic conversational scenarios, including spontaneous user interruptions, proactive agent initiated engagement, robust interaction in noisy environments, multi-party conversations, and backchannel (e.g., brief acknowledgments such as “uh-huh,” “right,” and “I see”). These behaviors are difficult to capture reliably through a pipeline that relies on independently designed modules such as VAD~\cite{SileroVAD}. More importantly, \textbf{interactivity should be intrinsic to the model, enabling it to scale with the underlying intelligence}. Inspired by this principle, Gander jointly processes streaming audio-visual inputs and the model’s generated text stream by partitioning all modalities into temporally aligned chunks and organizing them into a unified autoregressive sequence. Within each chunk, the model explicitly predicts whether to listen or speak, thereby learning to dynamically control its interaction state and coordinate perception and generation in realtime. 2) Realtime conversational interaction and complex agentic workflows impose fundamentally different computational and reasoning requirements. Casual conversation demands immediate responses and continuous contextual adaptation, whereas complex workflows often require long horizon reasoning, iterative planning, tool use, and sustained execution. Attempting to satisfy both requirements with a single monolithic model can introduce an inherent trade-off between responsiveness and intelligence. To address this challenge, following~\cite{thinkingmachines2026interactionmodels, huang2026duplexomni,Mind-paced-speaking}, \textbf{we adopt a Brain–Cerebellum style decoupled architecture, conceptually related to recent approaches that separate realtime interaction from asynchronous long horizon reasoning}. In Gander, the Cerebellum is responsible for realtime multimodal interaction, continuous perception, and responsive conversational control, while the Brain serves as a higher capacity reasoning module responsible for complex planning and agentic task execution. The Cerebellum continuously maintains the live interaction context and selectively invokes the Brain through tool calls, providing it with the accumulated textual context, speech transcriptions, and visual frames. The Brain then performs deeper reasoning asynchronously and can proactively return intermediate summaries, plans, or final results to the Cerebellum, which integrates these outputs into the ongoing interaction. Importantly, the Brain is designed as a training-free and plug-and-play component, allowing stronger reasoning models to be incorporated without retraining the core interaction model. Consequently, improvements in the underlying reasoning capability can be directly propagated to the overall system, providing a scalable pathway for simultaneously improving realtime interactivity and agentic intelligence.
+
+
+
+
+% Despite these advances, interactions between humans and LLMs remain predominantly text-based and turn-based. A user issues an instruction, the model generates a response, and the two proceed to the next round of interaction. Such a discrete and rigid interaction paradigm differs substantially from the natural and efficient ways in which humans collaborate. In practice, human–AI collaboration can be significantly more effective when AI systems are able to interact with people in a manner closer to human-to-human collaboration. In an ideal collaborative setting, humans and AI should be able to exchange information continuously and bidirectionally, converse, listen, observe, and present information at any time, while naturally intervening or interrupting the ongoing interaction whenever the context requires.
+
+% Realizing such a collaborative paradigm requires substantially broader capabilities from AI systems. Beyond the ability to perceive and understand information across multiple modalities, including text, speech, and vision, an intelligent agent should support continuous, low-latency, bidirectional interaction and possess strong agentic capabilities to perceive its environment, maintain contextual understanding, and autonomously plan and execute tasks. In this sense, the next generation of intelligent agents should move beyond conventional turn-based question-answering systems toward multimodal agents that can continuously perceive, interact, and act in realtime.
+
+
+
+
+% \begin{figure}[!b]
+% \centering
+% \captionsetup[subfigure]{font=small,skip=2pt}
+% \begin{subfigure}[b]{\textwidth}
+%     \centering
+%     \includegraphics[width=\textwidth]{figures/framwork/task_query_examples.png}
+%     \caption{Representative natural-language tasks across the three domains.}
+%     \label{fig:overview-queries}
+% \end{subfigure}
+% \begin{subfigure}[b]{\textwidth}
+%     \centering
+%     \includegraphics[width=\textwidth]{figures/framwork/overview.png}
+%     \caption{Tool-mediated task execution and deterministic database-diff evaluation.}
+%     \label{fig:overview-execution}
+% \end{subfigure}
+% \caption{Overview of \texttt{E-Bench}. 
+% (a) Natural-language tasks span diverse product domains. 
+% (b) Agents use domain-specific tools in fully-synthetic stateful environments, and are evaluated by comparing database-state diffs to ground truth.
+% }
+% \label{fig:overview_pipeline}
+% \vspace{-1em}
+% \end{figure}
+
+
+% This paradigm underlies many of the most valuable real-world applications, from operating software and querying databases to orchestrating business workflows, yet such environment-grounded agency remains hard to evaluate systematically. Recent benchmarks probe models' ability to invoke APIs correctly~\cite{patil2024gorilla, qin2024toolllm, patil2025the} and to operate in realistic web, OS, and software-engineering environments~\cite{zhou2024webarena, trivedi2024appworld, jimenez2024swebench}. While these reveal weaknesses in planning, tool grounding, and long horizon execution, they center on short tool-use trajectories~\cite{yao2024tau, mialon2023gaia}, isolated API calls~\cite{patil2024gorilla, patil2025the}, or static QA~\cite{rein2024gpqa, hendrycks2021measuring, yang2018hotpotqa} without environment modification, and thus fail to capture agentic capability under partial observability, heterogeneous tools, long horizon dependencies, and precise state-changing operations.
+
+% Moreover, although benchmarks built on real systems offer rich, stateful interactions, they are hard to scale, expensive to annotate, sensitive to data-safety and privacy constraints, and unstable to reproduce as the underlying services evolve~\cite{yao2024tau, liu2024agentbench, xu2024theagentcompany}. They can also be difficult to decontaminate: when tasks depend on public facts, familiar interfaces, or recurring workflows, model performance may reflect prior exposure rather than the ability to actively acquire hidden state through tools. 
+% A faithful benchmark must therefore present a complete, controllable environment in which the model cannot shortcut the intended reasoning, while remaining cheap to scale and safe to release.
+
+
+
+
+% To this end, we introduce \verb|E-Bench|, a \textbf{\textit{fully synthetic}} benchmark for evaluating multi-step tool-use agents. \verb|E-Bench| comprises $323$ state-changing tasks spanning three domains modeled after real products: \textit{Honor of Kings}, \textit{QQ Music}, and \textit{Tencent Meeting}. As illustrated in Figure~\ref{fig:overview_pipeline}, these tasks take the form of realistic natural-language requests (Figure~\ref{fig:overview-queries}) and are solved through tool-mediated interaction with a stateful product environment, with correctness determined by exact database-state differences (Figure~\ref{fig:overview-execution}).
+
+% \verb|E-Bench| is built in two decoupled stages: \emph{environment synthesis} and \emph{task synthesis}. For each domain, we first construct a reusable, fully mocked product environment rather than task-specific state snapshots, and then synthesize many state-changing tasks from this shared environment.
+% In the first stage, we synthesize a large, diverse, and consistent database via \emph{graph-guided database filling}.
+% Specifically, we construct a table-dependency graph from the relational schema and use a powerful LLM to populate tables in topological order, enforcing referential integrity by construction. 
+% This yields an orphan-free, stateful product world rather than tool stubs or task-local fixtures.
+% In the second stage, a privileged task \emph{generator} with SQL and code access explores this environment and authors tasks through a realistic product loop: \emph{inspect data $\rightarrow$ decide targets $\rightarrow$ modify state $\rightarrow$ summarize intent}. For each task, it records the induced database change as a ground-truth diff and annotates the exercised tool-use capabilities. 
+% Since tasks are derived from a shared reusable environment, new tasks can be generated by varying target entities, constraints, and reasoning patterns without redesigning the underlying data. Moreover, because all tasks share a complete underlying environment rather than task-specific, incomplete local snapshots, solvers have greater room to explore the available context, better reflecting the contextual richness encountered in real-world scenarios. 
+
+% During benchmarking, the agent (the \emph{solver}) has no direct database or SQL access. In the base \verb|E-Bench| setting, it is also denied code execution, while \verb|E-Bench|-Code grants this capability. This generator-solver asymmetry creates an \textit{information gap} and a \textit{tool gap}: solvers must discover hidden data, reason from partial observations, and compose available tools (e.g., issuing parallel independent calls) to produce the correct state change. Outcomes are graded deterministically by comparing the final database state with the ground-truth diff, without any LLM judge.
+
+% By evaluating agents through multi-step tool interaction with simulated product environments, \verb|E-Bench| measures their ability to gather necessary information, coordinate tool calls, and decide what to retrieve before acting. Since both environments and tasks are synthetically constructed rather than drawn from real users or live services, \verb|E-Bench| is controllable at the environment level and scalable at the task level for training-oriented use.
+
+For reproducibility, Gander adopts a Thinker-Talker architecture, following recent omni systems such as MiniCPM-o 4.5~\cite{cui2026minicpm} and Qwen Omni~\cite{qwen3.5omni,qwen3omni}, with a Codex based backend. Through extensive training on chat, interaction, omni understanding, and agentic data, as shown in Figure~\ref{fig1:example}, Gander achieves strong performance across dialogue, multimodal understanding, realtime interaction, and agentic capabilities. It also exhibits emerging multimodal behaviors, such as resolving ambiguous references using visual context. As no dedicated benchmark currently exists for Omni Interaction Agents, we follow GPT-4o~\cite{hurst2024gpt4o} and GPT-Live~\cite{openai_gpt_live_system_card_2026} by reporting results on established benchmarks such as BigBenchAudio, together with subjective demos on the project website. \underline{\textit{We will release the data, code, and models to facilitate community research}}, while further exploring real world deployment with our industrial scale Hy-Realtime model.
+
+
+Our contributions are summarized as follows:
+
+$(1)$ We introduce Gander, a unified end-to-end model that \textbf{scales effectively} and natively integrates omni perception, realtime interaction, and long horizon agentic reasoning.
+
+$(2)$ Built on a Brain–Cerebellum collaborative framework with tool call feedback and chunk based streaming, Gander achieves strong capabilities in omni dialogue, interruption, proactive interaction, interference robustness, multiparty backchanneling, reasoning, and agentic capabilities.
+
+% \textbf{An open frontier model.}
+
+$(3)$ We release the Gander model weights and code to facilitate open research, practical deployment, and further advances in Omni Interaction Agents.
+
+

@@ -1,0 +1,50 @@
+\begin{table}[t]
+    \centering
+    \caption{
+        Results on Full-Duplex-Bench~v3 (100 scenarios). The first four metrics are fractions,
+        the last three percentages; baseline numbers are from the benchmark release. Bold marks
+        the best value of each column, excluding the last row. $^{\dagger}$Text-driven and
+        comparable to the cascaded pipeline rather than to the full-duplex rows; the three
+        interaction metrics are not measurable without an audio timeline.
+    }
+    \label{tab:duplex_main}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \renewcommand{\arraystretch}{1.10}
+    \adjustbox{max width=\textwidth}{%
+    \begin{tabular}{lccccccc}
+        \toprule
+        \textbf{Model}
+        & \textbf{ToolSel}$\uparrow$
+        & \textbf{ArgAcc}$\uparrow$
+        & \textbf{RespQual}$\uparrow$
+        & \textbf{Pass@1}$\uparrow$
+        & \textbf{Take-turn}$\uparrow$
+        & \textbf{Interrupt}$\downarrow$
+        & \textbf{Filler}$\downarrow$ \\
+        \midrule
+        GPT-Realtime~\cite{openai_gpt_live_system_card_2026}
+        & \textbf{0.876} & \textbf{0.680} & \textbf{0.792} & \textbf{0.600}
+        & 96.0 & 13.5 & 16.9 \\
+        Gemini Live 3.1~\cite{gemini_live_2026}
+        & 0.817 & 0.588 & 0.718 & 0.540 & 78.0 & 19.2 & 31.7 \\
+        Cascaded (Whisper\,$\rightarrow$\,GPT-4o\,$\rightarrow$\,TTS)~\cite{whisper}
+        & 0.803 & 0.562 & 0.600 & 0.450 & \textbf{100.0} & 33.0 & 26.9 \\
+        Grok~\cite{grok_voice_2026}
+        & 0.797 & 0.542 & 0.617 & 0.430 & 94.0 & 25.5 & 44.3 \\
+        Ultravox v0.7~\cite{ultravox2026}
+        & 0.794 & 0.513 & 0.510 & 0.410 & 96.0 & 47.9 & 88.0 \\
+        Gemini Live 2.5~\cite{gemini_live_2026}
+        & 0.786 & 0.593 & 0.554 & 0.490 & 92.0 & 14.1 & \textbf{8.9} \\
+        \midrule
+        \textbf{Gander}
+        & 0.759 & 0.503 & 0.490 & 0.400
+        & \textbf{100.0} & \textbf{8.0} & 51.6 \\
+        \midrule
+        \textit{Gander, back brain only}$^{\dagger}$
+        & \textit{0.934} & \textit{0.590} & \textit{0.740} & \textit{0.520}
+        & --- & --- & --- \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table}

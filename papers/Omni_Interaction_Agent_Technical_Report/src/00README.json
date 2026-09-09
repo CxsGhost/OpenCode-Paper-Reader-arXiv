@@ -1,0 +1,37 @@
+{
+   "sources" : [
+      {
+         "usage" : "toplevel",
+         "filename" : "main.tex"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "Makefile"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "arXiv-2605.19597v1/hunyuan_arxiv.cls"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "build.sh"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "fancyhdr.sty"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "main.bbl"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "ref.bib"
+      }
+   ],
+   "spec_version" : 1,
+   "texlive_version" : "2025",
+   "process" : {
+      "compiler" : "pdflatex"
+   }
+}

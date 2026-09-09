@@ -1,0 +1,83 @@
+\makeatletter
+\def\input@path{{arXiv-2605.19597v1/}}
+\makeatother
+\PassOptionsToPackage{framemethod=tikz}{mdframed}
+\documentclass[11pt,letterpaper,onecolumn,logo]{hunyuan_arxiv}
+\graphicspath{{}{arXiv-2605.19597v1/}}
+
+\usepackage[authoryear,sort&compress,round]{natbib}
+\usepackage[most,breakable,skins]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{microtype}
+\usepackage{wrapfig}
+\usepackage{listings}
+
+
+
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{
+    arrows.meta,
+    positioning,
+    fit,
+    calc,
+    backgrounds
+}
+
+\newtcblisting{toolcall}{
+    listing only,
+    listing options={
+        basicstyle=\small\rmfamily,
+        columns=fullflexible,
+        keepspaces=true,
+        breaklines=true,
+        breakatwhitespace=false
+    },
+    colback=gray!5,
+    colframe=gray!30,
+    boxrule=0.4pt,
+    arc=1pt,
+    left=6pt,
+    right=6pt,
+    top=1pt,
+    bottom=1pt,
+    before skip=4pt,
+    after skip=4pt
+}
+
+
+\bibliographystyle{plainnat}
+\let\cite\citep
+
+\input{templates/common}
+
+\renewcommand{\topfraction}{0.9}%
+\renewcommand{\bottomfraction}{0.9}%
+\renewcommand{\textfraction}{0.08}%
+\renewcommand{\floatpagefraction}{0.85}%
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+
+\AtBeginDocument{%
+  \setlength{\parindent}{0pt}%
+  \setlength{\parskip}{0.6\baselineskip plus 2pt}%
+}
+
+\makeatletter
+\renewcommand{\abscontent}{}
+\renewenvironment{abstract}
+  {\begin{tcolorbox}[
+      colback=gblue9!5,
+      colframe=gblue9!5,
+      boxrule=0pt,
+      arc=6pt,
+      left=8pt,right=8pt,
+      top=6pt,bottom=6pt,
+      breakable]
+   \absfont}
+  {\end{tcolorbox}\par\bigskip}
+\makeatother

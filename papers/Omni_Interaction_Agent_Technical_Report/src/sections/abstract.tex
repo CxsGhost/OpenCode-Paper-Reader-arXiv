@@ -1,0 +1,25 @@
+% \vspace{1em}
+
+% aa
+
+\begin{abstract}
+
+
+
+In this work, we present \textbf{Gander}, \emph{an end-to-end model that unifies omni perception, realtime interaction, and agentic capabilities within a single framework}. In contrast to turn-based conventional paradigms, \textbf{Gander} continuously receives streaming inputs across multiple modalities, including video, speech, and text, enabling natural full-duplex interaction in both everyday conversations and complex workflow-oriented agent scenarios. Users can interrupt the model at any time, while the model can also proactively provide intermediate feedback or ask follow up questions. To natively support these capabilities, \textbf{Gander} adopts two key architectural designs: 1)\emph{ It employs a Cerebellum-Brain collaborative framework}, in which the Cerebellum is responsible for realtime interaction and omni conversational capabilities, while the Brain handles complex reasoning and higher-level agentic tasks. The two components interact continuously through \emph{tool calling and the agent orchestration runtime}. 2) The Cerebellum is built upon a streaming Thinker-Talker architecture, \emph{user inputs and model outputs are further flattened into an ordered token stream at the chunk level}, providing a unified representation for low latency, continuous interaction. We conduct comprehensive evaluations of \textbf{Gander} across four dimensions: conversational ability, omni understanding, interactive capability, and agentic intelligence. Internal human evaluations demonstrate that Gander maintains the natural and expressive spoken dialogue capabilities of SOTA open source models while achieving competitive performance in omni interaction. \textbf{Gander} also demonstrates robustness in challenging real-world scenarios, including background noise interference, multi-party interactions, and backchannel communication. We release \textbf{Gander} together with its models, code, and data to facilitate further research and development in the community.
+
+
+% Large Language Models (LLMs) are increasingly deployed as agents that interact with stateful environments over multiple steps: gathering hidden information, composing tool calls, and committing state changes. We refer to this capability as \textbf{multi-step tool use}. Existing benchmarks have advanced tool-use agent evaluation, but often focus on isolated API calls, short trajectories, or settings that are difficult to scale or control. We introduce \verb|E-Bench|, a \emph{\textbf{fully synthetic}} benchmark with $323$ state-changing tasks across three product domains: \textit{Honor of Kings}, \textit{QQ Music}, and \textit{Tencent Meeting}. \verb|E-Bench| decouples \emph{environment synthesis} from \emph{task synthesis}: graph-guided database filling builds reusable, orphan-free product environments, while generator-solver asymmetry creates tasks with both an \emph{information gap} and a \emph{tool gap}, requiring agents to discover hidden data and compose multiple tool calls before changing state. Outcomes are graded deterministically by database-state diffs. Since both environments and tasks are synthetic, \verb|E-Bench| is controllable at the environment level and scalable at the task level. Benchmarking $11$ cutting-edge LLMs shows that multi-step tool use remains challenging: Pass$^3$ stays below $60\%$ for the strongest models, and even with code execution in \verb|E-Bench|-Code extension, reliability (Pass$^3$) remains below $70\%$.
+
+\end{abstract}
+
+
+% \footnotetext[1]{
+% $^{\dagger}$Correspondence to shengpengji@zju.edu.cn
+% }
+
+% \footnotetext{$\dagger$ Correspondence to shengpengji@zju.edu.cn}
+
+\setcounter{footnote}{0}
+\renewcommand{\thefootnote}{\arabic{footnote}}
+

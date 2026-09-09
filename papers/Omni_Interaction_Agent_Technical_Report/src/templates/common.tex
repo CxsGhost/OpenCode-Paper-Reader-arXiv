@@ -1,0 +1,67 @@
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage{booktabs,array,tabularx,multirow,ragged2e,xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,backgrounds,calc}
+\usepackage[most]{tcolorbox}
+
+\definecolor{exposeRed}{HTML}{B91C1C}
+\definecolor{exploitAmber}{HTML}{B7791F}
+\definecolor{misleadBlue}{HTML}{1D4ED8}
+\definecolor{judgeBlue}{HTML}{1D4ED8}
+\definecolor{softGray}{HTML}{F3F4F6}
+\definecolor{borderGray}{HTML}{CBD5E1}
+\definecolor{codeBg}{HTML}{F8FAFC}
+\definecolor{codeFrame}{HTML}{D5DDE8}
+\definecolor{codeTitleBg}{HTML}{EEF4FF}
+\definecolor{codeTitleText}{HTML}{1E3A8A}
+\definecolor{codeAccent}{HTML}{2563EB}
+\definecolor{tableHeadBg}{HTML}{EAF1F8}
+\definecolor{tableBandBg}{HTML}{F7FAFC}
+\definecolor{tableGroupBg}{HTML}{F1F5F9}
+\definecolor{tableRule}{HTML}{94A3B8}
+\definecolor{tableText}{HTML}{1F2937}
+
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=*}
+\setlist[enumerate]{leftmargin=*}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{principle}{Principle}[section]
+
+\newcommand{\tablefont}{\small\color{tableText}\renewcommand{\arraystretch}{1.12}}
+\newcommand{\tableheader}{\rowcolor{tableHeadBg}}
+\newcommand{\tablegroup}[2]{\rowcolor{tableGroupBg}\multicolumn{#1}{@{}l}{\itshape #2}}
+\AtBeginEnvironment{tabular}{\arrayrulecolor{tableRule}}
+\AtBeginEnvironment{tabularx}{\arrayrulecolor{tableRule}}
+
+\newtcblisting{boxedcode}[1][]{
+  enhanced,
+  listing only,
+  listing engine=listings,
+  breakable,
+  width=0.88\textwidth,
+  center,
+  colback=codeBg,
+  colframe=codeFrame,
+  colbacktitle=codeTitleBg,
+  coltitle=codeTitleText,
+  fonttitle=\sffamily\bfseries\footnotesize,
+  boxrule=0.45pt,
+  arc=2pt,
+  borderline west={2pt}{0pt}{codeAccent},
+  left=9pt,
+  right=9pt,
+  top=7pt,
+  bottom=7pt,
+  before skip=8pt,
+  after skip=10pt,
+  listing options={
+    basicstyle=\ttfamily\scriptsize\color{black!82},
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true,
+    showstringspaces=false
+  },
+  #1
+}
