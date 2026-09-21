@@ -1,6 +1,6 @@
 # Paper Reader for Claude Code
 
-> **Version**: 1.1.0
+> **Version**: 1.2.0
 > **Purpose**: Automated arXiv paper reading workflow with AI-powered analysis
 > **Language**: All outputs in Chinese (中文)
 
@@ -16,7 +16,7 @@ When a user provides a paper title or arXiv ID, follow these steps:
   - Sanitize title → check if `papers/{sanitized_title}/analysis_report/summary.md` exists
   - If yes: Read and present the summary, inform user "该论文已存在于本地，以下是已有的分析摘要。"
   - If yes: Skip download and summary generation, go directly to Step 5
-- Only proceed to Step 2 if the paper is NOT found locally
+- If NOT found locally: **proceed directly to download and generate report without asking for user confirmation**
 
 ### 2. Download Source
 - URL: `https://arxiv.org/src/{arxiv_id}`
@@ -39,6 +39,12 @@ Read LaTeX source and generate `analysis_report/summary.md` covering:
 - 结论与展望
 - 个人评价
 
+**写入方式（强制）**：必须逐章节分段写入，禁止一次性生成完整长文后写入。具体流程：
+1. 先用 Write 创建文件并写入标题和第一个章节（如"背景与动机"）
+2. 每完成一个章节的分析后，立即用 Edit 追加写入该章节内容
+3. 依次完成所有章节，每个章节独立思考、独立写入
+4. 这样做的目的是确保每个章节都经过充分思考，避免因一次性生成过长内容导致质量下降
+
 ### 4. Push to GitHub
 - Repo: `https://github.com/CxsGhost/opencode-paper-reader-arxiv`
 - Use HTTPS
@@ -60,10 +66,12 @@ Read LaTeX source and generate `analysis_report/summary.md` covering:
   [你的详细回答]
   ```
 - Use Chinese for all outputs
+- **生成额外文档时**同样遵循分段写入原则：先创建文件写入开头，再逐段追加内容
 
 ## Key Constraints
 - arXiv only
 - HTTPS for Git
 - Chinese output
-- Confirm before downloading
+- Download directly if paper not found locally, no confirmation needed
 - Always re-read `.tex` source when answering technical questions
+- **分段写入原则**：所有 markdown 文档生成必须逐章节、逐段落写入，严禁一次性生成完整长文后整体写入。每个章节独立分析、独立写入，确保内容质量
