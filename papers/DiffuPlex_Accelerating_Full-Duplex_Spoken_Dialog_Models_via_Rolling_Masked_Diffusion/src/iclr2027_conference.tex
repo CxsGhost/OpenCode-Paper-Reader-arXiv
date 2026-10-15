@@ -1,0 +1,71 @@
+
+\documentclass{article}
+\usepackage{iclr2027_conference,times}
+
+\input{math_commands.tex}
+\iclrfinalcopy
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{kotex}
+\usepackage{colortbl}
+\usepackage{booktabs}   
+\usepackage{multirow}  
+\usepackage{multicol}    
+\usepackage{array}      
+\usepackage{tabularx}    
+\usepackage{makecell}    
+\usepackage{siunitx}    
+\usepackage{graphicx}  
+\usepackage{bbm}
+\usepackage{subcaption}
+
+\title{DiffuPlex: Accelerating Full-Duplex Spoken Dialog Models via Rolling Masked Diffusion}
+
+\author{Heeseung Kim \\
+Department of Artificial Intelligence \\
+University of Seoul \\
+Seoul, Republic of Korea \\
+\texttt{gmltmd789@uos.ac.kr}
+}
+
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\begin{document}
+
+\maketitle
+\lhead{Preprint. Under review.}
+
+\begin{abstract}
+Recent full-duplex spoken dialog models enable simultaneous listening and speaking, but fine-grained models still advance their backbone autoregressively at every interaction frame.
+We introduce DiffuPlex, a rolling masked diffusion framework that reduces this sequential computation by predicting multiple future user and assistant frames in a single backbone wake.
+DiffuPlex consumes only a confident prefix of each predicted future while interaction continues at the original frame rate.
+As user speech arrives, it checks the corresponding user predictions and, when the interaction diverges, preserves already played assistant content while revising only the unplayed future.
+We consider two inference policies over the same predictor: DiffuPlex-\textsc{Listen} consumes multiple future frames when they predict assistant silence, whereas DiffuPlex-\textsc{Speak} can also consume predicted assistant speech.
+Across full-duplex interaction and spoken-language evaluations, DiffuPlex substantially reduces sequential backbone computation while largely preserving interaction behavior and general capability.
+DiffuPlex-\textsc{Listen} and DiffuPlex-\textsc{Speak} achieve $1.46\times$ and $1.59\times$ deployment-path wall-clock speedups and $1.61\times$ and $1.80\times$ Core LM speedups, with all measured backbone invocations completing within the 80ms interaction interval.
+Human evaluation shows that \textsc{Listen} preserves speech naturalness and conversational quality, while \textsc{Speak} retains conversational quality with some degradation in speech naturalness.
+\end{abstract}
+\input{Sections/introduction}
+\input{Sections/related_work}
+\input{Sections/method}
+\input{Sections/experiments}
+\input{Sections/results}
+\input{Sections/conclusion}
+
+
+\input{Sections/ai_use_statement}
+\input{Sections/ethics_statement}
+\input{Sections/reproducibility_statement}
+
+
+\bibliography{iclr2027_conference}
+\bibliographystyle{iclr2027_conference}
+
+\appendix
+
+\input{Sections/appendix}
+
+\end{document}

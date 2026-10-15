@@ -1,0 +1,8 @@
+\section{Conclusion}
+
+We introduced DiffuPlex, a masked-future prediction framework for reducing sequential forward passes in autoregressive full-duplex speech models.
+Rather than invoking the backbone at every interaction frame, DiffuPlex predicts multiple future positions in a single wake, consumes a confident prefix, and revises only the unplayed future when observed user speech deviates from the prediction.
+Experiments show that this rolling generation reduces backbone wakes and measured Core LM time
+while largely preserving full-duplex interaction behavior and general spoken-language capability.
+Our analyses show that confidence-based retention and revision play complementary roles in controlling future consumption, and identify missing autoregressive audio-token conditioning as a source of degradation in deeper future speech.
+These results suggest that predicting interaction ahead can provide a path toward more compute-efficient real-time full-duplex generation.

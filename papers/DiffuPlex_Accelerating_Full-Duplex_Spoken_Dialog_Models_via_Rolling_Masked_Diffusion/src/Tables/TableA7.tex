@@ -1,0 +1,93 @@
+\begin{table*}[t]
+\centering
+\caption{
+Training-objective and architecture ablations on Full-Duplex-Bench v1.0.
+The shaded rows report the autoregressive PersonaPlex and \texttt{personaplex-rl-seamless} references evaluated under the same protocol.
+The future gate leaves the $h=1$ autoregressive path unchanged; removing it (No gate) allows the learned adapters to modify this path.
+}
+\label{atab:architecture_ablation}
+\scriptsize
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcc cc ccc cc ccc}
+\toprule
+& \multicolumn{2}{c}{Efficiency}
+& \multicolumn{2}{c}{Pause}
+& \multicolumn{3}{c}{Backchannel}
+& \multicolumn{2}{c}{Turn}
+& \multicolumn{3}{c}{Interruption} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-8}
+\cmidrule(lr){9-10}\cmidrule(lr){11-13}
+Variant
+& $c$ & LM$\times$
+& S$\downarrow$ & C$\downarrow$
+& TOR$\downarrow$ & Freq. & JSD$\downarrow$
+& TOR$\uparrow$ & Lat.$\downarrow$
+& TOR$\uparrow$ & Judge$\uparrow$ & Lat.$\downarrow$ \\
+\midrule
+
+\rowcolor{gray!12}
+\texttt{personaplex-rl-seamless} (AR)
+& 1.00 & 1.00
+& .299 & .301 & .218 & .163 & .740
+& 1.000 & .124 & .995 & 4.286 & .281 \\
+
+\midrule
+Default / \textsc{Listen}
+& 1.91 & 1.56 & .277 & .343 & .109 & .140 & .753
+& 1.000 & .173 & .990 & 4.328 & .329 \\
+Default / \textsc{Speak}
+& 2.23 & 1.77 & .263 & .347 & .145 & .154 & .738
+& 1.000 & .156 & .995 & 4.357 & .347 \\
+
+\midrule
+No gate / \textsc{Listen}
+& 1.86 & 1.67 & .292 & .301 & .091 & .176 & .729
+& .983 & .202 & 1.000 & 4.340 & .296 \\
+No gate / \textsc{Speak}
+& 2.11 & 1.89 & .263 & .282 & .109 & .162 & .738
+& .975 & .253 & 1.000 & 4.265 & .265 \\
+
+\midrule
+CE only / \textsc{Listen}
+& 1.76 & 1.44 & .277 & .352 & .091 & .136 & .758
+& 1.000 & .182 & .985 & 4.365 & .512 \\
+CE only / \textsc{Speak}
+& 2.07 & 1.65 & .270 & .324 & .091 & .180 & .729
+& 1.000 & .196 & .980 & 4.332 & .327 \\
+
+\midrule
+w/o token-level text KL / \textsc{Listen}
+& 1.91 & 1.56 & .292 & .347 & .109 & .161 & .738
+& 1.000 & .139 & .985 & 4.259 & .388 \\
+w/o token-level text KL / \textsc{Speak}
+& 2.24 & 1.78 & .270 & .343 & .054 & .219 & .720
+& 1.000 & .121 & .990 & 4.202 & .293 \\
+
+\midrule
+w/o three-way text-state KL / \textsc{Listen}
+& 1.89 & 1.54 & .277 & .389 & .182 & .165 & .737
+& 1.000 & .161 & .980 & 4.250 & .280 \\
+w/o three-way text-state KL / \textsc{Speak}
+& 2.26 & 1.79 & .255 & .324 & .054 & .142 & .747
+& 1.000 & .178 & .990 & 4.318 & .369 \\
+
+\specialrule{0.8pt}{0.5ex}{0.15ex}
+\specialrule{0.4pt}{0pt}{0.5ex}
+
+\rowcolor{gray!12}
+PersonaPlex (AR)
+& 1.00 & --
+& .307 & .343 & .200 & .058 & .824
+& .941 & .285 & .930 & 4.328 & .218 \\
+
+\midrule
+PersonaPlex backbone / \textsc{Listen}
+& 1.76 & 1.44 & .577 & .630 & .400 & .104 & .743
+& .992 & .170 & .905 & 4.243 & 1.277 \\
+PersonaPlex backbone / \textsc{Speak}
+& 2.02 & 1.61 & .606 & .620 & .327 & .112 & .744
+& .966 & .154 & .920 & 4.071 & 1.347 \\
+
+\bottomrule
+\end{tabular}}
+\end{table*}

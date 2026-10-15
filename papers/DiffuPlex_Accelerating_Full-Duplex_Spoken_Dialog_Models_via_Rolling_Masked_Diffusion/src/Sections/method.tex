@@ -1,0 +1,151 @@
+\section{DiffuPlex}
+\label{sec:method}
+
+
+We introduce \textbf{DiffuPlex}, an approach for reducing sequential temporal-backbone calls in full-duplex spoken dialog models.
+We build on \texttt{personaplex-rl-seamless}~\citep{ohashi2026multifacetedinteractivityalignmentfullduplex}, which operates at 12.5Hz, or one interaction frame every 80ms.
+At each frame, its temporal backbone jointly predicts the user and assistant streams, requiring one backbone call per frame.
+Backbone details are in Appendix~\ref{asubsec:backbone_architecture}.
+DiffuPlex instead predicts a short masked future at each backbone call, which we refer to as a \textit{backbone wake}.
+As in Figure~\ref{fig:diffuplex_overview}, each wake produces an assistant draft together with user predictions over the same future interval.
+DiffuPlex consumes only a confident prefix of the draft and revises only the unplayed future when newly arriving user input is inconsistent with the stored user predictions.
+We call this repeated predict-consume-revise process \textit{rolling masked diffusion}, as successive masked-future predictions roll forward with the evolving interaction boundary.
+
+\subsection{Masked Future Prediction}
+\label{subsec:masked_future}
+
+Predicting several future interaction frames in one backbone wake is difficult because farther positions depend on assistant outputs that have not yet been generated and user input that has not yet arrived.
+DiffuPlex replaces these inputs with learned stream-specific MASK tokens.
+At each wake, it predicts $W$ future positions indexed by lookahead $h\in\{1,\ldots,W\}$, where $h=1$ is the ordinary next-frame autoregressive prediction and larger $h$ denotes farther future positions.
+As $h$ increases, additional streams become unavailable and are masked according to their roles and native delays.
+The exact 17-stream layout is shown in Figure~\ref{afig:training_layout} in Appendix~\ref{asubsec:masked_training_layout}.
+
+To reflect the variable number of frames advanced between backbone wakes at inference time, we divide the training dialog into consecutive blocks with lengths $L_{\mathrm{blk}}$ sampled uniformly from $\{1,\ldots,W\}$.
+Lookahead resets to $h=1$ at the start of each block.
+Following the clean-context construction of block diffusion~\citep{ICLR2025_7ede97c3}, we concatenate a clean copy of the sequence with a masked copy tiled by these variable-length blocks.
+Each masked block conditions on the realized clean context preceding it and predicts a fresh future from that point in the interaction.
+
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/Figure2.pdf}
+    \caption{
+    Overview of DiffuPlex.
+    (a) One backbone wake predicts a masked future block with an assistant draft and user predictions.
+    The staircase indicates stream-wise masking of inputs unavailable at that wake; the exact 17-stream layout is shown in Figure~\ref{afig:training_layout} in Appendix~\ref{asubsec:masked_training_layout}.
+    (b) A confident prefix is played at the original 80ms rate without additional backbone wakes, while incoming user frames can trigger revision of only the unplayed future.
+    }
+    \label{fig:diffuplex_overview}
+\end{figure}
+To preserve the pretrained backbone while adapting to future masking, we freeze the backbone and train only stream-specific MASK embeddings and future-gated low-rank adapters (LoRA)~\citep{hu2022lora}.
+The adapters are activated only for future positions using $g(h)=\mathbf{1}[h\geq2]$, and the same gate is applied to the LoRA modules in the depth transformer, which decodes temporal states into audio codebooks.
+Thus, $h=1$ follows the original autoregressive path, while $h\geq2$ uses the learned future path.
+All lookaheads are processed in the same temporal-backbone pass, while the depth transformer remains autoregressive over the audio codebooks within each frame.
+
+We train the masked future to match the frozen autoregressive model on the clean sequence.
+Let $p^{\mathrm{AR}}$ and $p^{\mathrm{mask}}$ denote the clean-teacher and masked-student distributions.
+We minimize
+\begin{align}
+\mathcal{L}_{\mathrm{distill}}
+=&\;
+\frac{1}{|\mathcal{V}_{\mathrm{text}}|}
+\sum_{i\in\mathcal{V}_{\mathrm{text}}}
+\left[
+D_{\mathrm{KL}}
+\left(
+p^{\mathrm{AR}}_{\mathrm{text},i}
+\Vert
+p^{\mathrm{mask}}_{\mathrm{text},i}
+\right)
++
+D_{\mathrm{KL}}
+\left(
+\bar{p}^{\mathrm{AR}}_{\mathrm{text},i}
+\Vert
+\bar{p}^{\mathrm{mask}}_{\mathrm{text},i}
+\right)
+\right]
+\nonumber\\
+&+
+\frac{1}{Z_{\mathrm{audio}}}
+\sum_{q=1}^{Q} w_q
+\sum_{i\in\mathcal{V}_q}
+D_{\mathrm{KL}}
+\left(
+p^{\mathrm{AR}}_{q,i}
+\Vert
+p^{\mathrm{mask}}_{q,i}
+\right),
+\label{eq:distill}
+\end{align}
+where $\mathcal{V}_{\mathrm{text}}$ and $\mathcal{V}_q$ denote positions with valid text and audio targets,
+$q\in\{1,\ldots,Q\}$ indexes audio streams with weights $w_q$,
+$Z_{\mathrm{audio}}=\sum_{q=1}^{Q}w_q|\mathcal{V}_q|$,
+and $\bar{p}_{\mathrm{text}}$ denotes the assistant text distribution grouped into the backbone-defined PAD, EPAD, and lexical states, described in Section~\ref{subsec:rolling_draft_generation}.
+The remaining loss and stream details are provided in Appendix~\ref{asubsec:training}.
+
+\subsection{Rolling Draft Generation}
+\label{subsec:rolling_draft_generation}
+
+Given a predicted future block, DiffuPlex determines how many positions can be retained before the backbone wakes again.
+For a selected assistant text token $y_h$ at lookahead $h$, we define its confidence as
+$C_h=\mathrm{softmax}(z_h)_{y_h}$,
+where $z_h$ is the logits before temperature scaling or top-$k$ filtering.
+Assistant text tokens fall into PAD (no lexical token), EPAD (the final PAD before lexical generation), or lexical states.
+The next-frame prediction at $h=1$ is always retained, regardless of confidence.
+
+To control how aggressively DiffuPlex commits to the predicted future, we use two retention policies.
+DiffuPlex-\textsc{Listen} consumes future positions only during sustained listening.
+We approximate this condition by requiring predicted assistant text states to remain PAD, which indicates the absence of a lexical token.
+DiffuPlex-\textsc{Speak} removes this restriction, permitting retention during both listening and speaking.
+Let $s(y_h)$ denote the state of $y_h$, and let $\mathcal{S}$ denote the states permitted by each policy: $\{\mathrm{PAD}\}$ for \textsc{Listen} and all three states for \textsc{Speak}.
+We retain a contiguous prefix of the $W$ predictions until the first position whose state falls outside $\mathcal{S}$ or whose confidence falls below $\tau_{\mathrm{conf}}$:
+\begin{equation}
+\tilde r =
+\min\left(
+\{h\in\{2,\ldots,W\}: s(y_h)\notin\mathcal{S}\ \lor\ C_h<\tau_{\mathrm{conf}}\}
+\cup \{W+1\}
+\right)-1.
+\label{eq:retained_prefix}
+\end{equation}
+The candidate prefix $\tilde r$ gives the longest run that satisfies both the state and confidence criteria.
+For DiffuPlex-\textsc{Listen}, short PAD runs may reflect non-lexical gaps, such as pauses or transitions within speech, rather than a listening period, since PAD only indicates the absence of a lexical token.
+We therefore require $\tilde r$ to reach a policy-specific minimum length $m$ before consuming future positions:
+\begin{equation}
+r=
+\begin{cases}
+\tilde r, & \tilde r\ge m,\\
+1, & \text{otherwise},
+\end{cases}
+\label{eq:min_retained}
+\end{equation}
+where the values of $m$ and $\tau_{\mathrm{conf}}$ are given in Section~\ref{subsec:experimental_setup}.
+
+The retained assistant frames are played at the original 80ms rate without additional backbone wakes, while the corresponding user predictions are stored for the revision check in Section~\ref{subsec:user_aware_revision}.
+At the next wake, previously predicted positions are replaced by the received user and played assistant frames, which are processed together with a newly masked future in a single forward pass.
+
+\subsection{User-Aware Draft Revision}
+\label{subsec:user_aware_revision}
+
+The retained draft may become inconsistent with the evolving user interaction.
+DiffuPlex therefore compares stored user predictions with their corresponding observed frames,
+without waking the backbone again.
+At lookahead $h$, let $x_h$ denote the received user semantic token and $q_h$ its stored predicted distribution, and let $y_h$ and $P_h$ denote the selected assistant text token and its stored distribution.
+
+We revise the draft using two signals: how unlikely the received user token $x_h$ was under the stored user prediction and how weakly the assistant preferred its selected token over valid alternatives.
+Let $\mathcal{A}_h(y_h)$ denote the valid alternative assistant text tokens to $y_h$.
+Revision is triggered when
+\begin{equation}
+-\log q_h(x_h)
++\log P_h(\mathcal{A}_h(y_h))
+-\log P_h(y_h)
+\geq \tau_{\mathrm{rev}}.
+\label{eq:revision}
+\end{equation}
+Here, $\tau_{\mathrm{rev}}$ is the revision threshold, with its value given in Section~\ref{subsec:experimental_setup}.
+The first term increases when the received user token is unlikely under the stored prediction, while the remaining terms make revision easier when the assistant is less committed to its selected token.
+For $h\geq2$, this criterion can be motivated as an approximate posterior-odds test between
+keeping and revising the current draft; its derivation and the construction of $\mathcal{A}_h(y_h)$ are provided in Appendix~\ref{asubsec:inference}.
+
+If the criterion is not met, playback continues from the existing draft without another backbone wake.
+Otherwise, DiffuPlex discards only the unplayed future and wakes the backbone from the updated interaction, while all received user frames and played assistant frames remain as context.

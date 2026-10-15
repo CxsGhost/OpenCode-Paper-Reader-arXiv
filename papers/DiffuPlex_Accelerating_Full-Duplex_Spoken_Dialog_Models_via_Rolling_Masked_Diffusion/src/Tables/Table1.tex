@@ -1,0 +1,91 @@
+\begin{table*}[t]
+\caption{
+Full-duplex interaction and human evaluation on Full-Duplex-Bench v1.0.
+RL-Seamless denotes \texttt{personaplex-rl-seamless}, and $c$ is the average number of interaction frames advanced per backbone wake.
+Syn. and Can. denote the Synthetic and Candor pause sets.
+TOR denotes turn-over rate; Freq., backchannel frequency; JSD, Jensen--Shannon divergence of backchannel timing; Lat., response latency; and Judge, the \textit{gpt-5.6-luna} response-appropriateness score for interruption responses (reasoning effort: none).
+NMOS and DMOS denote naturalness and dialog mean opinion scores, reported as mean $\pm$ 95\% confidence interval.
+}
+\label{tab:full_duplex_results}
+\centering
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.05}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l
+                c
+                cc
+                ccc
+                cc
+                ccc
+                cc}
+\toprule
+& \multicolumn{1}{c}{Efficiency}
+& \multicolumn{2}{c}{Pause}
+& \multicolumn{3}{c}{Backchannel}
+& \multicolumn{2}{c}{Turn-taking}
+& \multicolumn{3}{c}{Interruption}
+& \multicolumn{2}{c}{Human} \\
+\cmidrule(lr){2-2}
+\cmidrule(lr){3-4}
+\cmidrule(lr){5-7}
+\cmidrule(lr){8-9}
+\cmidrule(lr){10-12}
+\cmidrule(lr){13-14}
+Model
+& $c \uparrow$
+& Syn. $\downarrow$
+& Can. $\downarrow$
+& TOR $\downarrow$
+& Freq.
+& JSD $\downarrow$
+& TOR $\uparrow$
+& Lat. $\downarrow$
+& TOR $\uparrow$
+& Judge $\uparrow$
+& Lat. $\downarrow$
+& NMOS $\uparrow$
+& DMOS $\uparrow$ \\
+\midrule
+Moshi
+& 1.00
+& 0.993 & 1.000
+& 0.582 & 0.184 & 0.679
+& 1.000 & 0.000
+& 0.765 & 3.359 & 1.229
+& $3.52 \pm 0.15$ & $2.86 \pm 0.20$ \\
+
+PersonaPlex
+& 1.00
+& 0.307 & 0.343
+& 0.200 & 0.058 & 0.824
+& 0.941 & 0.285
+& 0.930 & 4.328 & 0.218
+& $3.90 \pm 0.12$ & $4.10 \pm 0.13$ \\
+
+RL-Seamless
+& 1.00
+& 0.299 & 0.301
+& 0.218 & 0.163 & 0.740
+& 1.000 & 0.124
+& 0.995 & 4.286 & 0.281
+& $3.93 \pm 0.12$ & $4.09 \pm 0.14$ \\
+\midrule
+DiffuPlex-\textsc{Listen}
+& 1.91
+& 0.277 & 0.343
+& 0.109 & 0.140 & 0.753
+& 1.000 & 0.173
+& 0.990 & 4.328 & 0.329
+& $3.92 \pm 0.11$ & $4.08 \pm 0.13$ \\
+
+DiffuPlex-\textsc{Speak}
+& 2.23
+& 0.263 & 0.347
+& 0.145 & 0.154 & 0.738
+& 1.000 & 0.156
+& 0.995 & 4.357 & 0.347
+& $3.54 \pm 0.12$ & $4.07 \pm 0.13$ \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

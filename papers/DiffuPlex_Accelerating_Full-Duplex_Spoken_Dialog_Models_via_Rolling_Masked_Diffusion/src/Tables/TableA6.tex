@@ -1,0 +1,102 @@
+\begin{table*}[t]
+\centering
+\caption{
+Complete deferred-execution runtime results.
+$c_{60}$ is measured on the fixed runtime subset and $c_{727}$ over the complete Full-Duplex-Bench v1.0 evaluation.
+All speedups are relative to the autoregressive backbone.
+For \textsc{Silero} and \textsc{Smart Turn}, controller decisions are precomputed and replayed during the timed loop, so controller inference is excluded from these wall-clock measurements.
+}
+\label{atab:runtime_deferred}
+\scriptsize
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lrrrrrrrr}
+\toprule
+System
+& $c_{60}$ & $c_{727}$
+& Wall (s) & Wall speedup
+& E2E GPU (s) & E2E speedup
+& Core LM (s) & Core speedup \\
+\midrule
+AR backbone
+& 1.000 & 1.000
+& 745.7 & 1.000$\times$
+& 745.3 & 1.000$\times$
+& 656.8 & 1.000$\times$ \\
+\midrule
+\textsc{PAD} $R=2$
+& 1.531 & 1.447
+& 527.8 & 1.413$\times$
+& 526.9 & 1.415$\times$
+& 433.0 & 1.517$\times$ \\
+\textsc{PAD} $R=4$
+& 2.163 & 1.911
+& 405.7 & 1.838$\times$
+& 404.5 & 1.842$\times$
+& 308.2 & 2.132$\times$ \\
+\textsc{PAD} $R=6$
+& 2.525 & 2.202
+& 363.0 & 2.054$\times$
+& 361.9 & 2.060$\times$
+& 264.7 & 2.482$\times$ \\
+\textsc{PAD} $R=8$
+& 2.805 & 2.383
+& 337.6 & 2.209$\times$
+& 336.4 & 2.216$\times$
+& 239.1 & 2.747$\times$ \\
+\midrule
+\textsc{Silero} $R=2$
+& 1.416 & 1.346
+& 561.1 & 1.329$\times$
+& 560.2 & 1.330$\times$
+& 468.0 & 1.403$\times$ \\
+\textsc{Silero} $R=4$
+& 1.789 & 1.629
+& 467.2 & 1.596$\times$
+& 466.1 & 1.599$\times$
+& 371.5 & 1.768$\times$ \\
+\textsc{Silero} $R=6$
+& 1.955 & 1.753
+& 432.2 & 1.725$\times$
+& 431.1 & 1.729$\times$
+& 339.8 & 1.933$\times$ \\
+\textsc{Silero} $R=8$
+& 2.055 & 1.823
+& 418.8 & 1.781$\times$
+& 417.7 & 1.784$\times$
+& 324.0 & 2.027$\times$ \\
+\midrule
+\textsc{Smart Turn} $R=2$
+& 1.494 & 1.414
+& 537.3 & 1.388$\times$
+& 536.4 & 1.390$\times$
+& 443.8 & 1.480$\times$ \\
+\textsc{Smart Turn} $R=4$
+& 1.964 & 1.772
+& 434.1 & 1.718$\times$
+& 433.1 & 1.721$\times$
+& 338.8 & 1.938$\times$ \\
+\textsc{Smart Turn} $R=6$
+& 2.211 & 1.942
+& 396.7 & 1.880$\times$
+& 395.6 & 1.884$\times$
+& 301.3 & 2.180$\times$ \\
+\textsc{Smart Turn} $R=8$
+& 2.355 & 2.038
+& 380.6 & 1.960$\times$
+& 379.4 & 1.964$\times$
+& 283.6 & 2.316$\times$ \\
+\midrule
+DiffuPlex-\textsc{Listen}
+& 1.977 & 1.910
+& 512.4 & 1.455$\times$
+& 511.1 & 1.458$\times$
+& 408.4 & 1.608$\times$ \\
+DiffuPlex-\textsc{Speak}
+& 2.264 & 2.230
+& 469.1 & 1.590$\times$
+& 467.8 & 1.593$\times$
+& 365.5 & 1.797$\times$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}

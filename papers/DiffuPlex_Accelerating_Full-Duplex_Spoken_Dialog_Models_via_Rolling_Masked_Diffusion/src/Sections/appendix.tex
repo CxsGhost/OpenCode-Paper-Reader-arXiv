@@ -1,0 +1,980 @@
+\appendix
+\newpage
+
+\section{Limitations}
+\label{asec:limitations}
+
+DiffuPlex has several limitations that suggest directions for future work.
+First, DiffuPlex is adapted from a pretrained autoregressive backbone rather than trained natively for masked-future generation.
+We freeze the original backbone and train future-gated LoRA adapters together with learned MASK embeddings using self-distillation from the autoregressive model.
+This design makes it possible to add masked-future prediction without retraining the full model, but it also means that the backbone was not originally optimized to represent several uncertain future interaction frames at once.
+A model trained specifically for masked-future generation may therefore make better use of the additional future context.
+
+Second, DiffuPlex separates future prediction from the decisions about how much of that prediction to use.
+The predictor is trained to model future user and assistant frames, whereas retention and revision are controlled by inference-time rules based on prediction confidence and a fixed revision threshold.
+These rules work well in our experiments, but they are not learned jointly with the future predictor.
+Jointly learning future prediction, retention, and revision could allow the model to better trade off computation, interaction responsiveness, and prediction reliability.
+
+Third, aggressive future consumption remains more difficult during assistant speech than during listening.
+DiffuPlex-\textsc{Speak} reduces backbone wake frequency more aggressively, but this comes with lower speech naturalness.
+As analyzed in Section~\ref{subsec:draft_analysis} and Appendix~\ref{asubsec:future_speech}, one contributor is the loss of same-frame semantic conditioning for deeper future acoustic codebooks: when predicting farther into the future, the acoustic codebooks can no longer condition on the assistant semantic codebook that would normally already be available under autoregressive generation.
+Our interventions show that restoring same-frame cb0 improves acoustic-token prediction, while autoregressive replay recovers much of the measured quality gap; neither provides a practical solution to future speech generation.
+Improved future audio modeling is therefore still needed before long assistant-speech segments can be consumed as reliably as silent listening segments.
+
+Finally, our main experiments use \texttt{personaplex-rl-seamless} as the backbone.
+We additionally apply the same training and inference framework to PersonaPlex~\citep{11463413} in Appendix~\ref{asubsec:backbone_ablation}.
+Although this variant still reduces the number of backbone wakes, its full-duplex interaction behavior degrades substantially, particularly on pause handling and interruption behavior.
+This result suggests that transferring DiffuPlex across backbone checkpoints is not automatic and may depend on the interaction behavior already learned by the underlying model.
+We have not yet evaluated the method on substantially different full-duplex architectures.
+Moreover, the measured wall-clock and Core LM speedups depend on the evaluated hardware, software stack, and implementation.
+Evaluating DiffuPlex across additional architectures and deployment environments remains important future work.
+
+\section{Demo Page}
+\label{asec:demo}
+Selected audio examples and qualitative demonstrations of DiffuPlex are available at \url{https://diffuplex.github.io/}.
+
+\section{Full-Duplex Backbone and Stream Alignment}
+\label{asec:backbone}
+
+\subsection{Backbone Architecture}
+\label{asubsec:backbone_architecture}
+
+We build DiffuPlex on \texttt{personaplex-rl-seamless}~\citep{ohashi2026multifacetedinteractivityalignmentfullduplex}, a post-trained PersonaPlex checkpoint that follows the Moshi-style full-duplex architecture~\citep{defossez2024moshispeechtextfoundationmodel}.
+The model operates at 12.5Hz, corresponding to one interaction frame every 80ms, and represents the two sides of the conversation using parallel user and assistant streams.
+Its temporal backbone models the interaction across successive positions, while a depth transformer autoregressively predicts the audio codebooks associated with each position.
+
+The model contains one assistant text stream together with eight Mimi~\citep{defossez2024moshispeechtextfoundationmodel} audio codebooks for the assistant and eight for the user.
+Following the terminology and training objective of the backbone, we refer to codebook 0 (cb0) as the semantic codebook and codebooks 1--7 (cb1--7) as the acoustic codebooks.
+An important difference from the original Moshi architecture is that PersonaPlex~\citep{11463413} predicts audio codebooks for both sides of the interaction: whereas Moshi's depth transformer predicts eight assistant audio codebooks, PersonaPlex predicts eight assistant and eight user codebooks, for 16 audio streams in total.
+This joint user-assistant prediction structure is retained by the post-trained \texttt{personaplex-rl-seamless} backbone and, consequently, by DiffuPlex.
+The predicted user audio is not played back; during streaming inference, the actual user codebooks are supplied by the incoming audio stream, while the generated assistant codebooks are used for playback.
+In our measurements using the official implementations, PersonaPlex and \texttt{personaplex-rl-seamless} require more Core LM time and wall-clock time than Moshi on the same runtime subset, as shown in Table~\ref{tab:runtime_results}.
+
+The backbone uses a native one-position delay between cb0 and cb1--7.
+As a result, when the temporal backbone computes the representation used to predict cb1--7 for a physical frame, cb0 from that same frame is already available as an input.
+This allows same-frame semantic information to influence the temporal representation itself before the depth transformer predicts the acoustic codebooks.
+Without this delay, cb0 and cb1--7 of the same frame would be generated from the same temporal state, leaving their within-frame dependency to be modeled only by the depth transformer.
+We describe this alignment precisely in Appendix~\ref{asubsec:stream_alignment}; Moshi reports a theoretical algorithmic latency of 160ms for this streaming architecture~\citep{defossez2024moshispeechtextfoundationmodel}.
+Despite jointly modeling both sides of the interaction, temporal generation remains autoregressive: under ordinary inference, the temporal backbone is evaluated once every 80ms as the interaction advances.
+DiffuPlex targets this sequential temporal-backbone schedule while leaving the underlying stream organization, native delays, and the backbone's original next-frame prediction shift unchanged.
+
+\subsection{Exact Stream Alignment}
+\label{asubsec:stream_alignment}
+
+The backbone uses 17 streams in the following order:
+one assistant text stream, eight assistant Mimi codebooks, and eight user Mimi codebooks.
+Their native delays are
+\begin{equation}
+\Delta =
+[0,\,
+0,\underbrace{1,\ldots,1}_{7},\,
+0,\underbrace{1,\ldots,1}_{7}],
+\label{aeq:stream_delays}
+\end{equation}
+where $\Delta_k=0$ for assistant text, assistant cb0, and user cb0, and $\Delta_k=1$ for cb1--7 of both speakers.
+
+These delays mean that a model position should not be interpreted as containing all codebooks from the same physical interaction frame.
+We use zero-based indices for both model positions $p=0,1,\ldots$ and physical interaction frames $f=0,1,\ldots$; references to negative frame indices correspond to the backbone's initial tokens.
+For stream $k$ with native delay $\Delta_k$, the input and prediction target at model position $p$ are
+\begin{equation}
+\mathrm{input}[k,p]
+=
+\mathrm{frame}(p-1-\Delta_k),
+\qquad
+\mathrm{target}[k,p]
+=
+\mathrm{frame}(p-\Delta_k).
+\label{aeq:stream_alignment}
+\end{equation}
+Thus, for streams with $\Delta_k=0$, position $p$ receives frame $p-1$ and predicts frame $p$.
+For streams with $\Delta_k=1$, the same position receives frame $p-2$ and predicts frame $p-1$.
+Equivalently, a physical user frame $f$ becomes available to the temporal backbone at position $f+1$ for cb0 and at position $f+2$ for cb1--7.
+The one-step autoregressive input-to-target shift is preserved for every stream, while the physical frame represented at a given model position depends on its stream-specific delay.
+
+This alignment is particularly important for the assistant acoustic codebooks.
+To predict cb1--7 of physical frame $f$, ordinary autoregressive generation uses model position $f+1$.
+At this position, assistant cb0 of the same physical frame $f$ is already part of the temporal-backbone input.
+Same-frame semantic information can therefore influence the temporal representation before that representation is passed to the depth transformer.
+The depth transformer remains autoregressive over the codebooks and can also model dependencies among codebooks within its decoding sequence, but the native delay additionally exposes same-frame cb0 to the temporal backbone itself.
+Without this delay, cb0 and cb1--7 of the same physical frame would be generated from the same temporal state, leaving their same-frame dependency to the depth transformer rather than incorporating cb0 into the temporal representation.
+
+DiffuPlex preserves this native delay pattern.
+It masks only inputs that would not yet have been generated or observed at the backbone wake that predicts a future position.
+This distinction becomes important in our analysis of future speech generation in Appendix~\ref{asubsec:future_speech}.
+
+\subsection{Masked Training Layout}
+\label{asubsec:masked_training_layout}
+
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/FigureA1.pdf}
+    \caption{
+    Training sequence layout for masked future prediction.
+    A clean and masked copy of the same 17-stream sequence are concatenated to form a sequence of length $2T$.
+    The masked dialog region is tiled by variable-length blocks, with lookahead $h$ reset at every block start.
+    Inputs unavailable at that backbone wake are replaced by learned stream-specific MASK tokens: assistant streams from $h\geq2$, user cb0 from $h\geq3$, and user cb1--7 from $h\geq4$.
+    Native stream delays are unchanged.
+    The staircase denotes stream-wise input availability rather than an attention mask; temporal attention remains causal.
+    }
+    \label{afig:training_layout}
+\end{figure*}
+
+
+Figure~\ref{afig:training_layout} shows the exact training layout used for masked future prediction.
+For each training example, we concatenate a clean copy of the original sequence with a masked copy of the same sequence, producing a sequence of length $2T$.
+The clean copy preserves the realized interaction.
+In the masked copy, only the dialog region is modified; the system-prompt region remains unchanged.
+
+The masked dialog region is divided into consecutive blocks.
+For each block, its length is sampled independently as
+\begin{equation}
+L_{\mathrm{blk}}
+\sim
+\mathcal{U}\{1,\ldots,W\},
+\label{aeq:block_length}
+\end{equation}
+where $W=16$ for the main model.
+The final block is truncated if it reaches the end of the dialog region.
+Within every block, the lookahead index resets to
+$h=1,\ldots,L_{\mathrm{blk}}$.
+This construction exposes the model to different future distances from a backbone wake while conditioning on a varying amount of realized interaction available at each block boundary.
+
+For each lookahead, we replace only inputs that would not yet be causally available when that future position is predicted.
+The masking schedule is
+\begin{equation}
+\begin{aligned}
+h=1 &: \quad \text{no streams are masked},\\
+h\ge2 &: \quad \text{assistant text and assistant cb0--7 are masked},\\
+h\ge3 &: \quad \text{user cb0 is additionally masked},\\
+h\ge4 &: \quad \text{user cb1--7 are additionally masked}.
+\end{aligned}
+\label{aeq:mask_schedule}
+\end{equation}
+Each stream uses its own learned MASK embedding.
+The asymmetry between assistant and user streams reflects their different availability at inference.
+Future assistant outputs have not yet been generated and are therefore masked from $h=2$.
+By contrast, user audio observed during the current 80ms interaction frame becomes available as input only at subsequent model positions.
+Under the native delay pattern, user cb0 remains available at $h=2$ and is masked from $h=3$, while user cb1--7 remain available through $h=3$ and are masked from $h=4$, at which point all user streams are masked.
+The native delays in Eq.~\ref{aeq:stream_delays} are left unchanged.
+
+The staircase in Figure~\ref{afig:training_layout} therefore describes \emph{input availability}, not an attention mask.
+Temporal attention remains causal.
+For a position in the masked copy, attention includes the realized context preceding its block from the clean copy and masked positions up to the current position within the same block.
+It does not attend to later positions in the current block or to positions from preceding blocks in the masked copy.
+Instead, interaction preceding the current block boundary is provided by the corresponding clean context.
+Each block therefore represents a fresh future prediction from the realized interaction at its boundary, rather than a continuation of the preceding masked block.
+At $h=1$, no input is replaced by MASK, so the input is identical to the original next-frame autoregressive path.
+
+\section{Implementation Details}
+\label{asec:implementation}
+
+\subsection{Data Processing}
+\label{asubsec:data_processing}
+
+We train DiffuPlex on Seamless Interaction~\citep{agrawal2025seamlessinteractiondyadicaudiovisual}, a large corpus of face-to-face dyadic conversations recorded on separate speaker channels.
+The source dataset contains more than 4,000h of interaction from more than 4,000 participants and includes both naturalistic conversations and improvised scenarios.
+We process the two speaker channels jointly so that their original conversational timing, including pauses, overlaps, and interruptions, is preserved. 
+We first resample all audio to 24kHz.
+Each channel is transcribed with Qwen3-ASR-1.7B~\citep{shi2026qwen3asrtechnicalreport}, using English as the fixed language, and the resulting transcript is aligned to the waveform at the word level using Qwen3-ForcedAligner-0.6B~\citep{shi2026qwen3asrtechnicalreport}.
+We use Silero VAD~\citep{SileroVAD} to identify speech activity and encode each channel with the same Mimi codec used by the backbone, producing eight codebooks at 12.5Hz.
+The resulting aligned representation therefore retains the original 80ms interaction grid used by \texttt{personaplex-rl-seamless}.
+
+We apply session-level filtering before constructing training examples.
+We first remove sessions containing residual non-Latin transcription.
+We then filter sessions for microphone leakage using a transcript-similarity threshold of 0.30 and an overlap threshold of 0.20.
+We additionally remove one-sided conversations in which either speaker has no transcribed words, sessions with low speech density where speech occupies less than 60\% of the active region, sessions with an active region shorter than 30s, sessions containing an intermediate silence longer than 10s, and sessions with strong speaker imbalance where either speaker accounts for at least 75\% of the total speaking duration.
+After filtering, 42,613 sessions remain and 21,717 are excluded.
+
+From the retained sessions, we reserve 200 session-disjoint conversations, approximately 14h, for validation.
+The remaining training split contains 42,413 sessions totaling 2,728.5h of conversation from 3,516 participants.
+It contains 28,242 naturalistic sessions totaling 1,628.7h and 14,171 improvised sessions totaling 1,099.8h.
+We use both speaker assignments as training examples when valid voice references are available, resulting in 84,183 role-conditioned training examples.
+
+We additionally construct a voice-reference pool for each speaker.
+Candidate references are between 2s and 10s long, contain at least three ASR words, and are normalized to $-24$ LUFS.
+We retain up to six references per channel and mark a reference as clean when it does not overlap speech from the other channel.
+During training, we preferentially select a clean reference that lies outside the sampled interaction window, so that voice conditioning does not expose speech from the target region.
+
+\subsection{Training}
+\label{asubsec:training}
+
+We optimize the distillation objective in Eq.~\ref{eq:distill} over positions belonging to the dialog region.
+System-prompt positions, padding, and positions without defined targets under the backbone's native stream delays are excluded from the loss.
+Following the backbone objective, we use $w_q=1$ for the semantic codebook of each speaker and $w_q=0.02$ for cb1--7.
+The distribution $\bar p_{\mathrm{text}}$ groups the full assistant-text distribution $p_{\mathrm{text}}$ into the three interaction states PAD, EPAD, and lexical.
+Because most text positions are non-lexical, matching $p_{\mathrm{text}}$ alone can underemphasize the coarse interaction-state distinctions that govern full-duplex behavior, including when the assistant remains silent, begins speaking, backchannels, or yields to user speech.
+We therefore additionally distill $\bar p_{\mathrm{text}}$ to preserve these conversational dynamics, assigning its KL term equal weight to the KL on $p_{\mathrm{text}}$.
+The losses are pooled over all valid positions rather than normalized separately by future lookahead.
+
+We train the stream-specific MASK embeddings and future-gated LoRA adapters described in Section~\ref{subsec:masked_future}.
+LoRA is applied to both the temporal backbone and the depth transformer with rank 128 and scaling factor 2.0, and the MASK vectors are initialized with norm-matched random directions.
+Each sampled training window contains at most 2,047 code frames; after inserting the backbone's initial token and applying the native stream-delay construction, this yields 2,048 temporal model positions, corresponding to approximately 163.8s at 12.5Hz.
+The clean and masked copies are concatenated as described in Appendix~\ref{asubsec:masked_training_layout}, and we do not prepend additional dialog context outside the sampled window.
+We construct the training prompt in the same form used by PersonaPlex: a speaker voice reference is followed by six silence frames, the persona text prompt, and another six silence frames, while the user side is filled with the backbone's sine-wave conditioning during this priming region.
+When several valid voice references are available, we preferentially use one outside the sampled dialog window.
+
+We optimize for 526 steps using AdamW~\citep{loshchilov2019decoupledweightdecayregularization} with learning rate $10^{-4}$, weight decay $0.1$, and gradient clipping at $1.0$.
+We use a OneCycle learning-rate schedule with a 15\% warmup followed by cosine decay, bfloat16 precision, gradient checkpointing, and random seed 0.
+The per-GPU batch size is 4 with two gradient-accumulation steps on four NVIDIA RTX A6000 GPUs, giving an effective batch size of 32.
+Training processes 16,832 sampled windows drawn from 8,480 distinct sessions, corresponding to approximately 702h of conversational audio.
+We save checkpoints every 263 steps and use the final checkpoint at step 526 for all main experiments.
+
+\subsection{Inference}
+\label{asubsec:inference}
+
+For all main experiments, we use a future horizon of $W=16$, a confidence threshold of $\tau_{\mathrm{conf}}=0.80$, and a revision threshold of $\tau_{\mathrm{rev}}=-0.5$.
+As described in Section~\ref{subsec:rolling_draft_generation}, the ordinary next-frame prediction at $h=1$ is always retained.
+DiffuPlex-\textsc{Listen} retains positions beyond $h=1$ only while the sampled assistant text state remains PAD and requires a minimum candidate prefix of $m=6$, whereas DiffuPlex-\textsc{Speak} permits PAD, EPAD, and lexical states with $m=2$.
+If the candidate prefix does not reach the policy-specific minimum, we retain only $h=1$.
+Thus, \textsc{Listen} advances conservatively through predicted PAD states, while \textsc{Speak} can additionally consume confidently predicted EPAD and lexical states.
+
+Apart from the retention and revision rules, we preserve the original backbone sampling procedure.
+Assistant audio codebooks are sampled with temperature $0.8$ and top-$k=250$, while assistant text uses temperature $0.7$ and top-$k=25$.
+Following Section~\ref{subsec:rolling_draft_generation}, retention confidence is computed from the probability of the sampled assistant text token under the logits before temperature scaling and top-$k$ filtering.
+We use random seed 0 for all main evaluations.
+We also retain the official PersonaPlex priming procedure: the \texttt{SC0001.wav} voice prompt is encoded first, followed by six silence frames, the system text prompt, and another six silence frames.
+Task-specific system prompts are provided with their corresponding evaluation protocols in Appendix~\ref{asec:evaluation_details}.
+After priming, incoming user audio is encoded by Mimi at 12.5Hz following the autoregressive backbone.
+
+At each backbone wake, DiffuPlex predicts a future block and selects a contiguous prefix for retention.
+The assistant audio codebooks of the retained frames are decoded in parallel across temporal positions, while remaining autoregressive over codebooks within each frame, then placed in a playback queue and emitted at their original 80ms interaction times.
+The corresponding future user distributions are stored only for consistency checking; actual incoming user frames, rather than these predictions, form the realized interaction used at the next backbone wake.
+The temporal backbone wakes again when the retained prefix is exhausted or when newly observed user input triggers revision of the unplayed future.
+
+The revision check uses the distributions stored at the backbone wake that produced the current draft.
+For lookahead $h$, let $x_h$ denote the observed user semantic token, $q_h$ its stored predicted distribution, $y_h$ the sampled assistant text token, and $P_h$ the corresponding stored assistant text distribution.
+At $h=1$, $x_1$ is the user semantic token for the frame that has just arrived at the wake boundary. Because of the backbone's autoregressive shift, $q_1$ predicts this token from earlier context, even though the observed $x_1$ is already available to deeper draft positions in the same wake. We therefore use $q_1(x_1)$ only to measure how surprising the newly arrived boundary frame was, rather than to verify a future prediction. Starting from $h=2$, the corresponding user token has not yet arrived when the wake is computed, so $q_h$ is a genuine prediction of future user input that can be checked once $x_h$ is later observed. For these future positions, we let $H_0$ denote that the observed user input remains consistent with the current draft and $H_1$ that the unplayed future should be revised.
+By Bayes' rule,
+\begin{equation}
+\frac{P(H_1\mid x_h)}{P(H_0\mid x_h)}
+=
+\frac{P(H_1)}{P(H_0)}
+\frac{p(x_h\mid H_1)}{p(x_h\mid H_0)}.
+\label{aeq:revision_bayes_impl}
+\end{equation}
+
+Under $H_0$, the stored user prediction directly provides the likelihood of the received token,
+\begin{equation}
+p(x_h\mid H_0)=q_h(x_h).
+\end{equation}
+Under $H_1$, however, no corresponding user distribution is available: obtaining one would require generating an alternative future after revision with an additional temporal-backbone wake.
+Doing so would defeat the purpose of deciding whether to revise using only information already available from the current draft.
+We therefore use a position-independent reference likelihood,
+\begin{equation}
+p(x_h\mid H_1)\approx\xi.
+\end{equation}
+This does not require $\xi$ to be a calibrated likelihood under an explicit alternative future.
+Because the same positive constant is used at every position, it only sets the reference scale against which $q_h(x_h)$ is compared; in log space, its effect is a constant offset that can be absorbed into the revision threshold.
+Thus, the user-side evidence varies only with how surprising the received token is under the stored prediction.
+
+We use the assistant distribution stored at the same wake as a proxy for the assistant-side prior odds:
+\begin{equation}
+\frac{P(H_1)}{P(H_0)}
+\approx
+\frac{P_h(\mathcal{A}_h(y_h))}
+     {P_h(y_h)},
+\end{equation}
+where $\mathcal{A}_h(y_h)$ denotes the valid alternatives to the sampled assistant text token.
+A larger ratio indicates that the assistant distribution assigned more mass to valid alternatives relative to the token selected in the draft.
+
+Combining these approximations gives
+\begin{equation}
+\frac{P(H_1\mid x_h)}{P(H_0\mid x_h)}
+\approx
+\frac{P_h(\mathcal{A}_h(y_h))}
+     {P_h(y_h)}
+\frac{\xi}{q_h(x_h)}.
+\end{equation}
+Taking log odds,
+\begin{equation}
+\log
+\frac{P(H_1\mid x_h)}{P(H_0\mid x_h)}
+\approx
+-\log q_h(x_h)
++
+\log P_h(\mathcal{A}_h(y_h))
+-
+\log P_h(y_h)
++
+\log\xi.
+\end{equation}
+
+Let $\tilde{\tau}_{\mathrm{rev}}$ denote the decision threshold on these approximate log odds.
+Since $\xi$ is constant across positions, we absorb $\log\xi$ into the threshold by defining
+\begin{equation}
+\tau_{\mathrm{rev}}
+=
+\tilde{\tau}_{\mathrm{rev}}-\log\xi.
+\end{equation}
+The implemented revision score is therefore
+\begin{equation}
+S_h
+=
+-\log q_h(x_h)
++
+\log P_h(\mathcal{A}_h(y_h))
+-
+\log P_h(y_h),
+\label{aeq:revision_score_impl}
+\end{equation}
+and revision is triggered when
+\begin{equation}
+S_h \geq \tau_{\mathrm{rev}}.
+\end{equation}
+
+We construct $\mathcal{A}_h(y_h)$ according to the assistant text-state transitions of the backbone.
+Let $s_{h-1}$ denote the preceding assistant text state.
+At the first position of a draft, $s_{h-1}$ is the last realized assistant state; at later positions, it is the state of the preceding drafted token $y_{h-1}$.
+The valid alternatives are defined as follows:
+\begin{itemize}
+    \item \textbf{PAD.}
+    If $s_{h-1}$ is PAD, the next state can only remain PAD or transition to EPAD, since lexical generation must be preceded by EPAD.
+    The alternative mass is therefore the probability assigned to the other valid state.
+
+    \item \textbf{EPAD.}
+    If $s_{h-1}$ is EPAD, the next token must be lexical.
+    For a sampled lexical token $y_h$, the alternatives are all other lexical tokens, with total probability mass
+    \begin{equation}
+    P_h(\mathcal{A}_h(y_h))
+    =
+    1-P_h(\mathrm{PAD})-P_h(\mathrm{EPAD})-P_h(y_h).
+    \end{equation}
+
+    \item \textbf{Lexical.}
+    If $s_{h-1}$ is lexical, the next token may be lexical, PAD, or EPAD.
+    Every token other than the sampled $y_h$ is therefore a valid alternative, giving
+    \begin{equation}
+    P_h(\mathcal{A}_h(y_h))
+    =
+    1-P_h(y_h).
+    \end{equation}
+\end{itemize}
+
+Computing Eq.~\ref{aeq:revision_score_impl} requires only the stored distributions and the newly observed user token and therefore does not itself invoke the temporal backbone.
+If revision is triggered, all assistant frames that have already been emitted and all user frames that have already been observed remain fixed.
+Only the unplayed portion of the draft is discarded.
+The stored future predictions are cleared, the unplayed region is returned to the masked state, and the next backbone wake predicts a new future from the updated realized interaction.
+Revision never modifies audio that has already been played.
+
+For the signal-decomposition ablations in Appendix~\ref{asubsec:revision_decomposition}, we calibrate the user-only and assistant-only revision thresholds on a fixed subset of Full-Duplex-Bench v1.5~\citep{11463576} to approximately match the average number of interaction frames per backbone wake ($c$) of the full revision score.
+These calibrated variants are compared only on Full-Duplex-Bench v1.0~\citep{11433838}, which is not used for threshold selection.
+Full-Duplex-Bench v1.5 is not used to select any other inference hyperparameters.
+Finally, as an implementation sanity check, setting $W=1$ disables future prediction and reduces DiffuPlex to ordinary frame-by-frame generation.
+Under matched priming, streaming user encoding, sampling, and random seed, we verify token-level equivalence between this path and the official autoregressive inference implementation.
+
+\subsection{Deferred-Execution Baselines}
+\label{asubsec:deferred_baselines}
+
+The deferred-execution baselines test whether backbone calls can be reduced without predicting future interaction.
+Rather than generating a future block as DiffuPlex does, these methods retain the original autoregressive backbone and decide only whether its next update can be postponed.
+All three baselines use the same frozen \texttt{personaplex-rl-seamless} backbone, with no MASK embeddings or LoRA adapters, and share the same deferred-execution mechanism described below.
+They differ only in the controller signal used to determine when deferral is permitted.
+Deferral is permitted only while the assistant is silent: we require both the previously emitted assistant text token to be PAD and the corresponding decoded assistant-audio frame to have RMS below a silence threshold $\tau_{\mathrm{sil}}$.
+The audio condition is necessary because PAD tokens can also occur within spoken regions; using the text stream alone can therefore incorrectly classify an ongoing utterance as silence.
+We set $\tau_{\mathrm{sil}}=2.74670\times10^{-4}$ from the official PersonaPlex silence codebooks by streaming-decoding 2,000 silence frames, discarding the first 25 frames to remove decoder warm-up effects, taking the 99th percentile of the remaining RMS values ($2.19736\times10^{-4}$), and adding a 25\% margin.
+No evaluation audio is used to determine this threshold.
+
+While execution is deferred, the assistant text stream is fixed to PAD and the official silence audio codebooks are used for the assistant streams, respecting the backbone's native stream delays.
+Incoming user audio continues to be encoded by Mimi and is stored normally.
+When the controller wakes the backbone, the accumulated known user inputs and imposed assistant-silence trajectory are processed causally in a single temporal-backbone call, whose final position produces the next autoregressive prediction and avoids an additional redundant backbone call.
+We cap each deferred segment by a maximum run length $R\in\{2,4,6,8\}$ interaction frames.
+The count includes the current backbone wake; for example, $R=6$ consists of the current wake followed by at most five deferred frames.
+
+\noindent\textbf{\textsc{PAD}.}
+The \textsc{PAD} controller uses only the backbone's own assistant-text prediction.
+At an eligible silent backbone wake, if the sampled assistant text token is PAD with probability at least $0.80$, the controller starts a deferred segment, using the same sampled-token probability definition as the DiffuPlex confidence criterion.
+Because no new backbone prediction is produced during the deferred frames, the segment continues until the maximum run length $R$ is reached.
+Thus, for $R=6$, the qualifying wake is followed by five deferred frames, after which the backbone is forced to wake again and produce a new autoregressive prediction.
+If the PAD condition is not satisfied at a wake, no new deferral is started.
+This baseline therefore tests whether confident current-frame silence alone is sufficient to postpone future autoregressive updates without an external speech or turn detector.
+
+\noindent\textbf{\textsc{Silero}.}
+The \textsc{Silero} controller uses \textsc{Silero VAD} v6.2.1~\citep{SileroVAD} in streaming mode on the incoming user audio.
+Audio is resampled to 16kHz mono and processed causally in 512-sample (32ms) chunks using the official \texttt{VADIterator}.
+We use a speech threshold of $0.5$, the released hysteresis exit threshold of $0.35$, \texttt{min\_silence\_duration\_ms}$=200$, and \texttt{speech\_pad\_ms}$=0$.
+When the user is speaking, the backbone remains deferred while \textsc{Silero} continues to process the incoming audio.
+The backbone wakes at whichever occurs first: \textsc{Silero} reports that the user has been silent for at least 200ms, or the deferred segment reaches the maximum run length $R$.
+Thus, if speech continues throughout an $R=6$ segment, the qualifying wake is followed by five deferred frames before the backbone is forced to wake again.
+All \textsc{Silero} decisions are causal: we act only when the streaming VAD reports a transition, without shifting the decision back to an earlier estimated speech boundary.
+
+\noindent\textbf{\textsc{Smart Turn}.}
+The \textsc{Smart Turn} controller augments the same \textsc{Silero} frontend with \textsc{Smart Turn} v3.2\footnote{\url{https://huggingface.co/pipecat-ai/smart-turn-v3}}, using the released INT8 CPU model \texttt{smart-turn-v3.2-cpu.onnx}.
+At each \textsc{Silero}-detected speech end, \textsc{Smart Turn} is evaluated on the most recent user-audio context, truncated to the latest 8s and zero-padded at the beginning when shorter.
+If the completion probability is at least $0.5$, the backbone wakes; otherwise, it remains deferred.
+Deferral then continues until a later speech end produces a completion probability of at least $0.5$, the maximum run length $R$ is reached, or 3s of continuous silence forces a wake.
+For the primary \textsc{Smart Turn} baseline, we account for the controller's measured inference latency: a completion decision is applied at the first 80ms interaction frame after its result becomes available.
+If the user resumes speaking before that result is available, the decision is discarded as stale.
+
+\textsc{Silero} and \textsc{Smart Turn} decisions are precomputed before timed generation and replayed at their corresponding interaction times, so that controller execution does not affect GPU timing.
+We therefore exclude controller inference from the reported streaming-model runtime and report its CPU cost separately.
+For the primary \textsc{Smart Turn} configuration, the measured controller cost is 13.90 CPU-ms per interaction second, approximately 80\% of which comes from the continuously running \textsc{Silero} frontend.
+
+
+\section{Evaluation Details}
+\label{asec:evaluation_details}
+
+We provide the complete evaluation protocols for the interaction, general-capability, and runtime results reported in the main paper.
+Unless otherwise stated, all systems use the inference configuration in Appendix~\ref{asubsec:inference}.
+Model names and system prompts follow the corresponding backbone or benchmark conventions described below.
+
+\subsection{Full-Duplex Benchmarks}
+\label{asubsec:full_duplex_benchmarks}
+
+We evaluate full-duplex interaction using Full-Duplex-Bench v1.0~\citep{11433838} and v1.5~\citep{11463576}.
+Unlike the single-turn spoken-language benchmarks considered later, these evaluations preserve continuous full-duplex generation throughout the input, since when the assistant chooses to speak, remain silent, backchannel, or yield is itself part of the behavior being measured.
+
+\paragraph{Full-Duplex-Bench v1.0.}
+Full-Duplex-Bench v1.0 contains 727 clips spanning four interaction behaviors.
+Pause handling consists of 216 Candor~\citep{doi:10.1126/sciadv.adf3197} clips and 137 synthetic clips, smooth turn-taking contains 119 Candor clips, backchanneling contains 55 ICC~\citep{umair-etal-2024-large} clips, and user interruption contains 200 synthetic clips.
+For each example, the user waveform is streamed through Mimi and the assistant generates freely until the input waveform ends; assistant activity is never suppressed during the interaction.
+
+We follow the system-prompt convention of \texttt{personaplex-rl-seamless}.
+Pause handling, smooth turn-taking, and backchanneling use
+\texttt{You enjoy having a good conversation.},
+whereas user interruption uses
+\texttt{You are a wise and friendly teacher. Answer questions or provide advice in a clear and engaging way.}
+We use the official \texttt{SC0001.wav} voice prompt and the priming procedure described in Appendix~\ref{asubsec:inference}.
+
+We use the official benchmark evaluation scripts and metric definitions.
+Turn-Over Rate (TOR) measures whether the assistant takes a conversational turn; the official evaluator counts an output as a turn when an ASR transcription is present and either its duration is at least 1s or it contains more than three words.
+Lower TOR is preferred for pause handling and backchanneling, where a full assistant response is generally undesirable, whereas higher TOR is preferred for smooth turn-taking and user interruption.
+For smooth turn-taking and interruption, latency measures the onset of the first assistant word relative to the end of the corresponding user input.
+Backchannel frequency measures how often the model produces backchannels, and backchannel JSD measures the Jensen-Shannon divergence between their timing distribution and the reference ICC distribution.
+For user interruption, response appropriateness (Judge) is additionally scored on the official 1--5 scale.
+We use \texttt{nvidia/parakeet-tdt-0.6b-v2}~\citep{pmlr-v202-xu23g} for ASR-dependent metrics and \textit{gpt-5.6-luna}\footnote{\url{https://developers.openai.com/api/docs/models/gpt-5.6-luna}} with reasoning disabled for the interruption judge, while retaining the official prompt.
+
+\paragraph{Full-Duplex-Bench v1.5.}
+Full-Duplex-Bench v1.5 contains 498 examples covering background speech (100), talking to another person (100), user backchannels (98), and user interruptions (200).
+Each example provides an input containing the target overlap event together with a corresponding clean input in which that event is absent.
+We therefore run each system separately on both \texttt{input.wav} and \texttt{clean\_input.wav} and apply the official paired evaluation protocol to the resulting outputs.
+Background speech, talking-to-other, and user-backchannel examples use the conversational system prompt above, while user interruption uses the teacher prompt.
+
+The benchmark measures how assistant behavior changes in response to the overlap event.
+Its official evaluation includes response-behavior distributions, stop and response latency, and changes in speech characteristics before and after the event, including UTMOSv2~\citep{10832315}, speaking rate, pitch statistics, and intensity statistics.
+For the LLM-based behavior classification, we use \textit{gpt-5.6-luna} with reasoning disabled while retaining the official evaluation prompt.
+We apply the benchmark's paired pre/post comparisons as provided by the official evaluator.
+Complete Full-Duplex-Bench v1.5 results are reported in Appendix~\ref{asubsec:additional_full_duplex}.
+
+
+\subsection{General Spoken-Language Benchmarks}
+\label{asubsec:general_benchmarks}
+
+Full-duplex interaction metrics test whether DiffuPlex preserves conversational behavior, but do not establish whether future prediction changes the backbone's general response capability.
+We therefore additionally evaluate VoiceBench~\citep{chen-etal-2026-voicebench} and OpenAudioBench~\citep{li2025baichuanaudiounifiedframeworkendtoend} under a common single-turn protocol.
+VoiceBench contains 7,783 examples from nine tasks: AlpacaEval (636), CommonEval (200), WildVoice (1,000), SD-QA with the U.S. accent split (553), OpenBookQA (455), MMSU (3,074), BBH (1,000), IFEval (345), and AdvBench (520).
+We exclude the 46-example MT-Bench subset because it requires a multi-turn evaluation protocol that does not match the single-turn setting used here.
+For OpenAudioBench, we evaluate the four English subsets, Llama Questions (300), Web Questions (1,000), TriviaQA (1,000), and AlpacaEval (199), yielding 2,499 examples.
+We exclude the remaining Reasoning QA subset, which is released in Chinese, because the backbone and our speech-to-speech transcription pipeline are English-only.
+
+Both benchmarks assume that the complete spoken instruction is received before response generation begins.
+We adapt them to the continuously running full-duplex backbone following the Moshi~\citep{defossez2024moshispeechtextfoundationmodel} evaluation pipeline in VoiceBench.
+While the instruction waveform is streamed normally through Mimi, the assistant output streams are constrained to silence, and free generation begins immediately after the final instruction frame.
+This prevents incidental full-duplex behavior, such as backchannels produced during the question, from being interpreted as part of the benchmark answer while leaving the subsequent response unconstrained.
+Because the backbone does not emit an EOS event for spoken generation, we append a 163.84s silent user tail, corresponding to 2,048 interaction frames, after each instruction.
+Once assistant speech has begun, generation terminates after 8.0s of continuous assistant silence; if this condition is never reached, generation ends at the end of the appended tail.
+The silence counter begins only after the instruction has finished.
+Both benchmarks use the conversational system prompt \texttt{You enjoy having a good conversation.} and the sampling configuration in Appendix~\ref{asubsec:inference}.
+
+We evaluate both the model's native text output and the speech ultimately presented to the user.
+For speech-to-text (s$\rightarrow$t), we directly score the assistant text stream from the free-generation region after removing the backbone's special text tokens, without using ASR.
+For speech-to-speech (s$\rightarrow$s), we remove the instruction-aligned prefix from the generated assistant audio, transcribe the remaining speech with \texttt{nvidia/parakeet-tdt-0.6b-v2}, and apply the original benchmark scorers to the resulting transcription.
+For judge-based tasks, we use \textit{gpt-5.6-luna} with reasoning disabled while retaining the official task prompts and aggregation procedures.
+Complete per-task results for both output modalities are reported in Appendix~\ref{asubsec:additional_general}.
+
+
+\subsection{Runtime Measurement}
+\label{asubsec:runtime_measurement}
+
+We measure runtime on a fixed subset of 60 Full-Duplex-Bench v1.0 clips using a single NVIDIA RTX A6000 GPU.
+The subset contains 15 examples from each of the four interaction categories.
+Within each category, we select examples to cover the range of assistant-silence fractions observed under the autoregressive \texttt{personaplex-rl-seamless} reference; for pause handling, we additionally include examples from both the Candor and synthetic sources.
+This subset is selected once and reused unchanged for every system, so the runtime evaluation does not depend on each system's own speaking behavior.
+
+We distinguish three notions of runtime.
+\emph{Streaming wall time} measures elapsed time through the deployment-path streaming loop and therefore includes Python and CPU control, synchronization, and GPU execution.
+\emph{E2E GPU time} accumulates GPU execution for the complete streaming inference pipeline, including the speech codec path.
+\emph{Core LM time} measures GPU execution of the language-model generation core alone.
+All speedups are computed relative to the autoregressive \texttt{personaplex-rl-seamless} reference under the same measurement path, excluding file writing, ASR, judging, and benchmark scoring.
+To separate how often the temporal backbone runs from the cost of each wake, we define the number of interaction frames advanced per backbone wake as
+\begin{equation}
+c
+=
+\frac{\text{total interaction frames}}
+     {\text{total backbone wakes}}.
+\end{equation}
+The relative Core LM time per wake reported in Table~\ref{tab:runtime_results} is the average Core LM time per backbone wake normalized by the autoregressive reference.
+This distinction is important because a DiffuPlex wake processes a future block and can therefore be more expensive than a single autoregressive wake, while still reducing total Core LM time by invoking the backbone less frequently.
+
+GPU totals are measured with CUDA timing while avoiding unnecessary synchronization.
+Wake-frame latency is measured separately on the streaming critical path, with synchronization when the temporal backbone is invoked, and the initial CUDA graph capture is excluded.
+We report the p99 wake-frame latency together with the fraction
+whose wall-clock latency exceeds 80ms, the duration of one interaction frame.
+For the deferred-execution baselines in Appendix~\ref{asubsec:deferred_baselines}, controller decisions are computed causally in advance and replayed during the timed generation loop so that controller execution does not perturb GPU timing.
+\textsc{Silero} and \textsc{Smart Turn} inference is therefore excluded from streaming wall time and measured separately.
+The primary \textsc{Smart Turn} pipeline requires approximately 13.90ms of controller processing per interaction second in our setup, with approximately 80\% of this time spent in the continuously running \textsc{Silero} frontend.
+The runtime comparison therefore separates backbone streaming cost from this additional CPU-side controller computation.
+Runtime measurements for the main systems are reported in
+Table~\ref{tab:runtime_results}, with deferred-execution results
+in Appendix~\ref{asubsec:additional_runtime}.
+
+\subsection{Statistical Testing}
+\label{asubsec:statistical_testing}
+
+For Full-Duplex-Bench v1.0, we compare DiffuPlex-\textsc{Listen} and DiffuPlex-\textsc{Speak} separately with the autoregressive \texttt{personaplex-rl-seamless} backbone using paired statistical tests over ten interaction metrics per policy: the two pause-handling TORs; backchannel TOR, frequency, and JSD; smooth-turn TOR and latency; and interruption TOR, response score, and latency, yielding 20 comparisons in total. We use the exact McNemar test for binary clip-level outcomes, including TOR, and a two-sided Wilcoxon signed-rank test for paired continuous or ordinal measurements. We jointly correct the resulting 20 tests using the Holm procedure and report both unadjusted and Holm-adjusted results in Appendix~\ref{asubsec:paired_significance}. A non-significant result after correction is interpreted only as an absence of detected evidence of a difference under these tests, not as evidence of formal equivalence.
+
+\section{Human Evaluation}
+\label{asec:human_evaluation}
+
+
+\begin{figure*}[p]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/FigureNMOS.pdf}
+    \caption{
+    NMOS evaluation interface.
+    Evaluators rate the speech quality and naturalness of the assistant response following the user interruption on a five-point scale.
+    }
+    \label{afig:nmos_interface}
+\end{figure*}
+\clearpage
+
+\begin{figure*}[p]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/FigureDMOS.pdf}
+    \caption{
+    DMOS evaluation interface.
+    Evaluators rate the complete interaction on a five-point scale while focusing on interruption handling and conversational flow.
+    }
+    \label{afig:dmos_interface}
+\end{figure*}
+\clearpage
+
+We conduct two complementary human evaluations on Amazon Mechanical Turk (MTurk) using user-interruption examples from Full-Duplex-Bench v1.0.
+Naturalness mean opinion score (NMOS) evaluates only the assistant speech following the interruption, whereas dialog mean opinion score (DMOS) evaluates the complete interaction, including how the assistant yields to the interruption and resumes afterward.
+For each assignment, outputs from the compared systems correspond to the same underlying interaction, with presentation order randomized and model identities hidden.
+
+
+
+
+\paragraph{Speech naturalness.}
+For NMOS, evaluators hear only the assistant response following the interruption and answer, ``How would you rate the overall speech quality and naturalness?'', on a five-point scale from 1 (\textit{Very poor}) to 5 (\textit{Excellent}).
+They are instructed to judge speech quality and naturalness, including pronunciation, prosody, rhythm, and audio artifacts, while ignoring speaker identity, accent, speaking style, and personal voice preference.
+Before rating, workers are provided with fixed reference recordings illustrating approximate scores of 5, 3, and 1 for scale calibration.
+Each assignment includes two attention checks: an intentionally silent recording and a known score-1 calibration item, both of which must receive a score of 1.
+Assignments that fail either check are discarded and recollected from a new worker.
+The interface requires every recording to be played in full before submission.
+The final NMOS analysis contains 200 valid assignments from 120 workers.
+
+
+\paragraph{Conversational interaction.}
+For DMOS, evaluators hear the complete interaction and answer, ``How natural is the conversational flow and interruption handling?'', on a five-point scale from 1 (\textit{Very unnatural}) to 5 (\textit{Very natural}).
+They are instructed to judge whether the assistant yields at an appropriate time, avoids talking over the user, waits while the user is speaking, resumes appropriately, and produces a response that fits the user's continued or revised request.
+Because DMOS is intended to isolate interaction behavior, evaluators are explicitly instructed to ignore acoustic quality, including synthesis artifacts, timbre, speaker identity, accent, and pronunciation.
+Each assignment contains one attention-check interaction with the normal user channel but a completely silent assistant channel, which must receive a score of 1.
+Assignments that fail this check are discarded and recollected from a new worker.
+The interface requires every recording to be played in full before submission.
+The final DMOS analysis contains 180 valid assignments from 84 workers.
+
+\input{Tables/TableA1}
+
+\section{Additional Results}
+\label{asec:additional_results}
+
+
+\subsection{Paired Significance Results}
+\label{asubsec:paired_significance}
+
+
+\input{Tables/TableA2}
+\input{Tables/TableA3}
+
+Table~\ref{atab:paired_significance} reports the 20 paired Full-Duplex-Bench v1.0 comparisons defined in Appendix~\ref{asubsec:statistical_testing}.
+Each comparison uses the same clips for the autoregressive backbone and DiffuPlex, so the test asks whether the two systems behave differently on matched examples rather than comparing independent sets of outputs.
+For binary outcomes such as TOR, we use the exact McNemar test, which examines how often the two systems disagree on the same clips.
+For continuous or ordinal quantities such as latency, backchannel frequency, JSD, and interruption score, we use the two-sided Wilcoxon signed-rank test, which compares the paired differences across clips without assuming that those differences are normally distributed.
+The raw $p$-value measures the evidence for a difference in each individual comparison, while the Holm-adjusted $p$-value additionally accounts for testing 20 hypotheses jointly.
+We use the adjusted values when determining statistical significance.
+None of the 20 comparisons remains significant after Holm correction, so these tests do not detect a statistically significant difference between DiffuPlex and the autoregressive backbone on any evaluated metric.
+This should not be interpreted as evidence that the systems are formally equivalent.
+
+\input{Tables/TableA4}
+\input{Tables/TableA5}
+
+\subsection{Full-Duplex-Bench v1.5}
+\label{asubsec:additional_full_duplex}
+
+Tables~\ref{atab:fdb_v15_behavior} and~\ref{atab:fdb_v15_acoustic} report the Full-Duplex-Bench v1.5 behavioral and speech-feature analyses under the protocol described in Appendix~\ref{asubsec:full_duplex_benchmarks}.
+Across the four overlap conditions, DiffuPlex shows broadly similar response and resume patterns to the autoregressive backbone.
+For user interruptions, the response rate is $0.94$ for the backbone and $0.95$ and $0.96$ for DiffuPlex-\textsc{Listen} and DiffuPlex-\textsc{Speak}, respectively.
+For user backchannels, DiffuPlex resumes the interrupted response more often than the backbone ($0.92$ and $0.91$ versus $0.74$) while producing fewer new responses ($0.06$ versus $0.11$).
+The talking-to-other and background-speech conditions show smaller, mixed shifts in response and resume behavior.
+
+Table~\ref{atab:fdb_v15_acoustic} follows the benchmark's speech-feature analysis for user-interruption trials classified as \textsc{Respond}.
+All three systems exhibit a large post-interruption increase in speaking rate, together with higher mean intensity and lower intensity variability.
+Mean pitch decreases significantly for both DiffuPlex policies but not for the autoregressive backbone, while pitch variability does not change significantly for any system.
+UTMOSv2 remains statistically unchanged for the autoregressive backbone and increases slightly for both DiffuPlex policies.
+These tests evaluate pre/post changes within each system; they do not test whether the magnitude of those changes differs significantly across systems.
+
+
+\input{Tables/TableA6}
+
+\subsection{VoiceBench and OpenAudioBench}
+\label{asubsec:additional_general}
+
+Tables~\ref{atab:voicebench_full} and~\ref{atab:oab_full} provide the per-task results underlying the aggregate VoiceBench and OpenAudioBench scores reported in the main paper.
+As defined in Appendix~\ref{asubsec:general_benchmarks}, speech-to-text ($s\!\rightarrow\!t$) directly evaluates the native assistant text stream, whereas speech-to-speech ($s\!\rightarrow\!s$) evaluates a transcription of the generated assistant audio.
+DiffuPlex-\textsc{Listen} remains close to the autoregressive backbone across both benchmarks, while DiffuPlex-\textsc{Speak} shows mixed changes across modalities, with its largest aggregate reduction on OpenAudioBench speech-to-speech.
+The changes are spread across multiple tasks rather than being driven by a single benchmark category.
+
+\subsection{Deferred-Execution Runtime Results}
+\label{asubsec:additional_runtime}
+
+The detailed runtime decomposition for the autoregressive backbone, model baselines, and DiffuPlex is reported in Table~\ref{tab:runtime_results} in the main paper.
+Table~\ref{atab:runtime_deferred} reports the corresponding runtime measurements for the deferred-execution baselines.
+Larger deferral limits can produce higher raw speedups by forcing longer periods of assistant silence between autoregressive backbone updates; the resulting interaction trade-offs are analyzed in the main paper.
+For \textsc{Silero} and \textsc{Smart Turn}, controller decisions are replayed during timed generation, so controller inference is excluded from the reported runtime.
+Measured separately, the \textsc{Smart Turn} controller pipeline requires approximately 13.90ms of CPU processing per interaction second, with approximately 80\% of this cost attributable to the continuously running Silero frontend.
+
+
+\section{Additional Ablations}
+\label{asec:additional_ablations}
+
+The main paper focuses on the two inference components that directly determine whether a predicted future can be used during live interaction: confidence-based retention and user-aware revision.
+Here, we broaden the analysis to the training objective, future-gated adaptation, model and training scale, train-test horizon mismatch, inference thresholds, future attention, and the two signals used by the revision rule.
+Unless otherwise stated, all ablations are evaluated on the 727 clips of Full-Duplex-Bench v1.0 with the same prompts, sampling configuration, and seed as the main experiments.
+
+For the sweep tables below, $c$ denotes the number of interaction frames advanced per backbone wake.
+We additionally report the pooled LM speedup recorded during the ablation sweep.
+This quantity is useful for comparing configurations within the sweep, but is distinct from the controlled wall-clock, E2E GPU, and Core LM measurements reported in Table~\ref{tab:runtime_results}.
+Metric definitions follow Appendix~\ref{asubsec:full_duplex_benchmarks}.
+
+\subsection{Training Objective and Architecture}
+\label{asubsec:backbone_ablation}
+
+We first vary components that determine how the masked future predictor is learned.
+The default model freezes \texttt{personaplex-rl-seamless}, applies LoRA only for lookaheads $h\geq2$, and distills the clean autoregressive distributions into the masked path.
+We compare this model with several changes to the training objective and backbone.
+\emph{No gate} applies the learned adapters at every lookahead, including $h=1$, removing the structural guarantee that the ordinary next-frame path uses the original frozen backbone.
+\emph{CE only} replaces the teacher distributions for the masked path with hard data targets and removes the three-way text-state distillation term.
+We additionally remove either the token-level text KL or the three-way PAD/EPAD/lexical KL while retaining the remaining distillation terms, and train the same DiffuPlex adaptation on the original PersonaPlex backbone rather than the post-trained \texttt{personaplex-rl-seamless} checkpoint.
+Table~\ref{atab:architecture_ablation} reports the resulting efficiency and interaction metrics for both inference policies.
+
+\input{Tables/TableA7}
+
+The future gate primarily protects the original next-frame path.
+Without it, the model still reduces backbone wakes, but turn-taking TOR changes from $1.000$ to $.983$ for \textsc{Listen} and $.975$ for \textsc{Speak}, with corresponding turn latencies of $.202$s and $.253$s.
+The gate therefore provides a structural separation between the unchanged autoregressive prediction at $h=1$ and the learned masked-future behavior at deeper lookaheads.
+Replacing teacher distillation with hard-target cross-entropy also shortens the usable future horizon: $c$ decreases from $1.91$ to $1.76$ for \textsc{Listen} and from $2.23$ to $2.07$ for \textsc{Speak}.
+The interaction changes are not uniform across metrics, but the reduced advancement and larger \textsc{Listen} interruption latency ($.512$s versus $.329$s) are consistent with a benefit from matching the backbone distribution rather than relying only on hard future targets.
+Removing either text KL term produces mixed changes across the interaction metrics.
+Both ablations reduce the interruption Judge score for both policies, with the largest drop from $4.357$ to $4.202$ when removing the token-level text KL for \textsc{Speak}.
+The final model retains both text KL terms.
+
+The PersonaPlex-backbone variant separates the ability to advance multiple frames from the ability to preserve the behavior of a particular backbone.
+DiffuPlex still reaches $c=1.76$ for \textsc{Listen} and $2.02$ for \textsc{Speak} on PersonaPlex, showing that wake reduction transfers to this backbone.
+However, pause and interruption behavior shifts substantially; for example, interruption TOR becomes $.905$ and $.920$, with latencies of $1.277$s and $1.347$s.
+Thus, wake reduction transfers to PersonaPlex, but preservation of the underlying interaction behavior does not transfer automatically.
+
+\subsection{Model and Training Scale}
+\label{asubsec:training_scale}
+
+\input{Tables/TableA8}
+
+We next vary three training-scale axes: the maximum future block used during training, LoRA rank, and the number of optimization steps.
+The default uses $W=16$, rank 128, and 526 optimization steps.
+For the training-horizon variants, we use the same $W$ at inference as during training, yielding matched $8\!\rightarrow\!8$ and $32\!\rightarrow\!32$ settings; train-inference horizon mismatch is examined separately in Appendix~\ref{asubsec:inference_horizon}.
+To examine the effect of training exposure, the 263-step and 1,052-step variants use schedules whose learning-rate decay is defined to terminate at their respective final steps, rather than taking intermediate checkpoints from a longer run.
+Table~\ref{atab:scale_ablation} reports the resulting efficiency and interaction metrics.
+Across the rank and training-duration sweeps, the number of frames advanced per wake remains relatively stable, while individual interaction metrics vary in both directions.
+Increasing LoRA rank from 128 to 512 or doubling training from 526 to 1,052 steps does not yield a consistent improvement, whereas rank 32 retains a similar $c$ but shifts turn-taking behavior.
+
+The matched-horizon comparison shows a different trade-off.
+Training and inference with $W=8$ yields similar advancement but larger shifts on several interaction metrics, including \textsc{Speak} backchannel TOR and turn latency.
+Increasing both training and inference horizons to $W=32$ likewise provides little additional advancement, while the larger proposed block increases per-wake LM cost and reduces the pooled LM speedup.
+The default $W=16$ setting lies between these two trade-offs.
+
+\input{Tables/TableA9}
+
+\subsection{Inference Horizon}
+\label{asubsec:inference_horizon}
+
+The training horizon need not equal the maximum horizon used at inference, so we evaluate all cross-horizon combinations among $W\in\{8,16,32\}$.
+Table~\ref{atab:horizon_ablation} reports the resulting efficiency and interaction metrics.
+Across the mismatch sweep, \textsc{Listen} remains near $c=1.86$--$1.91$ and \textsc{Speak} near $c=2.19$--$2.27$ despite changing the inference cap from 8 to 32.
+The maximum proposed horizon is therefore not the same as the amount of future that is actually used: increasing $W$ exposes more candidate future positions, while the confidence and revision rules continue to determine how much of that future is ultimately consumed.
+
+The per-wake LM cost of proposing the block nevertheless grows with $W$.
+For the default $W=16$ training, increasing the inference horizon to $W=32$ leaves $c$ nearly unchanged but reduces the pooled LM speedup from $1.56\times$ to $1.42\times$ for \textsc{Listen} and from $1.77\times$ to $1.64\times$ for \textsc{Speak}.
+Conversely, $W=8$ is cheaper but does not consistently improve interaction timing.
+The default $W=16$ provides an intermediate horizon without proposing substantially more candidate positions than the retention policy typically uses.
+
+\input{Tables/TableA10}
+
+\subsection{Confidence and Retention}
+\label{asubsec:confidence_retention}
+
+The confidence threshold $\tau_{\mathrm{conf}}$ controls how aggressively a predicted future is retained before subsequent user evidence is observed.
+The main experiments use $\tau_{\mathrm{conf}}=0.80$; we vary it from $0.70$ to $0.90$ and additionally evaluate policy-specific no-confidence variants.
+For \textsc{Listen}, the confidence threshold is disabled while the PAD restriction and $m=6$ minimum are retained. For \textsc{Speak}, the confidence threshold is disabled while the original $m=2$ minimum is kept; because all assistant states are permitted, this minimum is non-binding and the full proposed future is retained.
+Table~\ref{atab:confidence_ablation} reports the resulting efficiency and interaction metrics.
+As expected from the retention rule, lowering $\tau_{\mathrm{conf}}$ increases advancement per wake, while raising it decreases advancement.
+This provides a direct inference-time control over how aggressively DiffuPlex uses its predicted future.
+
+The no-confidence interventions increase advancement for both policies, with different effects under the two retention policies.
+For \textsc{Listen}, where future retention remains restricted to PAD states, $c$ increases from $1.91$ to $2.11$ with comparatively modest changes in the interaction metrics.
+For \textsc{Speak}, the no-confidence intervention increases $c$ from $2.23$ to $2.80$, but the interruption Judge score decreases from $4.357$ to $3.550$ and backchannel TOR increases from $.145$ to $.236$.
+These results show that more aggressive future retention can increase advancement while altering interaction behavior.
+
+\input{Tables/TableA11}
+\input{Tables/TableA12}
+
+\subsection{Revision Rule}
+\label{asubsec:revision}
+
+Confidence determines which future frames are initially retained, whereas revision determines whether an already retained draft remains usable after new user speech arrives.
+We vary the revision threshold around the default $\tau_{\mathrm{rev}}=-0.5$ and additionally disable revision entirely; Table~\ref{atab:revision_ablation} reports the resulting efficiency and interaction metrics.
+Lowering $\tau_{\mathrm{rev}}$ makes revision easier to trigger, whereas raising it requires stronger evidence and permits greater advancement.
+This trade-off is clearest without revision: for \textsc{Speak}, $c$ increases from $2.23$ to $3.08$, but turn-taking TOR decreases from $1.000$ to $.950$ and turn latency increases from $.156$s to $.480$s; for \textsc{Listen}, turn latency similarly increases from $.173$s to $.440$s, while backchannel frequency decreases substantially for both policies.
+Thus, retaining a predicted future alone is insufficient; invalidating its unplayed remainder is important for maintaining responsiveness while advancing multiple frames per wake.
+
+For completeness, Table~\ref{atab:revision_ablation} also includes an uncalibrated User-only variant that removes the assistant-side contribution from the revision score, reducing the decision rule to $-\log q_h(x_h)\geq\tau_{\mathrm{rev}}$, where $q_h(x_h)$ is the probability assigned by the stored user prediction to the user semantic token that actually arrives.
+Keeping the default $\tau_{\mathrm{rev}}=-0.5$ after this removal changes the score scale: because $-\log q_h(x_h)\geq0$, every eligible check triggers revision, reducing $c$ to $1.00$ for both policies and making inference slower than the autoregressive baseline.
+We therefore use these rows only to illustrate threshold-scale mismatch; the controlled User-only comparison in Appendix~\ref{asubsec:revision_decomposition} recalibrates its threshold separately.
+
+
+\subsection{Causal and Bidirectional Future Attention}
+\label{asubsec:future_attention}
+
+
+The default masked predictor retains causal temporal attention within each future block: a position may use the realized context before the block and masked positions up to its current lookahead, but not later masked positions.
+We compare this design with a bidirectional variant in which masked positions within the same block may attend to one another in both directions, while leaving the realized context and stream-masking schedule unchanged.
+Because a bidirectional representation depends on the full set of positions present in the block, we train this variant with a fixed future-block length of 16 and evaluate it with $W=16$; all other inference settings, including $\tau_{\mathrm{conf}}=0.80$, $\tau_{\mathrm{rev}}=-0.5$, the \textsc{Listen} and \textsc{Speak} retention policies, prompts, sampling configuration, and seed, remain unchanged.
+Table~\ref{atab:future_attention} reports the resulting efficiency and interaction metrics.
+
+The two attention patterns yield almost identical advancement: $c$ changes from $1.910$ to $1.884$ for \textsc{Listen} and from $2.230$ to $2.223$ for \textsc{Speak}.
+Their interaction effects are mixed: for \textsc{Listen}, bidirectional attention slightly reduces turn latency and increases interruption Judge, but interruption latency increases from $.329$s to $.432$s; for \textsc{Speak}, some pause and backchannel metrics improve, while turn-taking TOR decreases from $1.000$ to $.983$ and interruption TOR from $.995$ to $.985$.
+Bidirectional future attention therefore does not provide a consistent improvement at comparable advancement.
+Causal attention remains the default because it matches the causal structure of the autoregressive backbone, naturally supports variable block lengths during training, and prevents an earlier future representation from depending on how many later masked positions happen to be included in the same block.
+
+
+\subsection{Revision Signal Decomposition}
+\label{asubsec:revision_decomposition}
+
+The full revision score combines two quantities with different roles.
+The User term,
+\begin{equation}
+S_h^{\mathrm{user}}
+=
+-\log q_h(x_h),
+\end{equation}
+measures how surprising the newly observed user semantic token is under the continuation predicted at the previous wake, while the Assistant term,
+\begin{equation}
+S_h^{\mathrm{asst}}
+=
+\log P_h(\mathcal{A}_h(y_h))
+-
+\log P_h(y_h),
+\end{equation}
+measures how weakly the assistant preferred the drafted text decision relative to its valid alternatives.
+The default revision rule adds these two terms.
+Because removing either term changes the numerical scale of the score, using the default $\tau_{\mathrm{rev}}=-0.5$ would not provide a meaningful decomposition.
+For these experiments only, we calibrate the User-only and Assistant-only thresholds on a fixed subset of Full-Duplex-Bench v1.5 to approximately match the average frames per wake $c$ of the Full rule, and then evaluate the selected settings on Full-Duplex-Bench v1.0.
+The final thresholds are $5.5$ and $4.5$ for User-only \textsc{Listen} and \textsc{Speak}, respectively, and $-3.5$ and $-3.0$ for Assistant-only \textsc{Listen} and \textsc{Speak}.
+Full-Duplex-Bench v1.0 is not used for threshold selection, and Full-Duplex-Bench v1.5 is not used to select any other inference hyperparameters.
+Table~\ref{atab:revision_decomposition} reports the final comparison.
+
+
+\input{Tables/TableA13}
+
+As shown in Table~\ref{atab:revision_ablation}, using the uncalibrated User-only rule with the default threshold collapses advancement to $c=1.00$ for both policies.
+Calibration removes this large scale mismatch, although the realized advancement is not identical on the final test set.
+User-only reaches $c=1.920$ for \textsc{Listen} and $2.096$ for \textsc{Speak}, while Assistant-only reaches $2.122$ and $2.586$, compared with $1.910$ and $2.230$ for the Full rule.
+We therefore interpret Table~\ref{atab:revision_decomposition} jointly with each variant's realized $c$, rather than as a strictly matched-efficiency comparison.
+
+The single-signal rules also produce distinct interaction profiles.
+For \textsc{Listen}, User-only changes turn latency from $.173$s to $.251$s and backchannel frequency from $.140$ to $.117$ despite similar advancement.
+For \textsc{Speak}, User-only is more conservative overall and changes backchannel TOR from $.145$ to $.018$ while backchannel frequency simultaneously decreases from $.154$ to $.106$, so the lower TOR should not be interpreted in isolation as uniformly better interaction.
+Assistant-only permits greater advancement in both policies, accompanied by longer interruption latency: $.329$s to $.457$s for \textsc{Listen} and $.347$s to $.484$s for \textsc{Speak}, with interruption TOR changing from $.990$ to $.980$ and from $.995$ to $.985$, respectively.
+These results suggest that the two terms capture different revision cues: user surprisal reacts to newly observed evidence that conflicts with the stored future, whereas assistant uncertainty reflects how strongly the model committed to that future when it was drafted.
+The Full rule used in the main experiments combines both sources of evidence rather than relying on either signal in isolation.
+
+
+\begin{figure}[t]
+\centering
+
+\begin{subfigure}[t]{0.49\linewidth}
+    \centering
+    \includegraphics[width=0.90\linewidth]{Figures/FigureA2-1.pdf}
+    \caption{Wake termination}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.49\linewidth}
+    \centering
+    \includegraphics[width=0.90\linewidth]{Figures/FigureA2-2.pdf}
+    \caption{Advancement by termination reason}
+\end{subfigure}
+
+\vspace{1mm}
+
+\begin{subfigure}[t]{0.49\linewidth}
+    \centering
+    \includegraphics[width=0.90\linewidth]{Figures/FigureA2-3.pdf}
+    \caption{State-level no-op revisions}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.49\linewidth}
+    \centering
+    \includegraphics[width=0.90\linewidth]{Figures/FigureA2-4.pdf}
+    \caption{Future-speech prediction error}
+\end{subfigure}
+
+\caption{
+Rolling-draft diagnostics.
+Revision-triggered wakes typically occur after several frames have already been consumed, whereas exhaustion is dominated by one-frame advances.
+State-level no-op revisions compare the next $K=4$ fully revisable frames.
+Positive NLL reduction indicates improved future acoustic prediction.
+}
+\label{afig:rolling_diagnostics}
+\end{figure}
+
+
+\section{Rolling-Draft Analysis}
+\label{asec:rolling_draft}
+
+The average number of interaction frames advanced per backbone wake, $c$, summarizes the resulting reduction in sequential backbone calls but does not reveal why individual wake intervals are short or long.
+We therefore analyze the relationship between the future retained at each wake, the frames actually consumed before the next wake, and the unplayed future that may be discarded by revision.
+Figure~\ref{afig:rolling_diagnostics} summarizes these rolling-draft dynamics.
+
+
+\subsection{Wake Dynamics and Revision}
+\label{asubsec:wake_dynamics}
+
+Let $r_w$ denote the retained prefix length selected at backbone wake $w$ after applying the confidence and policy constraints in Section~\ref{subsec:rolling_draft_generation}, and let $a_w$ denote the number of interaction frames actually realized before the temporal backbone next wakes.
+Thus,
+\[
+1 \leq a_w \leq r_w \leq W,
+\]
+where $W$ is the proposed future horizon.
+If the retained prefix is exhausted, $a_w=r_w$; if newly observed user input triggers revision first, $a_w<r_w$.
+For the wake-level analyses below, we exclude wakes truncated only because the evaluation clip ends, while the main frames-per-wake metric $c$ continues to use the complete interaction.
+
+Figure~\ref{afig:rolling_diagnostics}(a,b) separates wakes by whether they end through draft exhaustion or revision.
+Revision accounts for 23.6\% of \textsc{Listen} wake terminations and 32.1\% of \textsc{Speak} terminations.
+As summarized in the main results, revision-triggered wakes generally occur only after several retained frames have already been consumed, whereas exhaustion is dominated by short retained prefixes.
+This shows that short wake intervals do not primarily arise from repeatedly retaining long futures and immediately discarding them; they more often arise because the retention rule conservatively selects only a short prefix in the first place.
+
+Revision affects only interaction that has not yet been played.
+Assistant frames already presented to the user and user frames already received remain part of the realized interaction.
+Because of the backbone's native stream delays, if the observed user semantic token at lookahead $h$ triggers revision, the assistant text state associated with that boundary has already been selected.
+We therefore begin before-after comparisons at $h+1$, the first assistant text state that is fully revisable.
+We define a state-level no-op revision as one for which the PAD/EPAD/lexical sequence over the next $K=4$ fully revisable assistant frames (320ms) is unchanged after regeneration.
+Figure~\ref{afig:rolling_diagnostics}(c) reports the resulting no-op rates: 92.4\% for \textsc{Listen} and 82.5\% for \textsc{Speak}.
+Most revision triggers therefore do not alter the assistant's immediate interaction state, but a nontrivial subset does.
+Together with the no-revision ablation in Appendix~\ref{asubsec:revision}, this suggests that revision serves as a safeguard against inconsistent drafts, even though many triggers leave the immediate assistant state unchanged.
+
+
+\subsection{Future-Speech Mechanism}
+\label{asubsec:future_speech}
+
+DiffuPlex-\textsc{Speak} may consume lexical speech predicted several frames into the future, so the quality of these frames depends on how well the masked path predicts the acoustic codebooks.
+The key difference from ordinary autoregressive generation comes from the native delay between the semantic audio codebook cb0 and the acoustic codebooks cb1--7.
+For a physical audio frame, the autoregressive model has already observed that frame's cb0 when it forms the temporal representation used to predict cb1--7.
+At a masked future position, however, the same-frame cb0 has not yet been generated and is replaced by MASK, so cb1--7 must be predicted from a temporal representation that lacks this semantic audio information.
+We test whether this missing input contributes to the degradation by selectively giving it back.
+As shown in Figure~\ref{afig:rolling_diagnostics}(d), restoring the same-frame cb0 during assistant speech and using it to sequentially generate the remaining acoustic codebooks cb1--7 reduces their NLL by $0.0912$, whereas the corresponding improvement during silence is only $0.0285$.
+As a control, restoring assistant text instead of cb0 does not help and changes NLL by $\Delta=-0.0176$.
+The effect is therefore not simply caused by masking any assistant-side input: it is specifically associated with losing the same-frame semantic audio signal that normally helps the backbone predict the acoustic codebooks.
+
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{Figures/FigureA3-1.pdf}
+\caption{
+Long draft consumption during a stable silent interval.
+After several short backbone wakes, DiffuPlex-\textsc{Speak} consumes two consecutive 16-frame drafts without revision.
+The number inside each backbone pass indicates the number of frames realized before the next wake.
+}
+\label{afig:case_long}
+\end{figure}
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{Figures/FigureA3-2.pdf}
+\caption{
+Revision after partial draft consumption.
+For DiffuPlex-\textsc{Speak}, the highlighted backbone pass drafts 12 frames of assistant silence.
+Revision fires after three frames have been consumed, discarding the remaining nine unplayed frames before a new assistant continuation is generated.
+Hatched regions denote drafted frames that are revoked before playback.
+}
+\label{afig:case_revision}
+\end{figure}
+
+
+We further test this explanation by replaying DiffuPlex outputs through the original autoregressive temporal path.
+The purpose of this experiment is to separate errors in \emph{what} DiffuPlex decided to say from errors in \emph{how} that content was acoustically realized.
+Starting from a DiffuPlex-\textsc{Speak} output, we run the frozen \texttt{personaplex-rl-seamless} backbone frame by frame with $W=1$.
+In the first replay condition, we keep both the text and semantic cb0 sequence generated by DiffuPlex fixed and regenerate only cb1--7; thus, the linguistic content and semantic audio decisions are unchanged, but the acoustic codebooks are produced with their ordinary autoregressive temporal conditioning.
+In the second condition, we keep only the DiffuPlex text fixed and regenerate all audio codebooks cb0--7.
+As reported in the main text, restoring the autoregressive path in the first condition already recovers most of the measured UTMOSv2 gap, while regenerating cb0 as well provides only a small additional gain.
+Together with the NLL intervention above, this identifies missing same-frame semantic conditioning as one contributor, while the replay shows that restoring broader autoregressive audio-token conditioning recovers much of the measured quality gap.
+These replay experiments are diagnostic analyses, not additional stages of DiffuPlex inference.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{Figures/FigureA3-3.pdf}
+\caption{
+Different retention policies on the same interaction.
+Because the prediction at $h=2$ is lexical, DiffuPlex-\textsc{Listen}
+retains only the autoregressive frame ($r=a=1$), whereas
+DiffuPlex-\textsc{Speak} retains $r=16$ and consumes $a=9$ before revision.
+}
+\label{afig:case_policy}
+\end{figure}
+
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{Figures/FigureA3-4.pdf}
+\caption{
+Repeated one-frame retention during a stable user context.
+Although the user remains silent, DiffuPlex-\textsc{Speak} performs 47 consecutive backbone passes that each advance only one frame.
+This example shows that limited acceleration can arise because the retention rule repeatedly admits only the immediate next frame, rather than because long drafts are repeatedly consumed and then revoked.
+}
+\label{afig:case_failure}
+\end{figure}
+
+\subsection{Qualitative Examples and Failure Cases}
+\label{asubsec:qualitative}
+
+Figures~\ref{afig:case_long}--\ref{afig:case_failure} illustrate four rollout behaviors.
+Figure~\ref{afig:case_long} shows a stable silent interval in which several short wakes are followed by two consecutive backbone passes that each advance 16 frames without revision.
+Figure~\ref{afig:case_revision} shows the opposite case: a backbone pass initially drafts 12 frames of assistant silence, but revision fires after three frames have been consumed, so the remaining nine unplayed frames are discarded before the assistant begins a new response.
+These examples illustrate the two possible outcomes of a retained future: it may be consumed completely when the interaction remains stable, or only its unplayed suffix may be revoked when newly observed user input invalidates the draft.
+
+Figure~\ref{afig:case_policy} compares the two retention policies on the same interaction.
+At the marked boundary, the next predicted assistant state is lexical rather than silence.
+DiffuPlex-\textsc{Speak} is therefore able to consume nine frames from a single retained draft before revision, whereas DiffuPlex-\textsc{Listen} advances only one frame from the corresponding wake.
+Figure~\ref{afig:case_failure} shows a conservative-retention regime: despite a stable silent user context, the model executes 47 consecutive one-frame backbone passes.
+Together, these examples show that limited acceleration can arise for two different reasons: a longer retained future may later be revised, or the retention rule may repeatedly admit only a single frame in the first place.
+
+
+\section{Artifacts, Licenses, and Reproducibility}
+\label{asec:licenses}
+
+Table~\ref{atab:artifacts} lists the external datasets, models, and tools used in this work together with their licenses and public sources.
+We use these artifacts for research purposes consistent with their intended use.
+
+\input{Tables/TableA14}
+
+All main scored generations use seed 0 and retain the inference configuration used to produce each output.
+Ablation runs additionally record the adapter path, backbone, inference configuration, and source-code revision, while analysis outputs retain their originating rollout and policy metadata.
+Training configurations, checkpoints, generated audio, ASR transcripts, benchmark outputs, and rolling-draft analysis artifacts are stored separately so that each reported result can be traced to the configuration that produced it.
+
+DiffuPlex is trained on four NVIDIA RTX A6000 GPUs.
+Controlled runtime measurements use a single RTX A6000 as described in Appendix~\ref{asubsec:runtime_measurement}; no other jobs were running on the node during these measurements.
+We additionally verify the autoregressive boundary case $W=1$: under matched priming, sampling, and random state, the rolling implementation produces the same token sequence as the official frame-by-frame \texttt{LMGen.step} path.
+Selected generated audio and the qualitative examples are available on the anonymous project page at
+\url{https://diffuplex.github.io/}.

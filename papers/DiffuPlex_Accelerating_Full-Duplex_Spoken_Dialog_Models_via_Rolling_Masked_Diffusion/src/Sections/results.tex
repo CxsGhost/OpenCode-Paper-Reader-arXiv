@@ -1,0 +1,148 @@
+\section{Results}
+\label{sec:results}
+
+
+\input{Tables/Table1}
+\subsection{Full-Duplex Interaction}
+\label{subsec:full_duplex_results}
+
+Table~\ref{tab:full_duplex_results} shows that DiffuPlex reduces backbone wake frequency while remaining close to the autoregressive backbone in full-duplex interaction behavior.
+We use $c$ to denote the average number of interaction frames advanced per backbone wake; standard autoregressive generation has $c=1$.
+DiffuPlex-\textsc{Listen} and DiffuPlex-\textsc{Speak} increase this to $c=1.91$ and $c=2.23$, respectively, while remaining close to \texttt{personaplex-rl-seamless} across pause handling, backchanneling, turn-taking, and user interruption.
+Results on Full-Duplex-Bench v1.5 are provided in Appendix~\ref{asubsec:additional_full_duplex}.
+
+The two settings expose a trade-off in how aggressively predicted futures are consumed.
+DiffuPlex-\textsc{Listen} closely preserves both speech quality and conversational quality, with an NMOS of $3.92\pm0.11$ and a DMOS of $4.08\pm0.13$, compared with $3.93\pm0.12$ and $4.09\pm0.14$ for \texttt{personaplex-rl-seamless}.
+DiffuPlex-\textsc{Speak} increases $c$ to 2.23 while maintaining a DMOS of
+$4.07\pm0.13$, but its NMOS decreases to $3.54\pm0.12$, remaining close to Moshi at
+$3.52\pm0.15$.
+We analyze the source of this speech-quality degradation in Section~\ref{subsec:draft_analysis}.
+
+Fewer backbone wakes do not necessarily imply lower runtime, because each DiffuPlex wake predicts over a wider future span and is therefore more expensive than a single autoregressive wake.
+We next examine whether the reduction in wake frequency outweighs this increased per-wake cost.
+
+\input{Tables/Table2}
+
+\subsection{Runtime Efficiency}
+\label{subsec:runtime_results}
+
+Table~\ref{tab:runtime_results} shows that the reduction in backbone wakes translates into substantial measured speedups.
+On the fixed 60-clip runtime subset, DiffuPlex-\textsc{Listen} and DiffuPlex-\textsc{Speak} advance $c=1.98$ and $c=2.26$ interaction frames per backbone wake, respectively.
+This reduces accumulated Core-LM time from 656.8s for \texttt{personaplex-rl-seamless} to 408.4s and 365.5s, corresponding to $1.608\times$ and $1.797\times$ speedups.
+The reduction also translates into deployment-path wall-clock speedups of $1.455\times$ and $1.590\times$ for DiffuPlex-\textsc{Listen} and DiffuPlex-\textsc{Speak}, respectively.
+Considering device-side computation alone, this yields end-to-end GPU speedups of $1.458\times$ and $1.593\times$.
+Moshi predicts only assistant-side tokens, whereas the PersonaPlex family jointly models both user and assistant streams, giving Moshi a lighter per-frame prediction workload.
+
+These gains do not come from making each DiffuPlex backbone invocation cheaper.
+The pooled measurements imply 1.23$\times$ and 1.26$\times$ as much Core LM time per
+backbone wake for DiffuPlex-\textsc{Listen} and DiffuPlex-\textsc{Speak}, respectively.
+Instead, masked-future prediction amortizes this larger per-wake cost over multiple interaction
+frames, reducing accumulated Core LM time while sustaining the same 12.5Hz interaction stream.
+Meeting the 80ms deadline establishes real-time feasibility, but systems that satisfy the same
+deadline can still differ substantially in accumulated GPU time.
+DiffuPlex therefore reduces accumulated GPU and Core LM time over the course of an interaction.
+
+The larger individual wakes must still satisfy this real-time constraint.
+The 99th-percentile wall-clock latency of frames that invoke the backbone is 61.34ms for DiffuPlex-\textsc{Listen} and 61.41ms for DiffuPlex-\textsc{Speak}, and no measured wake frame exceeds 80ms.
+Thus, DiffuPlex reduces accumulated Core LM time while preserving the original real-time interaction cadence.
+
+\subsection{Masked Future Prediction vs.\ Deferred Execution}
+\label{subsec:deferred_results}
+
+We next ask whether similar efficiency gains can be obtained without predicting future interaction, simply by skipping autoregressive backbone calls and emitting silence during skipped frames.
+Figure~\ref{fig:deferred_tradeoff} compares DiffuPlex with the \textsc{PAD}, \textsc{Silero}, and \textsc{Smart Turn} deferred-execution baselines over $R\in\{2,4,6,8\}$.
+Increasing $R$ allows up to $R-1$ frames to be skipped between backbone calls, improving wall-clock speedup but increasingly degrading interaction behavior.
+In particular, deferred execution suppresses backchanneling and reduces assistant speaking activity, while turn-taking latency increases substantially for several controllers.
+For example, at $R=6$, \textsc{PAD} reaches a $2.05\times$ wall-clock speedup, but backchannel frequency drops from 0.163 to 0.048 and turn-taking latency increases from 0.124s to 0.423s relative to the backbone.
+
+DiffuPlex largely mitigates this trade-off by predicting interaction between backbone invocations rather than replacing skipped frames with silence.
+DiffuPlex-\textsc{Listen} and DiffuPlex-\textsc{Speak} achieve $1.455\times$ and $1.590\times$ wall-clock speedups while remaining much closer to the original backchannel, turn-taking, and speaking behavior.
+These results show that deferring backbone calls while emitting silence is insufficient in these baselines; predicting what occurs between backbone invocations better preserves full-duplex behavior.
+DiffuPlex can further adjust this efficiency-interaction trade-off through its confidence and revision thresholds, which we analyze in Appendices~\ref{asubsec:confidence_retention} and~\ref{asubsec:revision}.
+
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.32\columnwidth}
+        \centering
+        \includegraphics[width=0.90\linewidth]{Figures/Figure3-1.pdf}
+        \caption{Turn-taking latency ($\downarrow$)}
+        \label{fig:deferred_turn}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\columnwidth}
+        \centering
+        \includegraphics[width=0.90\linewidth]{Figures/Figure3-2.pdf}
+        \caption{Backchannel frequency}
+        \label{fig:deferred_bc}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\columnwidth}
+        \centering
+        \includegraphics[width=0.90\linewidth]{Figures/Figure3-3.pdf}
+        \caption{Assistant speaking fraction}
+        \label{fig:deferred_speaking}
+    \end{subfigure}
+\caption{
+Efficiency-interaction trade-offs under deferred execution.
+Deferred baselines vary $R\in\{2,4,6,8\}$, and deferred frames are forced to silence.
+Silero and Smart Turn replay precomputed controller decisions; controller inference cost is measured separately.
+}
+    \label{fig:deferred_tradeoff}
+\end{figure}
+
+\input{Tables/Table3}
+\input{Tables/Table4}
+
+\subsection{General Spoken-Language Capability}
+\label{subsec:general_results}
+
+Table~\ref{tab:general_results} shows that DiffuPlex largely preserves the general spoken-language capability of \texttt{personaplex-rl-seamless}.
+DiffuPlex-\textsc{Listen} remains nearly unchanged on
+VoiceBench and OpenAudioBench, while DiffuPlex-\textsc{Speak} shows moderate degradation,
+most notably on OpenAudioBench $s\!\to\!s$.
+Full per-task results are provided in Appendix~\ref{asubsec:additional_general}.
+
+
+\subsection{Analysis of Future Drafts}
+\label{subsec:draft_analysis}
+
+
+\textbf{Rolling draft behavior.}
+We first examine how confidence filtering and revision affect the use of predicted futures.
+As shown in Table~\ref{tab:inference_ablation}, the policy-specific no-confidence variants allow more aggressive
+retention, with different effects across the two policies.
+For \textsc{Speak}, $c$ increases from 2.23 to 2.80, but the interruption Judge score decreases from 4.357 to 3.550.
+For \textsc{Listen}, where retention remains restricted to PAD states, removing confidence increases $c$ more modestly from 1.91 to 2.11 while leaving interaction behavior similar.
+Removing revision increases $c$ from 1.91 to 2.49 for \textsc{Listen} and from 2.23 to 3.08 for \textsc{Speak}, but substantially reduces responsiveness: backchannel frequency falls to 0.078 and 0.080, while turn-taking latency increases to 0.440s and 0.480s, respectively.
+Thus, the retention constraints limit aggressive future consumption, particularly for \textsc{Speak},
+while revision is important for preserving responsiveness to newly observed user speech.
+Sensitivity to the confidence threshold $\tau_{\rm conf}$ and revision threshold $\tau_{\rm rev}$ is reported in Appendices~\ref{asubsec:confidence_retention} and~\ref{asubsec:revision}.
+
+We next examine why DiffuPlex wakes the backbone again after producing a draft.
+A wake occurs either when the retained draft is exhausted or when new user speech triggers revision.
+When the draft is exhausted, DiffuPlex advances only 1.17 frames on average for \textsc{Listen} and 1.48 for \textsc{Speak}; 98.2\% and 81.5\% of these wakes, respectively, occur after a single frame.
+Revision-triggered wakes instead occur after several draft frames have already been consumed, with mean advancements of 4.24 and 3.79 frames and medians of 4 and 3.
+In other words, a short wake interval usually means that only a short prefix was retained in the first place, rather than that a longer retained draft was quickly revised.
+When revision does occur, several retained frames have typically been consumed.
+Additional wake-level diagnostics and revision analyses are provided in
+Appendix~\ref{asubsec:wake_dynamics}.
+
+\textbf{Why does future speech degrade?}
+We next investigate the speech-quality degradation of DiffuPlex-\textsc{Speak}.
+\texttt{personaplex-rl-seamless} models assistant audio using a semantic codebook, cb0, followed by seven acoustic codebooks, cb1--7.
+Because cb1--7 are natively delayed by one temporal step, the cb0 corresponding to a given physical audio frame appears one temporal position earlier in the model sequence and is therefore already available when the autoregressive model predicts cb1--7 for that frame.
+DiffuPlex preserves this native delay pattern, but at future depths $h\geq2$ all assistant streams are masked, so future cb1--7 must be predicted without the same-frame cb0 that would normally condition them.
+To test whether this missing conditioning contributes to the degradation, we use the 199 valid user-interruption examples from Full-Duplex-Bench v1.0 and replace only the masked cb0 with the ground-truth cb0 for the physical frame whose cb1--7 are being predicted.
+During assistant speech, this reduces the cb1--7 negative log-likelihood from 5.702 to 5.611
+($\Delta=0.091$, 95\% CI [0.081, 0.101]), compared with a much smaller reduction during silence ($\Delta=0.029$).
+These results show that same-frame semantic conditioning has a substantially larger effect on acoustic-token prediction during speech than during silence.
+
+We then test whether restoring autoregressive audio-token conditioning improves generated audio.
+Starting from each DiffuPlex-\textsc{Speak} output, we teacher-force its generated text and cb0 while recomputing the sequence frame by frame through the original autoregressive backbone.
+We then use the resulting temporal representations to regenerate only cb1--7 with the unchanged depth transformer.
+UTMOSv2, a neural predictor of perceptual speech quality on a 5-scale~\citep{10832315}, increases from 2.646 to 2.894.
+Regenerating cb0--7 while keeping only the generated text fixed yields 2.903, compared with 2.919 for fully autoregressive generation.
+Thus, most of the measured quality loss is recovered by restoring autoregressive audio-token conditioning even when the text and cb0 generated by DiffuPlex are unchanged.
+Additional intervention controls are in
+Appendix~\ref{asubsec:future_speech}.

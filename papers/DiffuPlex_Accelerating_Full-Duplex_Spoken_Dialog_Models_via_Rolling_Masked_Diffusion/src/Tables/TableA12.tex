@@ -1,0 +1,38 @@
+\begin{table*}[t]
+\centering
+\caption{
+Causal and bidirectional future attention on Full-Duplex-Bench v1.0.
+The two attention variants advance a similar number of frames per wake.
+Bidirectional attention changes individual interaction metrics in both directions rather than providing a consistent advantage.
+}
+\label{atab:future_attention}
+\scriptsize
+\resizebox{\textwidth}{!}{
+\begin{tabular}{l c cc ccc cc ccc}
+\toprule
+& \multicolumn{1}{c}{Efficiency}
+& \multicolumn{2}{c}{Pause}
+& \multicolumn{3}{c}{Backchannel}
+& \multicolumn{2}{c}{Turn}
+& \multicolumn{3}{c}{Interruption} \\
+\cmidrule(lr){2-2}\cmidrule(lr){3-4}\cmidrule(lr){5-7}
+\cmidrule(lr){8-9}\cmidrule(lr){10-12}
+Setting
+& $c$
+& S$\downarrow$ & C$\downarrow$
+& TOR$\downarrow$ & Freq. & JSD$\downarrow$
+& TOR$\uparrow$ & Lat.$\downarrow$
+& TOR$\uparrow$ & Judge$\uparrow$ & Lat.$\downarrow$ \\
+\midrule
+Causal / \textsc{Listen}
+& 1.910 & .277 & .343 & .109 & .140 & .753 & 1.000 & .173 & .990 & 4.328 & .329 \\
+Bidirectional / \textsc{Listen}
+& 1.884 & .299 & .343 & .109 & .148 & .752 & 1.000 & .156 & .990 & 4.374 & .432 \\
+\midrule
+Causal / \textsc{Speak}
+& 2.230 & .263 & .347 & .145 & .154 & .738 & 1.000 & .156 & .995 & 4.357 & .347 \\
+Bidirectional / \textsc{Speak}
+& 2.223 & .307 & .324 & .127 & .143 & .748 & .983 & .169 & .985 & 4.284 & .327 \\
+\bottomrule
+\end{tabular}}
+\end{table*}

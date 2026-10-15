@@ -1,0 +1,54 @@
+\begin{table*}[t]
+\centering
+\caption{
+Train-inference horizon mismatch on Full-Duplex-Bench v1.0.
+The retained advancement $c$ changes little across most combinations even when the maximum proposed horizon changes substantially.
+}
+\label{atab:horizon_ablation}
+\scriptsize
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcc cc ccc cc ccc}
+\toprule
+& \multicolumn{2}{c}{Efficiency}
+& \multicolumn{2}{c}{Pause}
+& \multicolumn{3}{c}{Backchannel}
+& \multicolumn{2}{c}{Turn}
+& \multicolumn{3}{c}{Interruption} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-8}
+\cmidrule(lr){9-10}\cmidrule(lr){11-13}
+Train $\rightarrow$ infer
+& $c$ & LM$\times$
+& S$\downarrow$ & C$\downarrow$
+& TOR$\downarrow$ & Freq. & JSD$\downarrow$
+& TOR$\uparrow$ & Lat.$\downarrow$
+& TOR$\uparrow$ & Judge$\uparrow$ & Lat.$\downarrow$ \\
+\midrule
+$8\rightarrow16$ / \textsc{Listen}
+& 1.89 & 1.55 & .307 & .347 & .127 & .162 & .736 & 1.000 & .200 & 1.000 & 4.300 & .372 \\
+$8\rightarrow16$ / \textsc{Speak}
+& 2.25 & 1.79 & .292 & .333 & .091 & .146 & .745 & 1.000 & .182 & .995 & 4.226 & .429 \\
+$8\rightarrow32$ / \textsc{Listen}
+& 1.91 & 1.44 & .299 & .389 & .073 & .146 & .745 & 1.000 & .157 & .995 & 4.332 & .400 \\
+$8\rightarrow32$ / \textsc{Speak}
+& 2.27 & 1.66 & .255 & .384 & .218 & .153 & .741 & .992 & .160 & .985 & 4.284 & .349 \\
+\midrule
+$16\rightarrow8$ / \textsc{Listen}
+& 1.86 & 1.58 & .365 & .394 & .145 & .155 & .742 & 1.000 & .162 & .990 & 4.293 & .335 \\
+$16\rightarrow8$ / \textsc{Speak}
+& 2.20 & 1.81 & .350 & .380 & .091 & .158 & .741 & 1.000 & .155 & .990 & 4.328 & .318 \\
+$16\rightarrow32$ / \textsc{Listen}
+& 1.88 & 1.42 & .285 & .356 & .127 & .142 & .743 & .992 & .170 & 1.000 & 4.435 & .523 \\
+$16\rightarrow32$ / \textsc{Speak}
+& 2.24 & 1.64 & .299 & .347 & .145 & .144 & .745 & .992 & .146 & .980 & 4.398 & .316 \\
+\midrule
+$32\rightarrow8$ / \textsc{Listen}
+& 1.87 & 1.59 & .307 & .347 & .145 & .144 & .749 & 1.000 & .152 & .990 & 4.247 & .351 \\
+$32\rightarrow8$ / \textsc{Speak}
+& 2.19 & 1.81 & .314 & .329 & .127 & .148 & .746 & 1.000 & .157 & .985 & 4.340 & .342 \\
+$32\rightarrow16$ / \textsc{Listen}
+& 1.87 & 1.54 & .314 & .361 & .182 & .142 & .745 & 1.000 & .149 & .995 & 4.337 & .344 \\
+$32\rightarrow16$ / \textsc{Speak}
+& 2.23 & 1.77 & .285 & .370 & .164 & .140 & .750 & 1.000 & .112 & .980 & 4.250 & .326 \\
+\bottomrule
+\end{tabular}}
+\end{table*}

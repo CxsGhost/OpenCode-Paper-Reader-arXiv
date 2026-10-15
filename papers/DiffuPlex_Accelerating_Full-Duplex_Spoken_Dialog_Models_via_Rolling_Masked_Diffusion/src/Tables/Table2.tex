@@ -1,0 +1,85 @@
+\begin{table*}[t]
+\caption{
+Measured inference efficiency on the fixed 60-clip runtime subset.
+Streaming wall is the elapsed wall-clock time of the deployment-path streaming loop, including CPU/Python control, synchronization, and GPU execution.
+E2E GPU and Core LM denote accumulated GPU time for the full inference pipeline and the language-model backbone, respectively.
+Spd. denotes speedup relative to RL-Seamless, and Rel. time/wake is the Core LM time per backbone wake normalized by RL-Seamless.
+Wake-frame p99 is the 99th-percentile wall-clock latency of frames that invoke the backbone, and $>80$ms is the fraction of such frames exceeding the 80ms interaction interval.
+}
+\label{tab:runtime_results}
+\centering
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l
+                c
+                cc
+                cc
+                cc
+                ccc}
+\toprule
+& \multicolumn{1}{c}{Wake}
+& \multicolumn{2}{c}{Streaming wall}
+& \multicolumn{2}{c}{E2E GPU}
+& \multicolumn{2}{c}{Core LM}
+& \multicolumn{3}{c}{Wake behavior} \\
+\cmidrule(lr){2-2}
+\cmidrule(lr){3-4}
+\cmidrule(lr){5-6}
+\cmidrule(lr){7-8}
+\cmidrule(lr){9-11}
+Model
+& $c \uparrow$
+& Time (s) $\downarrow$
+& Spd. $\uparrow$
+& Time (s) $\downarrow$
+& Spd. $\uparrow$
+& Time (s) $\downarrow$
+& Spd. $\uparrow$
+& Rel. time/wake
+& p99 (ms) $\downarrow$
+& $>80$ms $\downarrow$ \\
+\midrule
+Moshi
+& 1.00
+& 638.7 & 1.168$\times$
+& 638.3 & 1.168$\times$
+& 550.1 & 1.194$\times$
+& 0.84$\times$
+& -- & -- \\
+
+PersonaPlex
+& 1.00
+& 744.1 & 1.002$\times$
+& 743.7 & 1.002$\times$
+& 656.8 & 1.000$\times$
+& 1.00$\times$
+& -- & -- \\
+
+RL-Seamless
+& 1.00
+& 745.7 & 1.000$\times$
+& 745.3 & 1.000$\times$
+& 656.8 & 1.000$\times$
+& 1.00$\times$
+& 46.85 & 0\% \\
+\midrule
+DiffuPlex-\textsc{Listen}
+& 1.98
+& 512.4 & 1.455$\times$
+& 511.1 & 1.458$\times$
+& 408.4 & 1.608$\times$
+& 1.23$\times$
+& 61.34 & 0\% \\
+
+DiffuPlex-\textsc{Speak}
+& 2.26
+& 469.1 & 1.590$\times$
+& 467.8 & 1.593$\times$
+& 365.5 & 1.797$\times$
+& 1.26$\times$
+& 61.41 & 0\% \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}

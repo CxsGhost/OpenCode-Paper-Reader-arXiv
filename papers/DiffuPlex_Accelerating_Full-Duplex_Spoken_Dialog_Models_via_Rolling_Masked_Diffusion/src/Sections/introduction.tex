@@ -1,0 +1,47 @@
+\section{Introduction}
+\label{sec:intro}
+
+With the advent of large language models (LLMs)~\citep{singh2026openaigpt5card,qiu2026designqwen38nextarchitectureevaluation}, voice assistants have shifted from cascaded pipelines of automatic speech recognition (ASR), text processing, and text-to-speech (TTS)~\citep{lin-etal-2024-advancing} toward end-to-end speech LLMs that directly take speech as input and generate speech as output~\citep{zhang-etal-2023-speechgpt,NEURIPS2024_ecfa5340,ICLR2025_90d1fc07,zeng2024glm4voiceintelligenthumanlikeendtoend}.
+Most early systems remain half-duplex: the user and model take turns, and response generation begins only after the user is judged to have finished speaking~\citep{SileroVAD,liao2025flexduopluggableenablingfullduplex,11463929}.
+Human conversation, however, includes interruptions, overlap, and backchannels.
+This has motivated full-duplex spoken dialog models that continuously listen while generating speech, allowing both sides to speak and respond even when their speech overlaps~\citep{defossez2024moshispeechtextfoundationmodel,11463413,kim2026raonspeechtechnicalreport,cui2026minicpmo45realtimefullduplex}. 
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figures/Figure1.pdf}
+    \caption{
+    Overview of conventional full-duplex generation and DiffuPlex.
+    Conventional models advance one interaction frame at a time, requiring a new backbone computation at every step (left).
+    DiffuPlex predicts multiple future frames in a single backbone wake, consumes a retained prefix, and revises only the unplayed future when new user input diverges from the prediction (right).
+    }
+    \label{fig:1_overview}
+    \vskip -15pt
+\end{figure}
+
+Despite enabling continuous interaction, full-duplex models remain fundamentally autoregressive.
+Some serialize user and assistant speech into a single sequence and update relatively coarse chunks~\citep{veluri-etal-2024-beyond,zhang-etal-2025-omniflatten,cui2026minicpmo45realtimefullduplex,kim2026raonspeechtechnicalreport}, while multi-stream models keep parallel user and assistant channels and update both at every interaction step~\citep{defossez2024moshispeechtextfoundationmodel,11463413,ohashi2026multifacetedinteractivityalignmentfullduplex}.
+This finer granularity enables prompt reactions to interruptions, overlaps, and backchannels, but increases backbone computation.
+Moshi~\citep{defossez2024moshispeechtextfoundationmodel} and PersonaPlex~\citep{11463413}, for example, process one frame every 80ms, requiring a new temporal-backbone forward pass every 80ms throughout the conversation.
+
+Fine-grained interaction, however, does not necessarily require a fresh backbone computation at every frame.
+Across 38h of Switchboard dyadic telephone conversations~\citep{225858}, 95.3\% of active conversational time contains only one speaking participant~\citep{10.3389/fpsyg.2015.00731}, leaving long stretches in which the other side remains silent.
+Even during speech, upcoming content is planned beyond individual frames: response preparation can begin before the interlocutor finishes speaking~\citep{10.3389/fpsyg.2017.00393}, and speech planning can extend beyond individual words~\citep{MARTIN2010177}.
+These observations suggest that several future interaction frames may be predicted together.
+Text generation has exploited similar redundancy through speculative decoding~\citep{pmlr-v202-leviathan23a,chen2023acceleratinglargelanguagemodel} and diffusion language models~\citep{NEURIPS2025_48b383b2,ICLR2025_7ede97c3,fu2026nemotronlabsdiffusiontrimodelanguagemodel}.
+However, extending such parallel prediction to full-duplex speech is challenging because the future user speech needed to verify the assistant draft has not yet arrived.
+
+We introduce \textbf{DiffuPlex}, which replaces frame-by-frame autoregressive rollout with masked prediction of a short future block.
+At each temporal-backbone forward pass, which we call a \textit{backbone wake}, DiffuPlex predicts a block of future user and assistant frames by replacing unavailable future inputs with learned MASK tokens.
+It retains a confident contiguous prefix of the assistant draft and plays it at the original interaction rate while user speech continues to arrive.
+The user predictions are stored for consistency checking.
+If the observed user input diverges from the prediction, DiffuPlex keeps all assistant frames that have already been played and revises only the remaining future.
+Figure~\ref{fig:1_overview} illustrates this process of predicting a future block and revising its unplayed portion as the interaction unfolds.
+We refer to this repeated process of predicting, consuming, and revising a masked future as \textit{rolling masked diffusion}.
+
+We evaluate DiffuPlex on full-duplex interaction, spoken-language capability, human evaluation, and inference efficiency.
+We consider two inference policies over the same predictor: DiffuPlex-\textsc{Listen} consumes multiple future frames only when they predict assistant silence, whereas DiffuPlex-\textsc{Speak} can also consume predicted assistant speech.
+On Full-Duplex-Bench v1.0, the two policies advance the interaction by 1.91 and 2.23 frames per backbone wake on average while remaining close to the autoregressive backbone in interaction behavior.
+On the fixed 60-clip runtime subset, they achieve 1.46$\times$ and 1.59$\times$ deployment-path wall-clock speedups and 1.61$\times$ and 1.80$\times$ Core LM speedups, with all measured invocations completing within 80ms.
+The more conservative \textsc{Listen} policy also preserves human-rated speech and conversational quality, while extending prediction into assistant speech exposes a speech-quality trade-off that we analyze further.
+To test whether speedups can be achieved without future prediction, we compare against training-free baselines that defer autoregressive execution and emit silence on skipped frames, at the cost of degraded full-duplex conversational dynamics.
+DiffuPlex instead predicts the intervening interaction, reducing backbone calls while better preserving these dynamics.

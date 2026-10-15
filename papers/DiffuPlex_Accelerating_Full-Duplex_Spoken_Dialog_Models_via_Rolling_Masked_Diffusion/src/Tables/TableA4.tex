@@ -1,0 +1,31 @@
+\begin{table*}[t]
+\centering
+\caption{
+Complete VoiceBench results.
+Values follow the benchmark's official task-specific scoring and are reported on the common percentage scale used for aggregation.
+Overall is the aggregate reported in the main paper.
+}
+\label{atab:voicebench_full}
+\scriptsize
+\resizebox{\textwidth}{!}{
+\begin{tabular}{llrrrrrrrrrr}
+\toprule
+Model & Mode & AlpacaEval & CommonEval & WildVoice & SD-QA & OpenBookQA & MMSU & BBH & IFEval & AdvBench & Overall \\
+\midrule
+AR backbone
+& $s\!\rightarrow\!t$ & 51.99 & 43.73 & 36.19 & 20.34 & 25.71 & 24.89 & 48.60 & 12.99 & 23.08 & 31.95 \\
+DiffuPlex-\textsc{Listen}
+& $s\!\rightarrow\!t$ & 50.91 & 45.00 & 36.82 & 22.42 & 25.05 & 25.05 & 49.30 & 12.00 & 20.77 & 31.93 \\
+DiffuPlex-\textsc{Speak}
+& $s\!\rightarrow\!t$ & 49.88 & 44.03 & 35.92 & 19.89 & 22.64 & 25.57 & 47.10 & 13.82 & 21.92 & 31.20 \\
+\midrule
+AR backbone
+& $s\!\rightarrow\!s$ & 52.05 & 44.43 & 36.17 & 17.81 & 24.62 & 24.11 & 47.80 & 13.08 & 24.42 & 31.61 \\
+DiffuPlex-\textsc{Listen}
+& $s\!\rightarrow\!s$ & 50.37 & 44.23 & 36.58 & 20.16 & 25.71 & 24.43 & 48.40 & 12.25 & 21.54 & 31.52 \\
+DiffuPlex-\textsc{Speak}
+& $s\!\rightarrow\!s$ & 49.15 & 43.33 & 35.75 & 17.18 & 24.40 & 24.95 & 48.40 & 13.28 & 22.88 & 31.04 \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}

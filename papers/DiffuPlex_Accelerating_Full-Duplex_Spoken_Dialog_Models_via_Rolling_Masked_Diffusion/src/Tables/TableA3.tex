@@ -1,0 +1,54 @@
+\begin{table*}[t]
+\centering
+\caption{
+Speech-feature changes before and after user interruption for trials classified as \textsc{Respond}, following the Full-Duplex-Bench v1.5 evaluation protocol.
+Each cell reports pre-overlap $\rightarrow$ post-overlap, followed by the post-minus-pre change and paired $t$-test $p$-value.
+The number of valid paired trials varies slightly across systems and features because \textsc{Respond} filtering and the benchmark's MAD-based outlier removal ($k=3.5$) are applied separately to each system.
+}
+\label{atab:fdb_v15_acoustic}
+\scriptsize
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcccccc}
+\toprule
+Model
+& WPM
+& Pitch Mean
+& Pitch SD
+& Intensity Mean
+& Intensity SD
+& UTMOSv2 \\
+\midrule
+
+AR backbone
+& \shortstack{$141.05 \rightarrow 220.05$\\ $(+79.00,\;p<.001)$}
+& \shortstack{$238.45 \rightarrow 236.77$\\ $(-1.68,\;p=.134)$}
+& \shortstack{$46.24 \rightarrow 46.30$\\ $(+0.06,\;p=.950)$}
+& \shortstack{$59.10 \rightarrow 60.48$\\ $(+1.38,\;p<.001)$}
+& \shortstack{$17.93 \rightarrow 15.98$\\ $(-1.95,\;p<.001)$}
+& \shortstack{$2.829 \rightarrow 2.858$\\ $(+0.029,\;p=.429)$}
+\\
+
+\midrule
+DiffuPlex-\textsc{Listen}
+& \shortstack{$140.79 \rightarrow 219.90$\\ $(+79.11,\;p<.001)$}
+& \shortstack{$238.32 \rightarrow 234.53$\\ $(-3.79,\;p=.001)$}
+& \shortstack{$44.40 \rightarrow 42.58$\\ $(-1.82,\;p=.065)$}
+& \shortstack{$58.64 \rightarrow 60.25$\\ $(+1.61,\;p<.001)$}
+& \shortstack{$18.58 \rightarrow 16.22$\\ $(-2.37,\;p<.001)$}
+& \shortstack{$2.697 \rightarrow 2.812$\\ $(+0.115,\;p<.001)$}
+\\
+
+\midrule
+DiffuPlex-\textsc{Speak}
+& \shortstack{$141.76 \rightarrow 220.04$\\ $(+78.28,\;p<.001)$}
+& \shortstack{$239.46 \rightarrow 236.36$\\ $(-3.09,\;p=.023)$}
+& \shortstack{$47.57 \rightarrow 46.64$\\ $(-0.93,\;p=.367)$}
+& \shortstack{$58.02 \rightarrow 60.22$\\ $(+2.21,\;p<.001)$}
+& \shortstack{$18.21 \rightarrow 16.08$\\ $(-2.13,\;p<.001)$}
+& \shortstack{$2.549 \rightarrow 2.635$\\ $(+0.086,\;p=.024)$}
+\\
+
+\bottomrule
+\end{tabular}
+}
+\end{table*}

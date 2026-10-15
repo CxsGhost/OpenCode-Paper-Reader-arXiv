@@ -1,0 +1,31 @@
+\begin{table*}[t]
+\centering
+\caption{
+OpenAudioBench results.
+The four task columns retain their original score ranges.
+Overall first normalizes each task to a percentage scale and then averages across tasks.
+}
+\label{atab:oab_full}
+\small
+\resizebox{\textwidth}{!}{
+\begin{tabular}{llrrrrr}
+\toprule
+Model & Mode & Llama Questions $(0\!-\!100)$ & Web Questions $(0\!-\!10)$ & TriviaQA $(0\!-\!10)$ & AlpacaEval $(1\!-\!10)$ & Overall (\%) \\
+\midrule
+AR backbone
+& $s\!\rightarrow\!t$ & 54.20 & 2.95 & 1.92 & 3.97 & 35.66 \\
+DiffuPlex-\textsc{Listen}
+& $s\!\rightarrow\!t$ & 57.60 & 3.07 & 1.92 & 3.93 & 36.71 \\
+DiffuPlex-\textsc{Speak}
+& $s\!\rightarrow\!t$ & 55.53 & 3.07 & 1.86 & 3.85 & 35.82 \\
+\midrule
+AR backbone
+& $s\!\rightarrow\!s$ & 49.33 & 2.96 & 1.75 & 3.97 & 34.03 \\
+DiffuPlex-\textsc{Listen}
+& $s\!\rightarrow\!s$ & 46.73 & 3.02 & 1.80 & 3.92 & 33.53 \\
+DiffuPlex-\textsc{Speak}
+& $s\!\rightarrow\!s$ & 46.07 & 2.84 & 1.62 & 3.78 & 32.12 \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}

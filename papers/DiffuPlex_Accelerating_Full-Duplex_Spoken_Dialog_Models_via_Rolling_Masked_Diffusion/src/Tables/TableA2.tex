@@ -1,0 +1,49 @@
+\begin{table*}[t]
+\centering
+\caption{
+Full-Duplex-Bench v1.5 behavioral response distributions and interaction latencies.
+Stop and response latencies are reported in seconds.
+}
+\label{atab:fdb_v15_behavior}
+\small
+\begin{tabular}{llrrr}
+\toprule
+Scenario & Class / Metric
+& AR backbone
+& DiffuPlex-\textsc{Listen}
+& DiffuPlex-\textsc{Speak} \\
+\midrule
+User interruption
+& Respond $\uparrow$     & 0.94  & 0.95  & 0.96 \\
+& Resume $\downarrow$    & 0.04  & 0.04  & 0.04 \\
+& Uncertain $\downarrow$ & 0.00  & 0.01  & 0.00 \\
+& Unknown $\downarrow$   & 0.02  & 0.00  & 0.00 \\
+& Stop (s) $\downarrow$  & 0.443 & 0.459 & 0.446 \\
+& Resp. (s) $\downarrow$ & 0.368 & 0.417 & 0.455 \\
+\midrule
+User backchannel
+& Respond $\downarrow$   & 0.11  & 0.06  & 0.06 \\
+& Resume $\uparrow$      & 0.74  & 0.92  & 0.91 \\
+& Uncertain $\downarrow$ & 0.01  & 0.01  & 0.00 \\
+& Unknown $\downarrow$   & 0.13  & 0.01  & 0.03 \\
+& Stop (s) $\uparrow$    & 0.586 & 0.556 & 0.598 \\
+& Resp. (s) $\downarrow$ & 0.603 & 0.598 & 0.730 \\
+\midrule
+Talking to other
+& Respond $\downarrow$   & 0.60  & 0.56  & 0.54 \\
+& Resume $\uparrow$      & 0.26  & 0.31  & 0.34 \\
+& Uncertain $\uparrow$   & 0.05  & 0.01  & 0.03 \\
+& Unknown $\downarrow$   & 0.09  & 0.12  & 0.09 \\
+& Stop (s) $\uparrow$    & 0.528 & 0.515 & 0.547 \\
+& Resp. (s) $\downarrow$ & 0.387 & 0.322 & 0.364 \\
+\midrule
+Background speech
+& Respond $\downarrow$   & 0.49  & 0.46  & 0.49 \\
+& Resume $\uparrow$      & 0.39  & 0.45  & 0.35 \\
+& Uncertain $\uparrow$   & 0.01  & 0.01  & 0.04 \\
+& Unknown $\downarrow$   & 0.11  & 0.08  & 0.12 \\
+& Stop (s) $\uparrow$    & 0.710 & 0.630 & 0.680 \\
+& Resp. (s) $\downarrow$ & 0.362 & 0.291 & 0.452 \\
+\bottomrule
+\end{tabular}
+\end{table*}

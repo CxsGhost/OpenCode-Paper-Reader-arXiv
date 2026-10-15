@@ -1,0 +1,27 @@
+\section{Related Work}
+\label{sec:related_work}
+
+\textbf{Full-Duplex Spoken Dialog Models.}
+Early work such as dGSLM~\citep{nguyen-etal-2023-generative} jointly modeled two conversational speech streams to capture turn-taking and overlap.
+More recent end-to-end full-duplex models use either single-stream generation, as in SyncLLM~\citep{veluri-etal-2024-beyond}, OmniFlatten~\citep{zhang-etal-2025-omniflatten}, Raon-SpeechChat~\citep{kim2026raonspeechtechnicalreport}, and MiniCPM-o 4.5~\citep{cui2026minicpmo45realtimefullduplex}, or parallel user and assistant streams, as in Moshi~\citep{defossez2024moshispeechtextfoundationmodel} and PersonaPlex~\citep{11463413}.
+Recent work further improves turn-taking, interruption handling, and response timing through interactivity training~\citep{pmlr-v267-wu25t,hsiao2026aspirinactionspaceprojection,ohashi2026multifacetedinteractivityalignmentfullduplex,li2026decouplingconversationaldynamicsfullduplex}.
+Despite these advances, these models still advance the interaction autoregressively, requiring sequential backbone computation as new frames or chunks are generated.
+
+\textbf{Accelerating Autoregressive Generation.}
+Speculative and parallel decoding reduce sequential generation by predicting multiple future tokens and processing them with fewer target-model calls~\citep{NEURIPS2018_c4127b91,pmlr-v202-leviathan23a,chen2023acceleratinglargelanguagemodel}.
+Methods such as Medusa~\citep{pmlr-v235-cai24b} and EAGLE~\citep{pmlr-v235-li24bt} improve drafting through additional prediction heads or feature-level prediction, and related approaches have been extended to autoregressive speech generation~\citep{10887855,10888194,11464026}.
+PredGen~\citep{li2025predgen} and RelayS2S~\citep{mai2026relays2sdualpathspeculativegeneration} instead begin response generation before the complete spoken input is available, using partial user speech to prepare future output while subsequent input continues to arrive.
+However, their speculative responses remain autoregressively generated.
+They therefore move response computation earlier rather than reducing the sequential backbone steps required to predict multiple future interaction frames within an end-to-end full-duplex model.
+
+\textbf{Diffusion-Based Parallel Generation.}
+Masked and block diffusion replace token-by-token generation with parallel prediction over multiple positions~\citep{NEURIPS2021_958c5305,pmlr-v235-lou24a,NEURIPS2024_eb0b13cc,ICLR2025_7ede97c3}.
+Recent work adapts pretrained autoregressive models to masked or block prediction~\citep{ICLR2025_0fa81c3f,cheng-etal-2026-sdar,ICLR2026_d0865cbe,gat2025setblockdecodinglanguage,samragh2025llmknowsfutureuncovering},
+while DFlash (Chen et al., 2026a) and DiffuSpec (Li et al., 2026a) use diffusion models as parallel
+drafters for autoregressive verification.
+Rolling Diffusion Models~\citep{pmlr-v235-ruhe24a} and Diffusion Forcing~\citep{NEURIPS2024_2aee1c41} further consider causal or rolling prediction over temporal sequences.
+Related ideas have recently been applied to speech: VocalNet-MDM~\citep{cheng2026vocalnetmdmacceleratingstreamingspeech} accelerates streaming half-duplex speech LLMs, while Chatterbox-Flash~\citep{seo2026chatterboxflashpriorcalibratedblockdiffusion} and DELTA-TTS~\citep{moon2026deltattsadaptingautoregressivemodel} adapt autoregressive TTS models for block or masked diffusion.
+In these settings, farther output positions can be predicted from already available input.
+Full-duplex dialog introduces a different constraint: future assistant frames depend on user speech that has not yet arrived.
+DiffuPlex therefore predicts the missing future interaction jointly and revises only the unplayed assistant future as the corresponding user speech is observed.
+

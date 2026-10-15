@@ -1,0 +1,51 @@
+\begin{table*}[t]
+\centering
+\caption{
+Confidence-threshold ablation.
+Lower thresholds retain longer predicted futures, whereas stricter thresholds wake the backbone more frequently.
+The no-confidence intervention disables only the confidence threshold for \textsc{Listen}
+(retaining the PAD and $m=6$ constraints), whereas \textsc{Speak} retains the full proposed future when confidence filtering is disabled, since its original $m=2$ minimum is non-binding.
+}
+\label{atab:confidence_ablation}
+\scriptsize
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcc cc ccc cc ccc}
+\toprule
+& \multicolumn{2}{c}{Efficiency}
+& \multicolumn{2}{c}{Pause}
+& \multicolumn{3}{c}{Backchannel}
+& \multicolumn{2}{c}{Turn}
+& \multicolumn{3}{c}{Interruption} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-8}
+\cmidrule(lr){9-10}\cmidrule(lr){11-13}
+Setting
+& $c$ & LM$\times$
+& S$\downarrow$ & C$\downarrow$
+& TOR$\downarrow$ & Freq. & JSD$\downarrow$
+& TOR$\uparrow$ & Lat.$\downarrow$
+& TOR$\uparrow$ & Judge$\uparrow$ & Lat.$\downarrow$ \\
+\midrule
+\textsc{Listen}, no confidence filtering
+& 2.11 & 1.64 
+& .197 & .343
+& .164 & .191 & .724
+& .966 & .170
+& .980 & 4.398 & .314 \\
+\textsc{Listen}, $\tau_{\mathrm{conf}}=0.70$
+& 1.99 & 1.62 & .270 & .319 & .182 & .140 & .750 & 1.000 & .191 & .985 & 4.345 & .342 \\
+\textsc{Listen}, $\tau_{\mathrm{conf}}=0.80$
+& 1.91 & 1.56 & .277 & .343 & .109 & .140 & .753 & 1.000 & .173 & .990 & 4.328 & .329 \\
+\textsc{Listen}, $\tau_{\mathrm{conf}}=0.90$
+& 1.80 & 1.48 & .263 & .366 & .145 & .148 & .743 & 1.000 & .089 & .990 & 4.384 & .485 \\
+\midrule
+\textsc{Speak}, no confidence filtering
+& 2.80 & 2.07 & .321 & .347 & .236 & .191 & .729 & 1.000 & .209 & 1.000 & 3.550 & .281 \\
+\textsc{Speak}, $\tau_{\mathrm{conf}}=0.70$
+& 2.39 & 1.87 & .241 & .315 & .145 & .162 & .741 & .992 & .218 & .995 & 4.266 & .385 \\
+\textsc{Speak}, $\tau_{\mathrm{conf}}=0.80$
+& 2.23 & 1.77 & .263 & .347 & .145 & .154 & .738 & 1.000 & .156 & .995 & 4.357 & .347 \\
+\textsc{Speak}, $\tau_{\mathrm{conf}}=0.90$
+& 2.07 & 1.67 & .285 & .366 & .109 & .138 & .758 & 1.000 & .166 & .985 & 4.330 & .378 \\
+\bottomrule
+\end{tabular}}
+\end{table*}

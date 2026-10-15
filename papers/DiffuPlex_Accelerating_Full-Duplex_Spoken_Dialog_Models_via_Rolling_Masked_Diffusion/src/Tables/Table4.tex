@@ -1,0 +1,36 @@
+\begin{table}[t]
+\caption{
+Ablation of confidence-based retention and draft revision on Full-Duplex-Bench v1.0.
+}
+\label{tab:inference_ablation}
+\centering
+\small
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.03}
+\begin{tabular}{llccccc}
+\toprule
+Policy & Variant
+& $c\uparrow$
+& BC Freq.
+& Turn Lat.$\downarrow$
+& Int. Judge$\uparrow$
+& Int. Lat.$\downarrow$ \\
+\midrule
+\multirow{3}{*}{\textsc{Listen}}
+& DiffuPlex
+& 1.91 & .140 & .173 & 4.328 & .329 \\
+& w/o confidence
+& 2.11 & .191 & .170 & 4.398 & .314 \\
+& w/o revision
+& 2.49 & .078 & .440 & 4.372 & .744 \\
+\midrule
+\multirow{3}{*}{\textsc{Speak}}
+& DiffuPlex
+& 2.23 & .154 & .156 & 4.357 & .347 \\
+& w/o confidence
+& 2.80 & .191 & .209 & 3.550 & .281 \\
+& w/o revision
+& 3.08 & .080 & .480 & 4.251 & .515 \\
+\bottomrule
+\end{tabular}
+\end{table}

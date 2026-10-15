@@ -1,0 +1,35 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Experimental Setup}
+\label{subsec:experimental_setup}
+
+We use \texttt{personaplex-rl-seamless}~\citep{ohashi2026multifacetedinteractivityalignmentfullduplex}, a reinforcement-learning post-trained variant of PersonaPlex~\citep{11463413}, as the backbone for DiffuPlex.
+We freeze the original backbone and train only the stream-specific MASK embeddings and future-gated LoRA parameters on Seamless Interaction~\citep{agrawal2025seamlessinteractiondyadicaudiovisual}, a large-scale dataset of face-to-face dyadic interactions.
+Unless otherwise noted, we use a maximum lookahead of $W=16$, a confidence threshold of $\tau_{\mathrm{conf}}=0.80$, and a revision threshold of $\tau_{\mathrm{rev}}=-0.5$.
+We evaluate two inference policies over the same masked-future predictor.
+DiffuPlex-\textsc{Listen} consumes future positions only during sustained listening, with a minimum retained length of $m=6$, whereas DiffuPlex-\textsc{Speak} removes this state restriction and uses $m=2$.
+The prediction at $h=1$ is always retained, ensuring that each backbone wake advances the interaction by at least one 80ms frame.
+We use the original backbone sampling configuration and fix the generation seed to 0.
+Further data processing, training, and inference details are provided in Appendices~\ref{asubsec:data_processing}--\ref{asubsec:inference}.
+
+\subsection{Evaluation}
+\label{subsec:evaluation}
+
+We evaluate DiffuPlex along four axes: full-duplex interaction, general spoken-language capability, human evaluation, and inference efficiency.
+For full-duplex interaction, we use Full-Duplex-Bench v1.0~\citep{11433838} to evaluate pause handling, backchanneling, turn-taking, and user interruption, and additionally evaluate on Full-Duplex-Bench v1.5~\citep{11463576} under overlapping and interfering speech.
+We evaluate general spoken-language capability with VoiceBench~\citep{chen-etal-2026-voicebench} and OpenAudioBench~\citep{li2025baichuanaudiounifiedframeworkendtoend}, reporting both the assistant text stream ($s{\rightarrow}t$) and transcripts of generated speech ($s{\rightarrow}s$).
+For human evaluation, we measure speech quality (NMOS) on the assistant response following an interruption and conversational quality (DMOS) over the full interaction, using user-interruption examples from Full-Duplex-Bench v1.0.
+Finally, we measure inference efficiency on a fixed 60-clip subset of Full-Duplex-Bench v1.0, with 15 clips per task on a single NVIDIA RTX A6000 GPU.
+We report wall-clock streaming, end-to-end GPU, and Core LM time, together with frames advanced per backbone wake and wake-frame latency.
+Detailed evaluation, runtime, and human-evaluation protocols are provided in Appendices~\ref{asec:evaluation_details} and~\ref{asec:human_evaluation}.
+
+\subsection{Baselines}
+\label{subsec:baselines}
+
+We compare against Moshi~\citep{defossez2024moshispeechtextfoundationmodel}, PersonaPlex~\citep{11463413}, and \texttt{personaplex-rl-seamless}, the autoregressive backbone used by DiffuPlex.
+To test whether similar computational savings can be obtained simply by skipping some autoregressive backbone calls, we additionally construct three training-free deferred-execution baselines using the same frozen backbone: \textsc{PAD}, \textsc{Silero}, and \textsc{Smart Turn}.
+On a deferred 80ms interaction step, these baselines do not run the backbone or predict the skipped frame; instead, they emit silence for the assistant and resume autoregressive generation at a later step.
+\textsc{PAD} skips backbone calls while the assistant predicts silence, \textsc{Silero} while the user is speaking, and \textsc{Smart Turn} until a turn-ending detector predicts that the user has finished.
+We cap the interval between autoregressive backbone calls at $R\in\{2,4,6,8\}$ interaction steps.
+Further implementation details are in Appendix~\ref{asubsec:deferred_baselines}.

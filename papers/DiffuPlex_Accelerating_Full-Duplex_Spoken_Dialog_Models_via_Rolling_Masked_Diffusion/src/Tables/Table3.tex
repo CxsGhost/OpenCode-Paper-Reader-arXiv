@@ -1,0 +1,35 @@
+\begin{table}[t]
+\caption{
+General spoken-language capability. Higher is better.
+}
+\label{tab:general_results}
+\centering
+\small
+\setlength{\tabcolsep}{4.5pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{VoiceBench}
+& \multicolumn{2}{c}{OpenAudioBench} \\
+\cmidrule(lr){2-3}
+\cmidrule(lr){4-5}
+Model
+& $s{\rightarrow}t$
+& $s{\rightarrow}s$
+& $s{\rightarrow}t$
+& $s{\rightarrow}s$ \\
+\midrule
+\texttt{personaplex-rl-seamless}
+& 31.95 & 31.61
+& 35.66 & 34.03 \\
+
+DiffuPlex-\textsc{Listen}
+& 31.93 & 31.52
+& 36.71 & 33.53 \\
+
+DiffuPlex-\textsc{Speak}
+& 31.20 & 31.04
+& 35.82 & 32.12 \\
+\bottomrule
+\end{tabular}
+\end{table}

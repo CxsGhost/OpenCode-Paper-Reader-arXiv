@@ -1,0 +1,41 @@
+\begin{table*}[t]
+\centering
+\caption{
+Paired Full-Duplex-Bench v1.0 comparisons against the autoregressive \texttt{personaplex-rl-seamless} backbone.
+AR and DiffuPlex values are computed over the paired clips used by each test and may therefore differ from the aggregate values in the main table.
+$\Delta$ denotes DiffuPlex minus AR.
+Holm correction is applied jointly over all 20 comparisons.
+$\dagger$ denotes a binary comparison for which the two systems have identical clip-level outcomes.
+}
+\label{atab:paired_significance}
+\small
+\begin{tabular}{lllrcccrr}
+\toprule
+Policy & Metric & Test & $n$ & AR & DiffuPlex & $\Delta$ & Raw $p$ & Holm $p$ \\
+\midrule
+\textsc{Listen}
+& Pause C & McNemar & 216 & 0.3009 & 0.3426 & +0.0417 & 0.2221 & 1.0000 \\
+& Pause S & McNemar & 137 & 0.2993 & 0.2774 & -0.0219 & 0.6776 & 1.0000 \\
+& BC TOR & McNemar & 55 & 0.2182 & 0.1091 & -0.1091 & 0.2379 & 1.0000 \\
+& BC Freq & Wilcoxon & 55 & 0.1634 & 0.1402 & -0.0231 & 0.0266 & 0.5320 \\
+& BC JSD & Wilcoxon & 55 & 0.7405 & 0.7534 & +0.0130 & 0.0859 & 1.0000 \\
+& Turn TOR & McNemar$^\dagger$ & 119 & 1.0000 & 1.0000 & 0.0000 & 1.0000 & 1.0000 \\
+& Turn Lat. & Wilcoxon & 119 & 0.1242 & 0.1732 & +0.0490 & 0.3609 & 1.0000 \\
+& Int. TOR & McNemar & 200 & 0.9950 & 0.9900 & -0.0050 & 1.0000 & 1.0000 \\
+& Int. Lat. & Wilcoxon & 197 & 0.2412 & 0.3070 & +0.0658 & 0.0535 & 1.0000 \\
+& Int. Judge & Wilcoxon & 197 & 4.2843 & 4.3299 & +0.0457 & 0.6279 & 1.0000 \\
+\midrule
+\textsc{Speak}
+& Pause C & McNemar & 216 & 0.3009 & 0.3472 & +0.0463 & 0.1934 & 1.0000 \\
+& Pause S & McNemar & 137 & 0.2993 & 0.2628 & -0.0365 & 0.4049 & 1.0000 \\
+& BC TOR & McNemar & 55 & 0.2182 & 0.1455 & -0.0727 & 0.4545 & 1.0000 \\
+& BC Freq & Wilcoxon & 55 & 0.1634 & 0.1543 & -0.0091 & 0.4666 & 1.0000 \\
+& BC JSD & Wilcoxon & 55 & 0.7405 & 0.7378 & -0.0027 & 0.8210 & 1.0000 \\
+& Turn TOR & McNemar$^\dagger$ & 119 & 1.0000 & 1.0000 & 0.0000 & 1.0000 & 1.0000 \\
+& Turn Lat. & Wilcoxon & 119 & 0.1242 & 0.1559 & +0.0317 & 0.6327 & 1.0000 \\
+& Int. TOR & McNemar$^\dagger$ & 200 & 0.9950 & 0.9950 & 0.0000 & 1.0000 & 1.0000 \\
+& Int. Lat. & Wilcoxon & 199 & 0.2806 & 0.3465 & +0.0659 & 0.1104 & 1.0000 \\
+& Int. Judge & Wilcoxon & 199 & 4.2864 & 4.3568 & +0.0704 & 0.3263 & 1.0000 \\
+\bottomrule
+\end{tabular}
+\end{table*}

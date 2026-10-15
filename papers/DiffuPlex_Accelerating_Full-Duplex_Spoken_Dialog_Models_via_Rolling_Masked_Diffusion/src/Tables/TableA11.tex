@@ -1,0 +1,50 @@
+\begin{table*}[t]
+\centering
+\caption{
+Revision-rule ablation.
+A larger $\tau_{\mathrm{rev}}$ requires stronger evidence before revising, while the no-revision variant always continues through the retained draft unless it is exhausted.
+The uncalibrated User-only rows remove the assistant-side contribution while retaining the default revision threshold, and should not be interpreted as the calibrated User-only ablation in Appendix~\ref{asubsec:revision_decomposition}.
+}
+\label{atab:revision_ablation}
+\scriptsize
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcc cc ccc cc ccc}
+\toprule
+& \multicolumn{2}{c}{Efficiency}
+& \multicolumn{2}{c}{Pause}
+& \multicolumn{3}{c}{Backchannel}
+& \multicolumn{2}{c}{Turn}
+& \multicolumn{3}{c}{Interruption} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-8}
+\cmidrule(lr){9-10}\cmidrule(lr){11-13}
+Setting
+& $c$ & LM$\times$
+& S$\downarrow$ & C$\downarrow$
+& TOR$\downarrow$ & Freq. & JSD$\downarrow$
+& TOR$\uparrow$ & Lat.$\downarrow$
+& TOR$\uparrow$ & Judge$\uparrow$ & Lat.$\downarrow$ \\
+\midrule
+\textsc{Listen}, $\tau_{\mathrm{rev}}=-1.0$
+& 1.83 & 1.50 & .321 & .384 & .164 & .161 & .735 & 1.000 & .136 & 1.000 & 4.350 & .437 \\
+\textsc{Listen}, $\tau_{\mathrm{rev}}=-0.5$
+& 1.91 & 1.56 & .277 & .343 & .109 & .140 & .753 & 1.000 & .173 & .990 & 4.328 & .329 \\
+\textsc{Listen}, $\tau_{\mathrm{rev}}=0$
+& 1.95 & 1.60 & .321 & .352 & .036 & .157 & .739 & .992 & .125 & .995 & 4.236 & .446 \\
+\textsc{Listen}, no revision
+& 2.49 & 2.07 & .146 & .176 & .109 & .078 & .796 & .966 & .440 & .995 & 4.372 & .744 \\
+\textsc{Listen}, User-only (uncalibrated)
+& 1.00 & .79 & .431 & .417 & .145 & .145 & .743 & 1.000 & .089 & 1.000 & 4.335 & .307 \\
+\midrule
+\textsc{Speak}, $\tau_{\mathrm{rev}}=-1.0$
+& 2.15 & 1.70 & .314 & .370 & .145 & .152 & .740 & 1.000 & .152 & 1.000 & 4.350 & .419 \\
+\textsc{Speak}, $\tau_{\mathrm{rev}}=-0.5$
+& 2.23 & 1.77 & .263 & .347 & .145 & .154 & .738 & 1.000 & .156 & .995 & 4.357 & .347 \\
+\textsc{Speak}, $\tau_{\mathrm{rev}}=0$
+& 2.32 & 1.84 & .241 & .329 & .127 & .144 & .741 & .983 & .185 & .980 & 4.306 & .315 \\
+\textsc{Speak}, no revision
+& 3.08 & 2.50 & .131 & .157 & .091 & .080 & .797 & .950 & .480 & .995 & 4.251 & .515 \\
+\textsc{Speak}, User-only (uncalibrated)
+& 1.00 & .78 & .431 & .403 & .109 & .148 & .739 & 1.000 & .091 & 1.000 & 4.345 & .265 \\
+\bottomrule
+\end{tabular}}
+\end{table*}
