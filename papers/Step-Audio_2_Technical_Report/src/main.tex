@@ -1,0 +1,80 @@
+\documentclass{article}
+\usepackage{arxiv}
+\usepackage[utf8]{inputenc} %
+\usepackage[T1]{fontenc}    %
+\usepackage[hidelinks]{hyperref}       %
+\usepackage{url}            %
+\usepackage{booktabs}       %
+\usepackage{amsfonts}       %
+\usepackage{nicefrac}       %
+\usepackage{microtype}      %
+\usepackage{lipsum}		%
+\usepackage{graphicx}
+\usepackage{threeparttable}
+\usepackage{doi}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath,amsfonts,bm}
+\usepackage{amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{adjustbox}
+\usepackage{blindtext}
+\usepackage{cleveref}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{makecell} %
+\usepackage[perpage]{footmisc}
+
+
+\usepackage[
+    backend=biber,
+    style=numeric,
+]{biblatex}
+\addbibresource{references.bib}
+
+
+\newcommand{\citep}[1]{\parencite{#1}}
+\setlist[itemize,1]{leftmargin=\dimexpr 18pt}
+\setlist[enumerate,1]{leftmargin=\dimexpr 18pt}
+
+\title{
+\raisebox{-0.1\height}{\includegraphics[width=0.04\textwidth]{figures/title-logo.png}} %
+Step-Audio 2 Technical Report
+}
+\author{\Large StepFun Audio Team}
+
+
+\renewcommand{\headeright}{Technical Report}
+\renewcommand{\undertitle}{}
+\renewcommand{\shorttitle}{\raisebox{-0.12\height}{\includegraphics[width=0.02\textwidth]{figures/title-logo.png}}
+Step-Audio 2}
+
+
+\begin{document}
+\large
+
+\maketitle
+\input{content/abstract}
+\input{content/introduction}
+\input{content/related}
+\input{content/architecture}
+\input{content/sft}
+\input{content/rl}
+\input{content/evaluation}
+\input{content/conclusion}
+
+\printbibliography[title={References}]
+
+\newpage
+\appendix
+
+\section*{Appendix}
+\input{content/contributor}
+\input{content/appendix_7b}
+
+\end{document}

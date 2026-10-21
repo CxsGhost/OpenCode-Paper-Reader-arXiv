@@ -1,0 +1,42 @@
+\subsection{Reinforcement learning}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+To enhance the model's reasoning capabilities in audio understanding and speech interaction,
+we implement a multi-stage reinforcement learning strategy.
+We leverage our reasoning-centric datasets from SFT and utilize two stages of proximal policy optimization (PPO)~\cite{rafailov2023direct} to optimize reasoning efficiency for real-time audio engagement.
+In the first stage, a binary reward function is employed to limit the thinking sequence length to a predefined maximum.
+This reward function assigns a value of 1 for reasoning that is appropriately concise (neither empty nor excessively long) and 0 otherwise.
+Training is conducted for 60 iterations with a global batch size of 64, using an actor learning rate of $1 \times 10^{-6}$ and a critic learning rate of $2.5 \times 10^{-6}$.
+The second stage transitions from binary rewards to learned preference scoring, utilizing a trained reward model to evaluate response quality.
+This stage involves an additional 120 iterations while maintaining the same batch size and learning rate settings. Finally, we incorporate group relative policy optimization (GRPO)~\cite{rafailov2023direct} for 400 iterations to further improve the model's audio perceptual abilities.
+
+
+
+
+

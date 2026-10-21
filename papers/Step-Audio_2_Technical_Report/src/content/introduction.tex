@@ -1,0 +1,49 @@
+\begin{figure}[htb!]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/radar.pdf}
+\caption{Performance comparision of GPT-4o Audio$^1$, Kimi-Audio$^2$, Qwen-Omni$^3$ and Step-Audio 2 and on various benchmarks.}
+\label{fig:radar}
+\end{figure}
+\section{Introduction}
+
+With the rapid development of large language models and audio processing technology,
+large audio language models (LALMs) have demonstrated their superiority 
+over conventional approaches in 
+various speech and audio processing tasks.
+GPT-4o is first introduced and is pioneering the development of end-to-end speech interaction without intermediate textual conversions.
+Subsequently, many open-sourced LALMs \cite{chen2025minmo,chu2024qwen2,defossez2024moshi,ding2025kimi,fang2024llama,huang2025stepaudioaqaa,huang2025step,nguyen2024spiritlminterleavedspoken,xie2024mini,xie2024mini2,xu2025qwen25omnitechnicalreport,zeng2024glm} are emerged, advancing multi-modal large language model capabilities in various speech and audio domains.
+Among these approaches, 
+Qwen-Audio~\cite{chu2023qwen} and Qwen2-Audio~\cite{chu2024qwen2} perform audio analysis and generate textual responses to speech instructions. Qwen2.5-Omni~\cite{xu2025qwen25omnitechnicalreport} implements a thinker-talker architecture to enable full-duplex I/O during speech conversations.
+More recently, Kimi-Audio~\cite{ding2025kimi} has achieved impressive results on multiple speech and audio understanding benchmarks. In parallel, we have introduced Step-Audio~\cite{huang2025step} and Step-Audio-AQAA~\cite{huang2025stepaudioaqaa}, the first LALMs to unify speech understanding and generation through discrete audio tokens at a scale of 130 billion parameters.
+
+However, %
+existing LALMs still face challenges
+in achieving natural and intelligent speech interaction.
+Previous LALMs such as Spirit LM~\cite{nguyen2024spiritlminterleavedspoken} and GLM-4-Voice~\cite{zeng2024glm} mainly focus on aligning the semantic information in speech inputs to text modal,
+neglecting the para-linguistic information which is also crucial for intentional understanding.
+Although LALMs including Qwen-Audio~\cite{chu2023qwen}, Qwen2-Audio~\cite{chu2024qwen2} and Audio Flamingo series \cite{ghosh2025audioflamingo2, goel2025audioflamingo3,kong2024audioflamingonovelaudio} are capable of comprehending such information, they typically generate only textual outputs and fail to further utilize this capability to produce coherent and expressive responses in speech conversations.
+Moreover, due to the complexities of multi-modal modeling, existing LALMs frequently suffer from hallucination and offer limited choices of timbres and speaking styles~\cite{defossez2024moshi,ding2025kimi}, lacking access to real-world textual and acoustic knowledge.
+
+\footnotetext[1]{GPT-4o Audio is evaluated with gpt-4o-transcribe for ASR and gpt-4o-audio-preview-2025-06-03 for others via official API.}
+\footnotetext[2]{Kimi-Audio is excluded from translation evaluations since it consistently ignores prompts.}
+\footnotetext[3]{Qwen-Omni is evaluated with Qwen2.5-Omni for MMAU and speech-to-text translation, and qwen-omni-turbo-2025-03-26 for others via official API.}
+
+To address these issues and step into the next generation of multi-modal large language models,
+we present \textbf{Step-Audio 2}, an end-to-end large audio language model
+with industry-strength audio perception and speech interaction. %
+Step-Audio 2 directly processes raw audio as input and outputs discrete text and audio tokens and has fewer parameters than Step-Audio~\cite{huang2025step}. 
+Beyond capturing semantic information in speech, the model also comprehends para-linguistic and non-vocal information in audio.
+By leveraging chain-of-thought (CoT) reasoning and reinforcement learning (RL), 
+Step-Audio 2 further utilizes such multi-modal information to generate expressive speech responses coherent to 
+different conversation scenarios.
+To ground the model with real-world knowledge,
+Step-Audio 2 incorporates retrieval-augmented generation (RAG) and the capability to utilize various external tools, including web search and audio search, to provide more reliable and expressive responses.
+Specifically, we present an audio search as a tool unique to LALMs,
+enabling seamless speech retrieval via voice instructions and allowing the model to switch timbres and speaking styles based on the retrieved speech.
+
+To ensure its intelligence and
+expressiveness in diverse conversational scenarios, 
+we carefully design a multi-stage training strategy to train Step-Audio 2 on 680 billion tokens of text data and 8 million hours of real and synthesized audio data.
+Evaluation results shown in Figure \ref{fig:radar} demonstrate that Step-Audio~2 achieves state-of-the-art performance in a series of audio tasks, including automatic speech recognition (ASR) on multiple languages, audio understanding, 
+speech-to-speech translation and speech-to-speech conversation.
+Typical usages of Step-Audio 2 are also illustrated in Figure \ref{fig:usage}.

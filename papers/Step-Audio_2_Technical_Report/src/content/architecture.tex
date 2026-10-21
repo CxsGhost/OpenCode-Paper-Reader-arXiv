@@ -1,0 +1,149 @@
+\begin{figure}[t]
+\centering
+\includegraphics[clip, trim=0.75cm 0.3cm 0.3cm 0cm, width=\textwidth]{figures/architecture5.pdf} 
+\caption{Architecture of the Step-Audio 2.}
+\label{fig:architecture}
+\end{figure}
+
+\section{Methodology}
+\subsection{Architecture}
+
+Different from our previous Step-Audio~\cite{huang2025step},
+Step-Audio 2 further integrates the generation of audio tokens into language modeling,
+achieves end-to-end audio perception and generation.
+As shown in Figure~\ref{fig:architecture}, Step-Audio 2 consists of
+an audio encoder,
+an audio adaptor,
+an LLM decoder 
+and an audio detokenizer.
+
+The audio encoder is pretrained on various speech and audio understanding tasks including ASR, speaker age and gender prediction, audio event detection, etc.
+The audio encoder has an output frame rate of 25 Hz and is frozen during the entire training process. 
+An audio adaptor with a downsampling rate of 2 is employed to connect the audio encoder to LLM, thereby reducing the output frame rate of the audio encoder to 12.5 Hz. 
+
+The LLM decoder directly takes the latent audio features from the audio adaptor as input,
+and outputs an interleaved sequence of discrete text and audio tokens.
+We employ the tokenizer from CosyVoice 2 \cite{du2024cosyvoice2} as the audio tokenizer.
+And the text and audio tokens are interleaved \cite{huang2025stepaudioaqaa,huang2025step,zeng2024glm} at a fixed ratio and padded at the end to meet the ratio. %
+The audio tokens are then extracted from the interleaved sequence and consumed by the audio detokenizer to generate the output waveform.
+The input audio features and output interleaved sequences 
+are then pre-filled as the history information for the next round of conversation.
+
+
+To provide more accurate responses and expand interactive capabilities, %
+we 
+design tools to retrieve audio, current date and time, weather forecast and web content directly with explicit or implicit voice inputs.
+Notably, 
+we propose the audio search tool,
+a novel tool with a voice library of hundreds of thousands of speeches with their corresponding transcriptions and descriptions.
+With the retrieved speech from audio search, Step-Audio 2 is able to mimic the speaking style
+or switching timbre according to the speech.
+During inference,
+the retrieved information is appended after the input audio features
+before generating speech outputs.
+
+Similar to Step-Audio~\cite{huang2025step} and Step-Audio-AQAA~\cite{huang2025stepaudioaqaa}
+, Step-Audio 2’s audio detokenizer also consists of a Flow Matching module and a HiFi-GAN~\cite{kong2020hifigangenerativeadversarialnetworks} vocoder. The Flow-Matching module generates Mel spectrograms from the output audio tokens, while the vocoder further converts the Mel spectrograms into waveforms.
+For Flow-Matching, we incorporate a CNN-based encoder layer after each self-attention module within the transformer block and train the model on 200,000 hours of high-quality speech. This enhancement significantly improves its Mel spectrogram reconstruction capability, leading to substantial gains in both pronunciation accuracy and timbre similarity.
+
+Step-Audio 2 employs the same deployment infrastructure used in Step-Audio~\cite{huang2025step} and Step-Audio-AQAA~\cite{huang2025stepaudioaqaa}, which includes a voice activity detection (VAD) module to filter out input speeches and achieves real-time voice conversation. %
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+\subsection{Pre-training}
+
+Step-Audio 2 model is initialized with a textual LLM and %
+then continually pre-trained on 1.356T tokens of textual and audio data
+over 21 days.
+
+We first utilize
+100B tokens
+of ASR data to facilitate effective alignment between speech and text feature spaces within the adaptor.
+During this phase, both the audio encoder and LLM are frozen, with only the adaptor being trained.
+We conduct training for 12K steps at an 8,192 sequence length.
+And the learning rate decays from $10^{-4}$ to $2\times10^{-5}$. 
+
+We then extend the tokenizer of the textual LLM with 6.6K audio tokens.
+To properly embed the new audio tokens and preserve the model's textual capabilities,
+the model is then trained on 128B tokens of text data and 128B tokens of audio data.
+Specifically, audio data includes 80B, 32B and 16B tokens of TTS, speech-to-speech conversation and utterance-level text-speech interleaved continuation data respectively.
+The sequence length is increased to 16,384.
+And the learning rates of the LLM,
+adaptor, embedding layer
+and output layer
+are set to $2\times10^{-5}$, 
+$5\times10^{-5}$, 
+$5\times10^{-5}$, 
+and $4\times10^{-5}$ respectively.
+
+We then introduce our main pre-training process and further train the model on another 800B tokens of text and audio data.
+We unify the learning rates to $2\times10^{-5}$ 
+and
+employ
+400B tokens of textual data and 
+42B, 120B, 8B, 30B, 5B, 45B and 150B tokens of ASR, TTS, speech-to-text translation, text-to-speech translation, speech-to-text continuation, utterance-level text-speech interleaved continuation and speech-to-speech conversation data respectively.
+
+We finally employ 200B tokens of high-quality text and audio data to introduce a wider array of tasks and cooldown the model.
+We employ
+24.6B,
+12.4B,
+2.4B,
+and 3.6B
+tokens of audio data 
+for 
+multilingual and dialectal ASR, 
+TTS, 
+paralinguistic information understanding, 
+speech-to-text translation respectively.
+Besides, 
+we develop a conversational speech synthesis pipeline to synthesize 6B, 15B and 36B tokens of audio data for speech-to-speech translation, utterance-level text-speech interleaved conversation and speech-to-speech conversation.
+To ensure the vocal diversity in the synthesized speech, the system references a library of approximately 50k unique speakers.
+We balance the audio data with 100B tokens of high-quality text data and
+the learning rate decays from $2\times10^{-5}$ to $5\times10^{-6}$.
+
+After this comprehensive pre-training procedure, the model 
+has acquired strong audio understanding and generation capabilities
+while maintaining its textual performance inherited from the initial textual LLM.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

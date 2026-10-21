@@ -1,0 +1,155 @@
+\subsection{Automatic speech recognition}
+\begin{table}[htb]
+\centering
+\caption{Comparison between Doubao LLM ASR, GPT-4o Transcribe, Kimi-Audio, Qwen-Omni, Step-Audio 2 and Step-Audio 2 mini, on character (for Chinese, Cantonese and Japanese) and word (for Arabian and English) error rates among multiple ASR test sets. N/A indicates that the language is not supported.}
+\label{tab:asr-7b}
+\begin{tabular}{lccccccc}
+\toprule
+\textbf{Category} & \textbf{Test set} & \textbf{\makecell{Doubao\\LLM ASR}} & \textbf{\makecell{GPT-4o \\Transcribe}} & \textbf{\makecell{Kimi-\\Audio}} & \textbf{\makecell{Qwen-\\Omni}} & \textbf{\makecell{Step-\\Audio 2}} & \textbf{\makecell{Step-Audio\\2 mini}}\\
+\midrule
+\multirow{5}{*}{\textbf{English}} 
+& Common Voice & 9.20 & 9.30 & 7.83 & 8.33 & \textbf{5.95} & 6.76\\
+& FLEURS English & 7.22 & \textbf{2.71} & 4.47 & 5.05 & 3.03 & 3.05\\
+& LibriSpeech clean & 2.92 & 1.75 & 1.49 & 2.93 & \textbf{1.17} & 1.33\\
+& LibriSpeech other & 5.32 & 4.23 & 2.91 & 5.07 & \textbf{2.42} & 2.86\\
+\cmidrule(lr){2-8}
+& \textbf{Average} & 6.17 & 4.50 & 4.18 & 5.35 & \textbf{3.14} & 3.50\\
+\cmidrule(r){1-8}
+\multirow{7}{*}{\textbf{Chinese}}
+& AISHELL & 0.98 & 3.52 & 0.64 & 1.17 & \textbf{0.63} & 0.78\\
+& AISHELL-2 & 3.10 & 4.26 & 2.67 & 2.40 & \textbf{2.10} & 2.16\\
+& FLEURS Chinese & 2.92 & 2.62 & 2.91 & 7.01 & 2.68 & \textbf{2.53}\\
+& KeSpeech phase1& 6.48 & 26.80 & 5.11 & 6.45 & \textbf{3.63} & 3.97\\
+& WenetSpeech meeting & 4.90 & 31.40 & 5.21 & 6.61 & \textbf{4.75} & 4.87\\
+& WenetSpeech net & \textbf{4.46} & 15.71 & 5.93 & 5.24 & 4.67 & 4.82\\
+\cmidrule(lr){2-8}
+& \textbf{Average} & 3.81 & 14.05 & 3.75 & 4.81 & \textbf{3.08} & 3.19\\
+\cmidrule(r){1-8}
+& FLEURS Arabian & N/A & \textbf{11.72} & N/A & 25.13 & 14.22 & 16.46\\
+\textbf{Multilingual}& Common Voice yue & 9.20 & 11.10 & 38.90 & \textbf{7.89} & 7.90 & 8.32\\
+& FLEURS Japanese & N/A & 3.27 & N/A & 10.49 & \textbf{3.18} & 4.67\\
+\cmidrule(r){1-8}
+ & Anhui accent & \textbf{8.83} & 50.55 & 22.17 & 18.73 & 10.61 & 11.65\\
+ & Guangdong accent & 4.99 & 7.83 & \textbf{3.76} & 4.03 & 3.81 & 4.44\\
+ & Guangxi accent & 3.37 & 7.09 & 4.29 & \textbf{3.35} & 4.11 & 3.51\\
+\textbf{In-house} & Shanxi accent & 20.26 & 55.03 & 34.71 & 25.95 & \textbf{12.44} & 15.60\\
+ & Sichuan dialect & \textbf{3.01} & 32.85 & 5.26 & 5.61 & 4.35 & 4.57\\
+& Shanghai dialect & 47.49 & 89.58 & 82.90 & 58.74 & \textbf{17.77} & 19.30\\
+\cmidrule(lr){2-8}
+& \textbf{Average} & 14.66 & 40.49 & 25.52 & 19.40 & \textbf{8.85} & 9.85\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\subsection{Paralinguistic information understanding}
+
+\begin{table}[h]
+\caption{Comparison between GPT-4o Audio, Kimi-Audio, Qwen-Omni, Step-Audio-AQAA, Step-Audio 2 and Step-Audio 2 mini on StepEval-Audio-Paralinguistic.}
+\label{tab:paralinguistic-7b}
+\centering
+\begin{tabular}{lcccccccccccc}
+\toprule
+\textbf{Model} &\textbf{Avg.} &\textbf{Gender} & \textbf{Age} & \textbf{Timbre} & \textbf{Scenario} & \textbf{Event}  \\
+\midrule
+\textbf{GPT-4o Audio} & 43.45 & 18 & 42 & 34 & 22 & 14 \\
+\textbf{Kimi-Audio} & 49.64 & 94 & 50 & 10 & 30 & 48 \\
+\textbf{Qwen-Omni} & 44.18 & 40 & 50 & 16 & 28 & 42  \\
+\textbf{Step-Audio-AQAA} & 36.91 & 70 & 66 & 18 & 14 & 14  \\
+\textbf{Step-Audio 2} & \textbf{83.09} & \textbf{100} & \textbf{96} & \textbf{82} & \textbf{78} & \textbf{60} \\
+\textbf{Step-Audio 2 mini} & 80.00 & \textbf{100} & 94 & 80 & \textbf{78} & \textbf{60} \\
+\midrule
+\textbf{Model} &\textbf{Emotion} & \textbf{Pitch} & \textbf{Rhythm} & \textbf{Speed} & \textbf{Style} & \textbf{Vocal} \\
+\midrule
+\textbf{GPT-4o Audio} & 82 & 40 & 60 & 58 & 64 & 44  \\
+\textbf{Kimi-Audio} & 66 & 56 & 40 & 44 & 54 & 54 \\
+\textbf{Qwen-Omni} & 76 & 32 & 54 & 50 & 50 & 48 \\
+\textbf{Step-Audio-AQAA} & 40 & 38 & 48 & 54 & 44 & 0  \\
+\textbf{Step-Audio 2} & \textbf{86} & \textbf{82} & \textbf{86} & \textbf{88} & \textbf{88} & 68 \\
+\textbf{Step-Audio 2 mini} & 82 & \textbf{82} & 68 & 74 & 86 & \textbf{76} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Audio understanding}
+\begin{table}[h]
+\caption{Comparison between Audio Flamingo 3, Gemini 2.5 Pro, GPT-4o Audio, Kimi-Audio, Omni-R1, Qwen2.5-Omni, Step-Audio-AQAA, Step-Audio 2 and Step-Audio 2 mini on MMAU.}
+\label{tab:MMAU-7b}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model}& \textbf{Avg.} & \textbf{Sound} & \textbf{Speech} & \textbf{Music}  \\
+\midrule
+\textbf{Audio Flamingo 3} &73.1 & 76.9& 66.1& \textbf{73.9}\\
+\textbf{Gemini 2.5 Pro} & 71.6  & 75.1& 71.5 &68.3\\
+\textbf{GPT-4o Audio} & 58.1 & 58.0& 64.6 &51.8\\
+\textbf{Kimi-Audio} & 69.6& 79.0& 65.5&64.4\\
+\textbf{Omni-R1}&77.0 & 81.7& 76.0&73.4\\
+\textbf{Qwen2.5-Omni} &71.5 & 78.1& 70.6&65.9\\
+\textbf{Step-Audio-AQAA} & 49.7 &  50.5&  51.4& 47.3\\
+\textbf{Step-Audio 2} & \textbf{78.0} & \textbf{83.5} & \textbf{76.9} & 73.7\\
+\textbf{Step-Audio 2 mini} & 73.2 & 76.6 & 71.5 & 71.6\\
+\bottomrule
+\end{tabular}
+\end{table}
+\newpage
+
+\subsection{Speech translation}
+\begin{table}[h]
+\caption{Comparison of BLEU scores between GPT-4o Audio, Qwen2.5-Omni, Qwen-Omni, Step-Audio-AQAA, Step-Audio 2 and Step-Audio 2 mini on speech-to-text and speech-to-speech translation.}
+\label{tab:S2ST-7b}
+\centering
+\begin{tabular}{lccc}
+\toprule
+\multirow{2}{*}{\textbf{Model}}&\multicolumn{3}{c}{\textbf{CoVoST 2 (Speech-to-text translation)}}\\
+\cmidrule(lr){2-4}
+& \textbf{Avg.} & \textbf{English-to-Chinese}& \textbf{Chinese-to-English}\\
+\midrule
+\textbf{GPT-4o Audio}       &29.61& 40.20 & 19.01 \\
+\textbf{Qwen2.5-Omni}       &35.40& 41.40 & 29.40 \\
+\textbf{Step-Audio-AQAA}    &28.57& 37.71 & 19.43 \\
+\textbf{Step-Audio 2} &39.26& 49.01 & \textbf{29.51} \\
+\textbf{Step-Audio 2 mini}  &\textbf{39.29}& \textbf{49.12} & 29.47 \\
+\midrule
+\multirow{2}{*}{\textbf{Model}}&\multicolumn{3}{c}{\textbf{CVSS (Speech-to-speech translation)}}\\
+\cmidrule(lr){2-4}
+&\textbf{Avg.} & \textbf{English-to-Chinese} & \textbf{Chinese-to-English} \\
+\midrule
+\textbf{GPT-4o Audio}       &23.68& 20.07 & \textbf{27.29} \\
+\textbf{Qwen-Omni}          &15.35& 8.04  & 22.66 \\
+\textbf{Step-Audio-AQAA}    &27.36& 30.74 & 23.98 \\
+\textbf{Step-Audio 2} &\textbf{30.87}& \textbf{34.83} & 26.92 \\
+\textbf{Step-Audio 2 mini}  &29.08& 32.81 & 25.35 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Speech-to-speech conversation}
+\begin{table}[h]
+\centering
+\caption{Comparison between GPT-4o Audio, Kimi-Audio, Qwen-Omni, Step-Audio-AQAA, Step-Audio 2 and Step-Audio 2 mini on the URO-Bench. U. R. O. stands for understanding, reasoning, and oral conversation, respectively.}
+\begin{tabular}{lccccccccc}
+\toprule
+\multirow{2}{*}{\textbf{Model}} & \multirow{2}{*}{\textbf{Language}} & \multicolumn{4}{c}{\textbf{Basic}}& \multicolumn{4}{c}{\textbf{Pro}}\\
+\cmidrule(lr){3-6} \cmidrule(lr){7-10}
+&&\textbf{Avg.} & \textbf{U.} & \textbf{R.} & \textbf{O.} & \textbf{Avg.} & \textbf{U.} & \textbf{R.} & \textbf{O.} \\
+\midrule
+\textbf{GPT-4o Audio}&  \multirow{6}{*}{\textbf{Chinese}}&78.59&89.40 &65.48 &85.24 &67.10&70.60 &57.22 & 70.20 \\
+\textbf{Kimi-Audio} &                                    &73.59&79.34 &64.66 &79.75 &66.07&60.44 &59.29 & \textbf{76.21} \\
+\textbf{Qwen-Omni} &                                     &68.98&59.66 &69.74 &77.27 &59.11&59.01 &59.82 & 58.74 \\
+\textbf{Step-Audio-AQAA} &                               &74.71&87.61 &59.63 &81.93 &65.61&74.76  &47.29  & 68.97 \\
+\textbf{Step-Audio 2} &                                  &\textbf{83.32}&\textbf{91.05} &\textbf{75.45} & \textbf{86.08} &68.25 &74.78 &\textbf{63.18} & 65.10  \\
+\textbf{Step-Audio 2 mini} &                             &77.81&89.19 &64.53 &84.12 &\textbf{69.57}&\textbf{76.84} &58.90 & 69.42 \\
+\midrule
+\textbf{GPT-4o Audio}&  \multirow{6}{*}{\textbf{English}}&\textbf{84.54}&90.18 &75.90 &\textbf{90.41} &\textbf{67.51}&60.65 &64.36 &\textbf{78.46} \\
+\textbf{Kimi-Audio} &                                    &60.04&83.36 &42.31 &60.36 &49.79&50.32 &40.59 &56.04 \\
+\textbf{Qwen-Omni} &                                     &70.58&66.29 &69.62 &76.16 &50.99&44.51 &63.88 &49.41 \\
+\textbf{Step-Audio-AQAA} &                               &71.11&90.15 &56.12 &72.06 &52.01&44.25 &54.54 &59.81 \\
+\textbf{Step-Audio 2} &                                  &83.90&\textbf{92.72} &\textbf{76.51} &84.92 &66.07 &\textbf{64.86} &\textbf{67.75}&66.33 \\
+\textbf{Step-Audio 2 mini} &                             &74.36&90.07 &60.12 &77.65 &61.25&58.79 &61.94 & 63.80 \\
+\bottomrule
+\end{tabular}
+\label{tab:uro-7b}
+\end{table}

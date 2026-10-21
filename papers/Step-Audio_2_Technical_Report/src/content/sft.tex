@@ -1,0 +1,37 @@
+\subsection{Supervised fine-tuning}
+
+We subsequently perform a large-scale, multi-task supervised fine-tuning (SFT) procedure \cite{wei2021finetuned} to
+instruct the model
+to follow human intention in fluid conversations
+and master core tasks.
+We select audio data 
+from open-source and proprietary data to ensure broad coverage and high quality.
+The model is trained on 4B tokens of text and audio data for a single epoch.
+And the learning rate decays from $10^{-5}$ to $10^{-6}$.
+
+Specifically, we leverage extensive corpora such as 
+GigaSpeech~\cite{gigaspeech}, 
+WenetSpeech~\cite{zhang2022wenetspeech10000hoursmultidomain}, 
+and other in-house data to enhance the model's performance in multilingual and multi-dialect ASR scenarios.
+We reformat existing datasets for audio event classification and audio captioning, such as AudioSet~\cite{7952261} and AudioCaps~\cite{kim2019audiocaps}, into speech question-answer pairs for audio understanding.
+To capture paralinguistic information beyond just semantics, we introduce a detailed speech captioning task and build an in-house dataset, requiring the model to generate comprehensive textual descriptions encompassing 11 paralinguistic and environmental aspects.
+
+
+We employ high-quality, professionally labeled data collected in-house for TTS. We utilize the Chinese-to-English and English-to-Chinese subsets from the CoVoST 2~\cite{wang2020covost2massivelymultilingual} dataset for speech-to-speech translation.
+
+We leverage high-quality in-house textual data for classic text-to-text conversation.
+Multiple LLMs are then employed to rewrite these text conversations as dialogue scripts with a more natural, colloquial style. We randomly insert emotion and speed instructions into the generated scripts to enable basic emotion and speaking style control. 
+The scripts are then synthesized into speech conversations using our conversation synthesis pipeline.
+
+We construct approximately 1K dialogue scripts in text for each type of external tools.
+Within these scripts, instructions with explicit or implicit tool invocation intentions and their corresponding statements are inserted into common dialogues. The scripts are then synthesized into speech conversations using our conversation synthesis pipeline.
+
+
+Besides, we construct and employ two reasoning-centric datasets during SFT to cold-start the subsequent reinforcement learning process.
+First, we build a dataset to enable and robust audio understanding in complex acoustic scenarios,
+by combining multiple audios from AudioSet and AudioCaps, thereby creating intricate acoustic environments.
+To better address and respond to the paralinguistic information in speech conversations,
+we synthesize a speech conversation dataset with our conversation synthesis pipeline,
+based on dialogue scripts with appropriate emotion descriptions generated from textual LLMs.
+Subsequently, a textual LLM with reasoning capabilities is employed to produce question–answer pairs with explicit step-by-step reasoning traces, according to the audio mixing recipes or the generated dialogue scripts.
+

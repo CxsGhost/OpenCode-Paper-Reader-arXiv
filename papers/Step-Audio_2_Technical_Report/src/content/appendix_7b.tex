@@ -1,0 +1,9 @@
+\section{Introduction and evaluation results of Step-Audio 2 mini}
+
+We are pleased to release Step-Audio 2 mini, a special open-source version of Step-Audio 2, available at \url{https://github.com/stepfun-ai/Step-Audio2}.
+Step-Audio 2 mini employs the encoder from Qwen2-Audio as its audio encoder and is initialized with Qwen2.5-7B.
+Step-Audio 2 mini is trained on the same dataset as Step-Audio 2, but it is limited to utilize only the web search tool.
+
+Step-Audio 2 mini is a more developer-friendly variant of Step-Audio 2, with a parameter count for fair comparisons with open-source models including Qwen-Omni and Kimi-Audio. Evaluation results\footnote{Evaluation results are obtained with our vLLM backend and may differ from the results with transformers backend.} demonstrate that Step-Audio 2 mini delivers on par results with Step-Audio 2, exceeding most open-source and commercial models such as GPT-4o Audio.
+
+\input{tables/mini}
