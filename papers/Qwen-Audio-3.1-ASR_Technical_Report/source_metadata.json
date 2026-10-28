@@ -1,0 +1,12 @@
+{
+  "title": "Qwen-Audio-3.1-ASR Technical Report",
+  "arxiv_id": "2610.28711",
+  "version": "v1",
+  "submitted_utc": "2026-10-20T17:08:12Z",
+  "source_url": "https://arxiv.org/src/2610.28711v1",
+  "abstract_url": "https://arxiv.org/abs/2610.28711v1",
+  "retrieved_at": "2026-10-28T15:48:05.627891+08:00",
+  "source_sha256": "0717b89c5c8220b8917fadf7b88623b0d80785af93d57c6e52673a5bc33861e9",
+  "source_bytes": 2886512,
+  "analysis_basis": "arXiv LaTeX 源码；成绩为作者报告，本次未独立评测或训练"
+}
