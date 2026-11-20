@@ -1,0 +1,39 @@
+
+
+\section{Preliminary}
+\label{sec:pre}
+
+Typically, existing mainstream LR schedulers consist of two phases: an initial warm-up followed by decay. 
+During the warm-up, the LR increases linearly from a small value to a peak value, $lr_{peak}$, over $T_{warmup}$ steps. This helps stabilize the optimization process in the early stages of training. Following the warm-up, the LR gradually decreases according to a predefined function, such as cosine, linear, or inverse square root decay. These schedules share a critical limitation: they require the total number of training tokens (or steps), $T_{max}$, to be known in advance.
+For instance, the prevalent cosine LR schedule is formulated as:
+\[
+lr(t) = 
+\begin{cases}
+    lr_{peak} \cdot \frac{t}{T_{warmup}} & \text{if } t < T_{warmup} \\
+    \frac{1}{2} lr_{peak} \left(1 + \cos\left(\frac{\pi(t - T_{warmup})}{T_{max} - T_{warmup}}\right)\right) & \text{if } t \ge T_{warmup}
+\end{cases}
+\]
+
+
+The Warmup-Stable-Decay (WSD) LR schedule introduces a \emph{stable} phase between warm-up and decay, maintaining a constant LR at its peak (\(lr_{peak}\)), which is defined as:
+\[
+lr(t) = 
+\begin{cases}
+    lr_{peak} \cdot \frac{t}{T_{warmup}} & \text{if } t < T_{warmup} \\
+    lr_{peak} & \text{if } T_{warmup} \le t < T_{decay\_start} \\
+    \operatorname{decay\_function}(t) & \text{if } T_{decay\_start} \le t \le T_{max}
+\end{cases}
+\]
+As shown, WSD eliminates the need for manual LR tuning during the stable phase while supporting multiple decay attempts from its endpoint—without requiring a reset to the initial state. 
+Despite this flexibility, it still requires predefined decay-phase settings—such as the decay start step ($T_{decay\_start}$), decay function ($\operatorname{decay\_function}$), and total training steps ($T_{max}$). %
+
+
+
+
+
+
+
+
+
+
+

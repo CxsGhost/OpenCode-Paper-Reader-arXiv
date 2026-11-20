@@ -1,0 +1,11 @@
+
+\section{Conclusion}
+In this paper, we have presented WSM, a decay-free LR scheduling approach for LLM pre-training. Our method bridges LR decay and checkpoint merging by establishing the theoretical connection. By eliminating the conventional decay phase, WSM simplifies LR scheduling while reformulating various decay strategies as principled model averaging schemes. Through systematic analysis, we identified merge duration as the most critical factor influencing model performance—outweighing other implementation choices. Extensive experiments have demonstrated WSM’s superiority over traditional WSD schedules, with consistent improvements across multiple benchmarks and sustained benefits during fine-tuning. Due to its optimizer-agnostic design, WSM offers broad applicability without modifying the underlying training pipeline. 
+
+As future work, we plan to expand the WSM framework by incorporating additional instantiations of decay strategies, as it can directly convert any decay strategy into a theoretically approximate checkpoint merging scheme. Given its flexibility, we also aim to adapt WSM to more complex tuning scenarios, such as dataset mixture optimization.
+
+
+
+
+
+

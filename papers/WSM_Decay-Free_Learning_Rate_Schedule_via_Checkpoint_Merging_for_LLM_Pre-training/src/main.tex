@@ -1,0 +1,138 @@
+\documentclass[table]{gtech}
+\PassOptionsToPackage{table, usenames, dvipsnames}{xcolor}
+\usepackage{xcolor}
+\usepackage{amsthm}                %
+\usepackage{algorithm}      %
+\usepackage{algpseudocode}  %
+\usepackage{tabularx}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\renewcommand{\tabularxcolumn}[1]{>{\centering\arraybackslash}m{#1}}
+\newtheorem{theorem}{Theorem}[section]
+\usepackage{amssymb}
+\usepackage{multirow}
+\usepackage{bigdelim}
+\usepackage{longtable}
+\usepackage{tabularray}
+\usepackage{wrapfig}
+\usepackage[most]{tcolorbox}
+\usepackage{url}
+\usepackage{float}
+\usepackage{datatool}
+\usepackage{enumitem}
+\usepackage{subcaption} %
+\usepackage[justification=centering]{caption}
+\let\comment\undefined
+
+\RequirePackage{tgpagella} %
+\RequirePackage{mathpazo}  %
+\RequirePackage{inconsolata} %
+\usepackage{makecell}
+
+\renewcommand{\title}[1]{\newcommand{\titlelist}{{\huge\fontfamily{optimistic}\selectfont #1}}}
+
+\newcommand{\model}{\texttt{Ring-lite}}
+\newcommand{\distillmodel}{\texttt{Ring-lite-distill}}
+\newcommand{\qwenbasedistill}{\texttt{Ring-distill-Qwen-7B}}
+\newcommand{\dsbasedistill}{\texttt{DeepSeek-R1-Distill-Qwen-7B}}
+\definecolor{prompt}{HTML}{5f84e4}
+\definecolor{img}{HTML}{820100}
+
+\newcommand\myboxed[1]{{{%
+    \setlength\fboxsep{8pt}%
+     \boxed{#1}}}}
+
+
+
+
+\newcommand{\paratitle}[1]{\vspace{1.5ex}\noindent\textbf{#1}}
+\newcommand{\ie}{\emph{i.e.,}\xspace}
+\newcommand{\aka}{\emph{a.k.a.,}\xspace}
+\newcommand{\eg}{\emph{e.g.,}\xspace}
+\newcommand{\etal}{\emph{et al.}\xspace}
+\newcommand{\ignore}[1]{}
+\newcommand{\changed}[1]{\textcolor{blue}{#1}}
+\newcommand{\remove}[1]{\sout{\textcolor{orange}{#1}}}
+\newcommand{\replace}[2]{\remove{#1}/\changed{#2}}
+\newcommand\mathbox[1]{\mbox{$#1$}}
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
+\newcommand{\todo}[1]{\noindent\textcolor{blue}{\textbf{[{ToDo: }#1]}}}
+
+\usepackage{arydshln}
+\definecolor{CQColor}{rgb}{0.0,0.0,1.0} %
+\newcommand{\gb}[1]{{\color{CQColor}#1}}
+
+\usepackage{colortbl}
+\usepackage{amssymb}
+\usepackage{pifont}
+\usepackage{booktabs,multirow}
+\usepackage{makecell}
+\usepackage{tabulary}
+\usepackage{fontawesome5}
+\usepackage{bbding}
+\usepackage{multicol}
+\newcommand \blfootnote[1]{
+    \begingroup
+        \renewcommand
+        \thefootnote{}\footnote{#1}
+        \addtocounter{footnote}{-1}
+        \vspace{-1ex}
+    \endgroup
+}
+\newlength\savewidth\newcommand\shline{\noalign{\global\savewidth\arrayrulewidth
+  \global\arrayrulewidth 1pt}\hline\noalign{\global\arrayrulewidth\savewidth}}
+\newcommand\hshline{\noalign{\global\savewidth\arrayrulewidth
+  \global\arrayrulewidth 0.6pt}\hline\noalign{\global\arrayrulewidth\savewidth}}
+\newcommand{\tablestyle}[2]{\setlength{\tabcolsep}{#1}\renewcommand{\arraystretch}{#2}\centering\footnotesize}
+\newcommand{\placeholder}[2]{%
+  \noindent
+  \fbox{%
+    \rule{0pt}{#2}%
+    \makebox[#1][c]{}
+  }%
+}
+
+
+\title{WSM: Decay-Free Learning Rate Schedule \\ via Checkpoint Merging for LLM Pre-training}
+
+\author[1,*]{Changxin Tian}
+\author[1,2,*,\dag]{Jiapeng Wang}
+\author[1]{Qian Zhao}
+\author[1]{Kunlong Chen}
+\author[1]{Jia Liu}
+\author[1]{Ziqi Liu}
+\author[2]{\\Jiaxin Mao}
+\author[2,\ddag]{Wayne Xin Zhao}
+\author[1,\ddag]{Zhiqiang Zhang}
+\author[1]{Jun Zhou}
+
+\affiliation[1]{Ling Team, Ant Group \\ $^2$Gaoling School of Artificial Intelligence, Renmin University of China \\[0.5em]}
+
+\contribution[*]{Equal contribution (listed in alphabetical order)}
+\contribution[\dag]{Contribution during internship at Ant Group}
+
+\contribution[\ddag]{Corresponding authors (listed in alphabetical order).}
+
+\date{July 20, 2025\vspace{-1mm}}
+\correspondence{\parbox[t]{12cm}{ %
+  \raggedright %
+  \email{\{tianchangxin.tcx,lingyao.zzq\}@antgroup.com} \\ \email{wangjp1010@ruc.edu.cn}, \email{batmanfly@gmail.com}
+}}
+
+\abstract{\fontsize{11pt}{12pt} {Recent advances in learning rate~(LR) scheduling have demonstrated the effectiveness of decay-free approaches that eliminate the traditional decay phase while maintaining competitive performance. Model merging techniques have emerged as particularly promising solutions in this domain. We present Warmup-Stable and Merge (WSM), a general framework that establishes a formal connection between learning rate decay and model merging. WSM provides a unified theoretical foundation for emulating various decay strategies—including cosine decay, linear decay and inverse square root decay—as principled model averaging schemes, while remaining fully compatible with diverse optimization methods. Through extensive experiments, we identify merge duration—the training window for checkpoint aggregation—as the most critical factor influencing model performance, surpassing the importance of both checkpoint interval and merge quantity. Our framework consistently outperforms the widely-adopted Warmup-Stable-Decay (WSD) approach across multiple benchmarks, achieving significant improvements of +3.5\% on MATH, +2.9\% on HumanEval, and +5.5\% on MMLU-Pro. The performance advantages extend to supervised fine-tuning scenarios, highlighting WSM's potential for long-term model refinement.
+}}
+\addsecondlogo[3.8cm]{assets/gsai.png} 
+\begin{document}
+\maketitle
+
+\input{sections/intro}
+\input{sections/pre}
+\input{sections/method}
+\input{sections/exp}
+\input{sections/rela}
+\input{sections/conclu}
+
+\bibliographystyle{assets/plainnat}
+\bibliography{main}
+
+\input{sections/appendix}
+\end{document}
