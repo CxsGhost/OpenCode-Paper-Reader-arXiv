@@ -1,0 +1,59 @@
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/analysis_report/discussion_log.md
+  s_281cc9fae12836::t_37d3fbed43932d 54-63
+  s_281cc9fae12836::t_9ee2e1bd276c83 18-37
+  s_281cc9fae12836::t_c6d90d350a5128 1-17
+  s_281cc9fae12836::t_9295d7772e32aa 38-53
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/analysis_report/summary.md
+  s_281cc9fae12836::t_882b603da47a8f 26-46,48-51
+  s_281cc9fae12836::t_f80010957c0ae2 86-112
+  s_281cc9fae12836::t_516a4a99302500 126-133
+  s_281cc9fae12836::t_c703045d1ab3f6 52,55-64
+  s_281cc9fae12836::t_3e166da5d03d61 16-25
+  s_281cc9fae12836::t_a7c7c2d960bd0e 1-15
+  s_281cc9fae12836::t_799705e955e43a 47,53-54,81,84-85
+  s_281cc9fae12836::t_2550947faa49b7 65-80,82-83
+  s_281cc9fae12836::t_572d9c3ca4b9ae 113-125
+  s_281cc9fae12836::t_0742e08859b93d 134-143
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/00README.json
+  s_281cc9fae12836::t_c4f9eb388fe57a 1-45
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/assets/plainnat.bst
+  s_281cc9fae12836::t_0b14f7bc0cacf7 1-1436
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/fancyhdr.sty
+  s_281cc9fae12836::t_ceef8a6d172e3e 1-485
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/gtech.cls
+  s_281cc9fae12836::t_136f1cd0f9bad7 1-207
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/main.bib
+  s_281cc9fae12836::t_5f91b319abeb26 1-1880
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/main.tex
+  s_281cc9fae12836::t_815951c8759e2d 1-138
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/sections/appendix.tex
+  s_281cc9fae12836::t_50217b07984b6e 1-360
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/sections/conclu.tex
+  s_281cc9fae12836::t_fedea49a58337d 1-11
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/sections/exp.tex
+  s_281cc9fae12836::t_de214323a6534a 1-137
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/sections/intro.tex
+  s_281cc9fae12836::t_b5f6b5946d9740 1-57
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/sections/method.tex
+  s_281cc9fae12836::t_92d68ff5c212db 1-209
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/sections/pre.tex
+  s_281cc9fae12836::t_83f60778f10f3a 1-39
+papers/WSM_Decay-Free_Learning_Rate_Schedule_via_Checkpoint_Merging_for_LLM_Pre-training/src/sections/rela.tex
+  s_281cc9fae12836::t_6bc18740c9d305 1-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "29233ae2433f0b98867e3309b528692fd33eeeb3",
+  "prompts": {},
+  "sessions": {
+    "s_281cc9fae12836": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f7fe-07e1-7720-aebc-dcf88761dcda",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "weilingxiao <weilingxiao@U-GXQK9LL6-0607.local>"
+    }
+  }
+}
