@@ -1,0 +1,8 @@
+\section{Related Work}
+\label{sec:related-work}
+
+\noindent\textbf{Parallel Drafting and Token-wise Dependencies.}
+DFlash generates tokens in a draft block in parallel~\citep{chen2026dflash}. Domino and DSpark restore token-wise dependencies through sequential correction~\citep{huang2026domino,cheng2026dspark}, whereas DFlash~2 uses a low-rank selector to score adjacent candidate pairs in parallel for single-path drafting~\citep{inco2026dflash2}. UBTree retains this scoring formulation but redesigns the token representations and learns depth-dependent weights for combining proposer logits and selector scores in tree verification.
+
+\noindent\textbf{Tree-based Speculative Decoding.}
+SpecInfer and Medusa retain multiple draft paths for tree verification~\citep{miao2024specinfer,cai2024medusa}, while EAGLE-2 adapts tree structure to proposal confidence~\citep{li2024eagle2}. DART applies $n$-gram-guided pruning to parallel predictions~\citep{liu2026dart}. DDTree and DARTree construct trees from block-parallel proposals using position-wise probabilities and path-conditioned correction, respectively~\citep{ringel2026accelerating,li2026dartree}. Compared to existing tree drafting methods, UBTree exploits \textit{tree-native} training to supervise the selector with target probabilities over alternatives rather than individual sampled tokens.

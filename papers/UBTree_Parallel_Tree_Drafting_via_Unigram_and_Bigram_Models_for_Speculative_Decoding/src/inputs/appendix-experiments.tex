@@ -1,0 +1,87 @@
+\section{Additional Experiments}
+\label{app:additional-experiments}
+
+\subsection{Drafting Latency Analysis}
+\label{sec:exp-latency}
+
+ We profile Qwen3-4B using Hugging Face Transformers-based implementations on 128 GSM8K questions at $T_{\mathrm{infer}}=0$, using the search budgets in Section~\ref{sec:exp-setup}. For each question, all methods run on the same GPU in randomized order, and we average measurements over ten complete passes. Timing excludes prefill and the first complete speculative round. Stage latencies are measured with CUDA events, while total round latency is measured independently using synchronized wall-clock time. For UBTree, draft post-processing includes LM-head projection, candidate selection, selector scoring, and tree construction, which are timed jointly. The ms/token column reports TPOT averaged over questions.
+
+Table~\ref{tab:latency-breakdown} shows that UBTree reduces draft post-processing latency from DARTree's 3.36 ms to 1.38 ms per round, a reduction of 58.8\%, while target verification takes approximately 20.9 ms for both methods. The principal latency reduction therefore occurs on the parallel selector side. UBTree achieves a higher acceptance length than DARTree (12.58 versus 12.50) while reducing decoding latency from 2.41 to 2.21 ms per token.
+
+\begin{table*}[htbp]
+\centering
+\caption{Drafting Latency profiling on Qwen3-4B. Stage and total latencies are in ms per verification round.}
+\label{tab:latency-breakdown}
+\small
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lrrrrrrr}
+\toprule
+Method & Proposer stage & Draft post-processing & Verification & Other & Total & $\tau$ & ms/token \\
+\midrule
+DARTree & 3.51 & 3.36 & 20.94 & 1.64 & 29.47 & 12.50 & 2.41 \\
+UBTree & 3.41 & 1.38 & 20.88 & 1.61 & 27.30 & 12.58 & 2.21 \\
+\bottomrule
+\end{tabular}
+}
+\vspace{2pt}
+\end{table*}
+
+
+\subsection{Long-context Tasks}
+\label{app:long-context}
+
+Tables~\ref{tab:long-context-longbench} and~\ref{tab:long-context-swe} report the quantitative results, together with the overall acceptance length on each benchmark. All results follow the long-context evaluation protocol in Appendix~\ref{app:long-context-protocol}.
+
+\begin{table*}[!t]
+\centering
+\caption{Acceptance length ($\tau$) on LongBench-v2 with Ling3-Flash, grouped by request-start prompt length. All methods use the same 401 requests. The Overall column reports results over the full evaluation subset. Bold marks the best acceptance length per column.}
+\label{tab:long-context-longbench}
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{0.95}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}l ccccccc@{}}
+\toprule
+Prompt tokens & $\le32$K & 32--64K & 64--96K & 96--128K & 128--192K & 192--260K & Overall \\
+Requests & 109 & 71 & 47 & 69 & 73 & 32 & 401 \\
+\midrule
+DSpark & 4.889 & 4.970 & 4.281 & 4.286 & 4.642 & 4.617 & 4.676 \\
+DFlash & 4.459 & 4.503 & 3.831 & 4.025 & 4.298 & 4.320 & 4.272 \\
+\textbf{UBTree} & \textbf{6.454} & \textbf{6.752} & \textbf{5.609} & \textbf{5.799} & \textbf{6.485} & \textbf{6.434} & \textbf{6.300} \\
+\bottomrule
+\end{tabular}
+}
+\endgroup
+\end{table*}
+
+\begin{table*}[!t]
+\centering
+\caption{Acceptance length ($\tau$) on SWE-bench with Ling3-Flash, grouped by accumulated prompt tokens relative to the first request in each case. Covered cases gives the number of cases represented in each bin. The Overall column reports request-pooled acceptance length over all 1,482 requests from 30 cases. Bold marks the best acceptance length per column.}
+\label{tab:long-context-swe}
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{0.95}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}l cccccccc@{}}
+\toprule
+Accumulated tokens & $\le0$ & 0--4K & 4--8K & 8--16K & 16--32K & 32--64K & 64--131K & Overall \\
+Covered cases & 30 & 30 & 28 & 27 & 23 & 13 & 2 & 30 \\
+\midrule
+DSpark & 3.793 & 3.899 & 4.330 & 4.270 & 4.430 & 4.412 & 4.473 & 4.277 \\
+DFlash & 3.389 & 3.436 & 3.963 & 3.794 & 4.044 & 3.923 & 4.023 & 3.826 \\
+\textbf{UBTree} & \textbf{4.794} & \textbf{5.041} & \textbf{5.449} & \textbf{5.481} & \textbf{5.714} & \textbf{5.544} & \textbf{5.616} & \textbf{5.450} \\
+\bottomrule
+\end{tabular}
+}
+\endgroup
+\end{table*}
+
+\noindent\textbf{Results.}
+UBTree achieves the highest acceptance length in every context-length bin on both benchmarks. On LongBench-v2, UBTree reaches $\tau=5.609$--$6.752$, improving over the strongest baseline, DSpark, by $31.0$--$39.7\%$. At 192--260K prompt tokens, UBTree attains $\tau=6.434$, compared with 4.617 for DSpark and 4.320 for DFlash, retaining nearly the same acceptance length as in the shortest bin ($6.454$). Overall, UBTree achieves $\tau=6.300$, a $34.7\%$ improvement over DSpark. On SWE-bench, UBTree reaches $\tau=4.794$--$5.714$ across accumulated-context bins, exceeding DSpark by $25.6$--$29.3\%$. Its overall request-pooled acceptance length is $5.450$, compared with $4.277$ for DSpark and $3.826$ for DFlash, improving over the strongest baseline by $27.4\%$. These results demonstrate UBTree's sustained acceptance advantage across both long initial prompts and growing agent histories.
+
+\noindent\textbf{Trajectory-stage Results.}
+Under the complementary trajectory-stage aggregation defined in Appendix~\ref{app:long-context-protocol}, UBTree achieves acceptance lengths of 5.116, 5.563, 5.448, and 5.644 across the four successive SWE-bench stages, compared with 3.942, 4.321, 4.241, and 4.461 for the strongest baseline, DSpark. The corresponding gains range from $26.5\%$ to $29.8\%$. This summary captures UBTree's advantage throughout agent trajectories, while the $25.6$--$29.3\%$ gains reported in the main text correspond to the accumulated-context results in Table~\ref{tab:long-context-swe}. The two ranges summarize the same replay workload under different groupings.
+
+\FloatBarrier

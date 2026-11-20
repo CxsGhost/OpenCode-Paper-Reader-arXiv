@@ -1,0 +1,96 @@
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/ubtree_diagram.pdf}
+    \caption{Overview of UBTree. \textbf{Left: UBTree Architecture.} The unigram proposer generates top-$K$ candidates at each draft position in parallel. The bigram selector scores adjacent candidate transitions in parallel, and tree construction uses these precomputed scores to build a verification tree. \textbf{Right: Tree-native Training.} Our training combines high-temperature target traces with renormalized KL supervision to encourage plausible alternative branches.}
+    \label{fig:ubtree-overview}
+\end{figure}
+
+\section{Method}
+\label{sec:method}
+
+Two key designs of UBTree are 1) parallelizing token-wise dependency modeling in tree drafting and 2) training the tree drafter towards optimal tree drafting. Section~\ref{sec:method-architecture} first explains how we incorporate token-dependencies with fully parallelized neural compuation in tree drafting. We use two parallel neural forwards to propose candidate tokens at each block position (Section~\ref{sec:method-unigram}) and select transition paths among these candidates (Section~\ref{sec:method-selector}). The verification tree is then built from paths selected by the selector (Section~\ref{sec:method-tree}). Section~\ref{sec:method-training} presents our \textit{tree-native} training, which regenerates the target rollouts for training under high temperatures and trains the drafter with a renormalized KL objective. We summarize these two designs of UBTree in Figure~\ref{fig:ubtree-overview}.
+
+\subsection{UBTree Architecture}
+\label{sec:method-architecture}
+\subsubsection{Unigram Proposer}
+\label{sec:method-unigram}
+The unigram proposer is designed to propose candidate tokens at each position without considering cross-token dependencies. Let $c$ be the key-value context from verified prefixes and $x_0$ be the prefilled anchor token. The unigram proposer can be formalized by
+\begin{equation}
+    q_i(x_{i}\mid x_0,c)=\operatorname{softmax}(u_i(x
+    _0,c)),\quad i=1,2,...,\gamma,
+    \label{eq:ubtree-unigram}
+\end{equation}
+where $i$ denotes the position in the block. Since the proposal at each position does not depend on each other, its neural forward could be easily parallelized. In practice, we deploy a pretrained DFlash backbone~\citep{chen2026dflash} as our unigram proposer, where its output logits are $u_i(x_0,c)$ and probabilities are $q_i(x_{i}\mid x_0,c)$. We also denote its predicted hidden states by $h_i$. We do not use DFlash2 backbone~\citep{inco2026dflash2} because it differs from DFlash backbone by strengthening token-wise connection, which is not the task of our unigram proposal.
+
+\noindent\textbf{Candidate Sets.}
+We pick the tokens with top-$K$ probabilities in $q_i$ at each position as candidate tokens of this position $\mathcal C_i$, with $\mathcal C_0=\{x_t\}$. The Cartesian product $\mathcal C_1\times\cdots\times\mathcal C_\gamma$ forms $K^\gamma$ candidate paths. Enumerating these paths is infeasible, so UBTree scores their adjacent transitions and searches a bounded subset by the bigram selector in the next section.
+
+\subsubsection{Bigram Selector}
+\label{sec:method-selector}
+Inspired by DFlash~2~\citep{inco2026dflash2}, we incorporate a lightweight bigram selector scores adjacent predecessor--successor token pairs from candidates, conditioned on the proposer hidden state $h_i$ at the successor position. This trainable selector models token-wise dependencies in a parallel manner. To improve the selector, we redesign its architecture with deep codebooks and depth calibration.
+
+\noindent\textbf{Deep Codebooks.}
+For predecessor token $a$ and successor candidate $b$ at position $i$, DFlash~2 learns two vocabulary-wide codebooks $\phi$ and $\psi$ by two embedding layers (See~\eqref{eq:dflash2-selector}). UBTree instead derives the codebooks from the frozen target token embedding $e_v\in\mathbb R^{d_e}$ and two bias-free MLPs:
+\begin{equation}
+  \phi(v)=W_{\phi,2}\,\operatorname{SiLU}(W_{\phi,1}e_v),
+  \qquad
+  \psi(v)=W_{\psi,2}\,\operatorname{SiLU}(W_{\psi,1}e_v).
+  \label{eq:ubtree-codebook}
+\end{equation}
+At inference, we precompute both MLPs once and store them as a vocabulary-wide lookup table. While keeping inference efficiency, our deep codebook introduces nonlinearity and makes use of features in the target embedding. Hence, it improves the selector performance.
+
+\noindent\textbf{Depth Calibration.}
+DFlash~2 combines proposer logits and selector scores with fixed unit weights. However, their reliability can vary across draft depths. UBTree therefore learns two positive, depth-dependent scales:
+\begin{equation}
+    s_i(a,b)=\alpha_i u_i(b)+\lambda_i\delta_i(a,b),
+    \qquad
+    \alpha_i=\exp(\rho_i),\quad
+    \lambda_i=\exp(\kappa_i).
+    \label{eq:ubtree-depth}
+\end{equation}
+The ratio $\lambda_i/\alpha_i$ controls the weight of selector scores relative to proposer logits, while their common magnitude controls the concentration of the normalized successor distribution. These scales depend only on depth and preserve parallel edge scoring.
+
+\noindent\textbf{Parallel Computation.}
+Once the proposer provides the candidate sets and hidden states, we compute transition scores for all $K+(\gamma-1)K^2$ predecessor-successor token pairs in parallel. At depth $i$, let $\boldsymbol{\Phi}_{i-1}$ have rows $\phi(a)^\top$ for predecessor candidates $a\in\mathcal C_{i-1}$, and let $\boldsymbol{\Psi}_i$ have rows $\psi(b)^\top$ for successor candidates $b\in\mathcal C_i$. With proposer's hidden state $h_i$ at the successor position, we obtain
+\begin{equation}
+    \boldsymbol\Delta_i
+    =\boldsymbol{\Phi}_{i-1}\operatorname{diag}\!\bigl(P(h_i)\bigr)\boldsymbol{\Psi}_i^\top
+    \in\mathbb R^{|\mathcal C_{i-1}|\times K}.
+    \label{eq:ubtree-edge-matrix}
+\end{equation}
+Here, $\operatorname{diag}(\cdot)$ places the input vector on the diagonal. The entry at the row for $a$ and column for $b$ is the selector score $\delta_i(a,b)$. After combining $\delta_i(a,b)$ with proposer logits $u_i(b)$ via~\eqref{eq:ubtree-depth}, tree construction can proceed depth by depth sequentially without any neural computation.
+\subsubsection{Tree Construction and Verification}
+\label{sec:method-tree}
+
+With unique scores for every transition $s_i(a,b)$ in $C_{i-1}\times C_i$, we are able to score all $K^\gamma$ candidate paths consisting of these transitions without neural computation. Specifically, we can normalize $s_i(a,b)$ into log-probabilities over successor candidates, then rank paths by cumulative log-probabilities. However, to save the computation cost, we use DARTree's depth-wise progressive tree construction and global pruning procedure~\citep{li2026dartree} instead of traversing all possible paths. After tree construction, target model will verify the whole tree in one-forward pass via tree attention, and keep the longest accepted continuation for lossless acceleration. Appendix~\ref{app:tree-construction} specifies the normalization, path scoring, search and verification procedure.
+
+\subsection{Tree-native Training}
+\label{sec:method-training}
+Tree drafting recommends multiple paths for target verification, rather than only proposing the greedy path. Hence, we need to diversify positive training signals to help the selector better recognize alternative plausible paths other than the greedy one. To this end, we use higher temperature $T_{\mathrm{train}}$ to regenerate the training data than the inference temperature $T_{\mathrm{infer}}$ and supervise the training by a renormalized KL objective.
+
+\noindent\textbf{Training with $T_{\mathrm{train}}\ge T_{\mathrm{infer}}$ for different $T_{\mathrm{infer}}$.}
+The training temperature $T_{\mathrm{train}}$ controls both the continuation distribution seen by the proposer and selector and the target distribution used for KL supervision. Temperature-matched training would set $T_{\mathrm{train}}=T_{\mathrm{infer}}$. As mentioned above, the selector needs to improve the plausibility of multiple paths in the tree, rather than focusing only on the top path. We can therefore make $T_{\mathrm{train}}\ge T_{\mathrm{infer}}$ to make those high-probability alternative paths more distinguishable. $T_{\mathrm{train}}$ then becomes an independent hyper-parameter to be tuned empirically. The best $T_{\mathrm{train}}$ amplifies the probability gap between plausible and other choices. Interestingly, $T_{\mathrm{train}}$ is disentangled with $T_{\mathrm{infer}}$ to some extent, that one UBTree drafter trained on $T_{\mathrm{train}}$ can be used in different $T_{\mathrm{infer}}$, which simplifies the drafter adaptation. \textbf{We therefore use drafters trained at $T_{\mathrm{train}}=1$ for both $T_{\mathrm{infer}}=0$ and $T_{\mathrm{infer}}=1$ in our experiments.}
+
+\noindent\textbf{Renormalized KL Loss.} To train the selector to better discriminate between alternates other than the top choice, we use the forward KL divergence between the renormalized probabilities~\citep{zhu2026many} of the target and that of the selector over the proposer's top-$K$ candidate tokens instead of the classical cross-entropy (CE) loss. For each valid future position, let $z_i(v)$ be the target logit and $s_i(y_{i-1}^{*},v)$ be the selector logit given the predecessor token $y_{i-1}^{*}$. For $T_{\mathrm{train}}>0$, we define the renormalized target probabilities $\widetilde p_i(v)$ at training temperature $T_{\mathrm{train}}$ and the selector probabilities $\widetilde q_i(v)$ on the top-$K$ token support $\mathcal C_i$:
+\begin{equation}
+\widetilde p_i(v)
+=\frac{\exp(z_i(v)/T_{\mathrm{train}})}
+{\sum_{b\in\mathcal C_i}\exp(z_i(b)/T_{\mathrm{train}})},
+\qquad
+\widetilde q_i(v)
+=\frac{\exp(s_i(y_{i-1}^{*},v))}
+{\sum_{b\in\mathcal C_i}\exp(s_i(y_{i-1}^{*},b))}.
+\label{eq:ubtree-training-distributions}
+\end{equation}
+For $T_{\mathrm{train}}=0$, the target distribution is understood in the limit $T_{\mathrm{train}}\to0^+$.
+The forward KL divergence between $\widetilde p_i(v)$ and $\widetilde q_i(v)$ constitutes the main term of our training objective. An auxiliary cross-entropy term, also used in the first-stage proposer training, is applied solely to the proposer $q_i$ to maintain the candidate distribution. Using weight $\beta$ to balance two terms, the joint objective is
+\begin{equation}
+\mathcal L
+=
+\mathrm{KL}(\widetilde p_i|\widetilde q_i)
+-\beta\log q_i(y_i^{*}\mid x_{\le t}),
+\qquad \beta=0.1.
+\label{eq:ubtree-training-loss}
+\end{equation}
+
+

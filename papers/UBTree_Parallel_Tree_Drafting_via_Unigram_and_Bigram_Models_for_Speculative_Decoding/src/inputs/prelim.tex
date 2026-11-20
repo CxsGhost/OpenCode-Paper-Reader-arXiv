@@ -1,0 +1,34 @@
+\section{Background}
+  \label{sec:method_prelim}
+  \phantomsection
+  \noindent\textbf{Speculative Decoding.}
+  \label{sec:prelim_spec_decoding}
+  Given a verified prefix $x_{\le t}$, a lightweight draft model proposes $\gamma$ future tokens, which the target model verifies in one forward pass~\citep{leviathan2023fast,chen2023accelerating}.
+  Each round accepts consecutive draft tokens from the start of the proposed block until the first rejection.
+  Let $\tau\in[1,\gamma+1]$ denote the average of accepted tokens per round or \textit{acceptance length}, including a token $x_0$ prefilled by the last verification.
+  With $T_{\mathrm{draft}}$ covering proposal construction and $T_{\mathrm{verify}}$ covering verification and commit work, the average per-token \textit{latency} and \textit{speedup} are~\citep{chen2026dflash,huang2026domino}
+  \begin{equation}
+      L_{\mathrm{spec}}=\frac{T_{\mathrm{draft}}+T_{\mathrm{verify}}}{\tau},
+      \qquad
+      \eta=\frac{L_{\mathrm{target}}}{L_{\mathrm{spec}}},
+      \label{eq:spec-latency}
+  \end{equation}
+  where $L_{\mathrm{target}}$ is the per-token latency of target-only autoregressive decoding.
+  \phantomsection
+  \noindent\textbf{DFlash \& DFlash 2.}
+  \label{sec:prelim-dflash2}
+  DFlash~\citep{chen2026dflash} proposes a $\gamma$-token block in parallel, conditioned on target hidden features through key-value context of one target prefilling forward. We denote the prefilled token $x_0$ by \textit{anchor token}. For each future draft position $i=1,...,\gamma$, one proposer forward pass produces final hidden state $h_i$, which is subsequently mapped to proposer logit $u_i$ through the frozen target LM head. The draft tokens of DFlash are predicted in parallel from masks where little token-wise dependencies are involved. DFlash~2~\citep{inco2026dflash2} fixes this by adding convolutions to the DFlash backbone and a low-rank bigram selector. For predecessor $a$ and successor $b$ at position $i$, the selector score $\delta_i(a,b)$ is added to the proposer logit $u_i(b)$ to obtain a combined score:
+  \begin{equation}
+      \delta_i(a,b)=\bigl(P(h_i)\odot \phi(a)\bigr)^\top \psi(b),
+      \qquad
+      u_i'(a,b)=u_i(b)+\delta_i(a,b),
+      \label{eq:dflash2-selector}
+  \end{equation}
+  where $\odot$ stands for Hadamard product. Here, the linear projector $P$ maps $h_i$ to a low-dimensional space, and $\phi$ and $\psi$ are low-rank embeddings for predecessor and successor tokens, respectively. The selector scores all adjacent pairs from the position-wise top-$K$ candidate sets in parallel; token selection then follows a single chain using the combined scores.
+
+  \phantomsection
+  \noindent\textbf{Tree Drafting.}
+  \label{sec:prelim-tree}
+  DFlash and DFlash 2 are \textit{single-path} drafting methods, which propose a single $\gamma$-token draft path to match a $\gamma$-token target path for the target model to verify. \textit{Tree drafting}, by contrast, constructs a draft tree storing multiple candidate draft paths. Taking candidate tokens as nodes, different paths share nodes across continuations with common prefixes. We then use tree attention to verify the whole draft tree in one target-model pass and picks the path with the longest accepted token continuations by the target model in the tree~\citep{miao2024specinfer,cai2024medusa}. This verification procedure maintains the lossless property of speculative decoding, and accepted path need not be the proposer's top-ranked.
+
+  DDTree~\citep{ringel2026accelerating} and DARTree~\citep{li2026dartree} construct budgeted trees from block-parallel proposals. DDTree uses best-first search, ranking paths by accumulated position-wise token log-probabilities. DARTree corrects token log-probabilities by a lightweight autoregressive head and ranks the cumulative log-probabilities with a depth decay and a $W$ node budget at each depth. These retained nodes accumulate into a candidate supertree of maximum depth $\gamma$, from which the $B$ highest-scoring non-root nodes are selected for verification. Correction at the next depth still depends on the tokens selected at the preceding depth, leading to extra overheads. 

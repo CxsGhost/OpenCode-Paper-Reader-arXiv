@@ -1,0 +1,459 @@
+\section{Experiments}
+\label{sec:experiments}
+
+
+\newcommand{\UBTreeFill}[1]{\textit{[TO FILL: #1]}}
+
+\newcommand{\UBTreeMainHeader}{
+\toprule
+\multirow{3}{*}{Model} & \multirow{3}{*}{Method}
+& \multicolumn{6}{c}{\textsc{Math}}
+& \multicolumn{6}{c}{\textsc{Code}}
+& \multicolumn{2}{c}{\textsc{Chat}}
+& \multicolumn{2}{c}{} \\
+\cmidrule(lr){3-8}\cmidrule(lr){9-14}\cmidrule(lr){15-16}
+& & \multicolumn{2}{c}{GSM8K}
+& \multicolumn{2}{c}{M-500}
+& \multicolumn{2}{c}{AIME}
+& \multicolumn{2}{c}{HE}
+& \multicolumn{2}{c}{MBPP}
+& \multicolumn{2}{c}{LCB}
+& \multicolumn{2}{c}{MT-B}
+& \multicolumn{2}{c}{Avg.} \\
+& & {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$} \\
+\midrule
+}
+
+\newcommand{\UBTreeMainRow}[2]{#1 & #2 & &  & &  & &  & &  & &  & &  & &  & &  \\}
+
+\newcommand{\UBTreeMainGroupRow}[2]{#1 & \multicolumn{17}{l}{\textit{#2}} \\}
+
+\newcommand{\UBTreeWideResultHeader}{
+\toprule
+\multirow{3}{*}{Model} & \multirow{3}{*}{Method}
+& \multicolumn{6}{c}{\textsc{Math}}
+& \multicolumn{6}{c}{\textsc{Code}}
+& \multicolumn{2}{c}{\textsc{Chat}}
+& \multicolumn{2}{c}{} \\
+\cmidrule(lr){3-8}\cmidrule(lr){9-14}\cmidrule(lr){15-16}
+& & \multicolumn{2}{c}{GSM8K}
+& \multicolumn{2}{c}{M-500}
+& \multicolumn{2}{c}{AIME}
+& \multicolumn{2}{c}{HE}
+& \multicolumn{2}{c}{MBPP}
+& \multicolumn{2}{c}{LCB}
+& \multicolumn{2}{c}{MT-B}
+& \multicolumn{2}{c}{Avg.} \\
+& & {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$} \\
+\midrule
+}
+
+\newcommand{\UBTreeWideResultRow}[2]{#1 & #2 & &  & &  & &  & &  & &  & &  & &  & &  \\}
+
+\newcommand{\UBTreeAblationHeader}{
+\toprule
+\multirow{3}{*}{}
+& \multicolumn{6}{c}{\textsc{Math}}
+& \multicolumn{6}{c}{\textsc{Code}}
+& \multicolumn{2}{c}{\textsc{Chat}}
+& \multicolumn{2}{c}{} \\
+\cmidrule(lr){2-7}\cmidrule(lr){8-13}\cmidrule(lr){14-15}
+& \multicolumn{2}{c}{GSM8K}
+& \multicolumn{2}{c}{M-500}
+& \multicolumn{2}{c}{AIME}
+& \multicolumn{2}{c}{HE}
+& \multicolumn{2}{c}{MBPP}
+& \multicolumn{2}{c}{LCB}
+& \multicolumn{2}{c}{MT-B}
+& \multicolumn{2}{c}{Avg.} \\
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$} \\
+\midrule
+}
+
+\newcommand{\UBTreeAblationRow}[1]{#1 & &  & &  & &  & &  & &  & &  & &  & &  \\}
+
+\newcommand{\UBTreeTemperatureHeader}{
+\toprule
+\multirow{3}{*}{$T_{\mathrm{train}}$} & \multirow{3}{*}{Variant}
+& \multicolumn{6}{c}{\textsc{Math}}
+& \multicolumn{6}{c}{\textsc{Code}}
+& \multicolumn{2}{c}{\textsc{Chat}}
+& \multicolumn{2}{c}{} \\
+\cmidrule(lr){3-8}\cmidrule(lr){9-14}\cmidrule(lr){15-16}
+& & \multicolumn{2}{c}{GSM8K}
+& \multicolumn{2}{c}{M-500}
+& \multicolumn{2}{c}{AIME}
+& \multicolumn{2}{c}{HE}
+& \multicolumn{2}{c}{MBPP}
+& \multicolumn{2}{c}{LCB}
+& \multicolumn{2}{c}{MT-B}
+& \multicolumn{2}{c}{Avg.} \\
+& & {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$}
+& {\scriptsize Speedup} & {\scriptsize $\tau$} \\
+\midrule
+}
+
+\newcommand{\UBTreeTemperatureRow}[2]{#1 & #2 & &  & &  & &  & &  & &  & &  & &  & &  \\}
+
+We evaluate UBTree on benchmarks and report decoding speedup $\eta$ over autoregressive baseline and average acceptance length $\tau$. Avg. means average results across all listed benchmarks.
+\begin{table*}[t]
+\centering
+\caption{Speedup and average acceptance length ($\tau$) on instruct and reasoning models. All $\tau$ values include the target-produced bonus token. M-500, HE, LCB, and MT-B denote MATH-500, HumanEval, LiveCodeBench, and MT-Bench. $\dagger$ values are paper-reported.}
+\label{tab:main-results}
+\begingroup
+\small
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{0.95}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}c l @{\hspace{1.0em}} cc cc cc @{\hspace{1.0em}} cc cc cc @{\hspace{1.0em}} cc @{\hspace{1.0em}} cc@{}}
+\toprule
+\multicolumn{18}{@{}l}{\textbf{Instruct Models}} \\
+\UBTreeMainHeader
+\UBTreeMainGroupRow{\multirow{9}{*}{\shortstack{Qwen3-4B\\$T_{\mathrm{infer}}=0$}}}{Single-path}
+ & DFlash (16) & 5.95 & 8.57 & 5.76 & 8.34 & 4.45 & 6.34 & 4.28 & 6.08 & 4.03 & 5.82 & 3.83 & 5.39 & 2.69 & 4.60 & 4.43 & 6.45 \\
+ & Domino\textsuperscript{\ensuremath{\dagger}} (17) & 8.02 & 10.12 & 7.14 & 9.01 & 5.97 & 7.49 & 5.66 & 7.02 & 5.59 & 7.11 & 5.33 & 6.86 & 3.28 & 5.12 & 5.86 & 7.53 \\
+\UBTreeMainGroupRow{}{Tree-based}
+ & EAGLE-3 (16) & 4.04 & 7.20 & 3.97 & 6.96 & 3.45 & 6.05 & 3.46 & 6.07 & 3.42 & 6.05 & 3.19 & 5.53 & 2.40 & 4.67 & 3.42 & 6.08 \\
+ & EAGLE-3 (64) & 4.42 & 7.97 & 4.45 & 7.85 & 4.02 & 7.11 & 4.00 & 7.07 & 3.95 & 7.11 & 3.75 & 6.58 & 2.80 & 5.46 & 3.91 & 7.02 \\
+ & DDTree (64) & 6.69 & 10.22 & 6.62 & 10.10 & 5.51 & 8.49 & 5.18 & 7.89 & 5.10 & 7.80 & 4.78 & 7.23 & 3.51 & 6.14 & 5.34 & 8.27 \\
+ & DARTree (64) & 7.89 & 12.50 & 7.63 & 11.90 & 6.55 & \textbf{10.37} & 6.09 & 9.78 & 6.33 & \textbf{10.07} & 5.75 & 9.04 & 3.93 & 7.23 & 6.31 & 10.13 \\
+ & \textbf{UBTree (64)} & \textbf{8.54} & \textbf{12.58} & \textbf{8.18} & \textbf{12.15} & \textbf{6.92} & 10.13 & \textbf{7.07} & \textbf{10.22} & \textbf{6.66} & 9.98 & \textbf{6.37} & \textbf{9.24} & \textbf{4.39} & \textbf{7.32} & \textbf{6.88} & \textbf{10.23} \\
+\midrule
+\UBTreeMainGroupRow{\multirow{9}{*}{\shortstack{Qwen3-4B\\$T_{\mathrm{infer}}=1$}}}{Single-path}
+ & DFlash (16) & 5.28 & 7.67 & 4.56 & 6.89 & 3.10 & 4.64 & 4.09 & 5.86 & 3.84 & 5.52 & 3.25 & 4.62 & 2.52 & 4.26 & 3.81 & 5.64 \\
+ & Domino\textsuperscript{\ensuremath{\dagger}} (17) & 6.79 & 8.61 & 5.67 & 7.35 & 3.75 & 4.83 & 5.02 & 6.30 & 4.96 & 6.36 & 5.04 & 6.45 & 3.02 & 4.56 & 4.89 & 6.35 \\
+\UBTreeMainGroupRow{}{Tree-based}
+ & EAGLE-3 (16) & 3.66 & 6.61 & 3.51 & 6.36 & 2.72 & 4.88 & 3.34 & 5.93 & 3.21 & 5.80 & 2.80 & 4.94 & 2.21 & 4.34 & 3.06 & 5.55 \\
+ & EAGLE-3 (64) & 4.13 & 7.66 & 3.96 & 7.29 & 3.20 & 6.00 & 3.75 & 6.84 & 3.71 & 6.92 & 3.27 & 5.96 & 2.54 & 5.12 & 3.51 & 6.54 \\
+ & DDTree (64) & 6.19 & 9.49 & 5.62 & 8.76 & 4.14 & 6.31 & 5.17 & 7.81 & 4.90 & 7.50 & 4.19 & 6.37 & 3.37 & 5.66 & 4.80 & 7.41 \\
+ & DARTree (64) & 6.94 & 11.01 & 6.05 & 9.73 & 4.10 & 6.99 & 5.84 & 9.10 & 5.76 & 9.28 & 4.71 & 7.33 & 3.64 & 6.53 & 5.29 & 8.57 \\
+ & \textbf{UBTree (64)} & \textbf{7.95} & \textbf{11.79} & \textbf{7.13} & \textbf{10.54} & \textbf{5.10} & \textbf{7.63} & \textbf{6.42} & \textbf{9.43} & \textbf{6.15} & \textbf{9.30} & \textbf{5.27} & \textbf{7.72} & \textbf{4.02} & \textbf{6.68} & \textbf{6.00} & \textbf{9.01} \\
+\midrule
+\UBTreeMainGroupRow{\multirow{9}{*}{\shortstack{Qwen3-8B\\$T_{\mathrm{infer}}=0$}}}{Single-path}
+ & DFlash (16) & 5.98 & 8.59 & 5.84 & 8.51 & 4.75 & 6.73 & 4.46 & 6.31 & 4.07 & 5.87 & 3.91 & 5.48 & 2.64 & 4.54 & 4.52 & 6.58 \\
+ & Domino\textsuperscript{\ensuremath{\dagger}} (17) & 7.92 & 10.03 & 7.38 & 9.43 & 5.85 & 7.41 & 5.89 & 7.39 & 5.53 & 7.04 & 5.27 & 7.04 & 3.29 & 5.18 & 5.88 & 7.65 \\
+\UBTreeMainGroupRow{}{Tree-based}
+ & EAGLE-3 (16) & 4.23 & 7.43 & 4.20 & 7.30 & 3.71 & 6.46 & 3.68 & 6.42 & 3.62 & 6.39 & 3.54 & 6.07 & 2.53 & 4.88 & 3.64 & 6.42 \\
+ & EAGLE-3 (64) & 4.57 & 8.20 & 4.66 & 8.11 & 4.34 & 7.51 & 4.23 & 7.39 & 4.13 & 7.39 & 4.11 & 7.10 & 2.99 & 5.77 & 4.15 & 7.35 \\
+ & DDTree (64) & 6.65 & 10.19 & 6.60 & 10.12 & 5.64 & 8.63 & 5.43 & 8.17 & 5.07 & 7.68 & 4.92 & 7.30 & 3.49 & 6.09 & 5.40 & 8.31 \\
+ & DARTree (64) & 8.26 & 12.49 & 7.61 & 12.13 & 6.71 & \textbf{10.37} & 6.41 & 10.09 & 6.32 & \textbf{10.02} & 5.88 & 9.19 & 4.01 & \textbf{7.33} & 6.46 & \textbf{10.23} \\
+ & \textbf{UBTree (64)} & \textbf{8.65} & \textbf{12.58} & \textbf{8.46} & \textbf{12.30} & \textbf{7.05} & 10.17 & \textbf{7.12} & \textbf{10.12} & \textbf{6.64} & 9.79 & \textbf{6.43} & \textbf{9.24} & \textbf{4.25} & 7.25 & \textbf{6.94} & 10.21 \\
+\midrule
+\UBTreeMainGroupRow{\multirow{9}{*}{\shortstack{Qwen3-8B\\$T_{\mathrm{infer}}=1$}}}{Single-path}
+ & DFlash (16) & 5.05 & 7.37 & 4.57 & 6.77 & 2.99 & 4.47 & 3.74 & 5.26 & 3.64 & 5.20 & 3.14 & 4.41 & 2.34 & 3.96 & 3.64 & 5.35 \\
+ & Domino\textsuperscript{\ensuremath{\dagger}} (17) & 6.47 & 8.34 & 5.40 & 7.20 & 3.78 & 4.92 & 4.75 & 5.98 & 4.73 & 6.02 & 5.06 & 6.72 & 2.94 & 4.61 & 4.73 & 6.26 \\
+\UBTreeMainGroupRow{}{Tree-based}
+ & EAGLE-3 (16) & 3.93 & 7.07 & 3.74 & 6.68 & 3.01 & 5.30 & 3.35 & 5.89 & 3.35 & 6.01 & 3.01 & 5.25 & 2.36 & 4.55 & 3.25 & 5.82 \\
+ & EAGLE-3 (64) & 4.39 & 8.05 & 4.23 & 7.65 & 3.51 & 6.34 & 3.88 & 7.00 & 3.88 & 7.14 & 3.53 & 6.32 & 2.73 & 5.45 & 3.73 & 6.85 \\
+ & DDTree (64) & 6.10 & 9.23 & 5.61 & 8.68 & 4.04 & 6.31 & 4.91 & 7.37 & 4.63 & 7.02 & 4.14 & 6.22 & 3.23 & 5.48 & 4.67 & 7.19 \\
+ & DARTree (64) & 7.04 & 11.01 & 5.86 & 9.59 & 4.48 & 7.21 & 5.26 & 8.36 & 5.53 & \textbf{8.91} & 4.45 & 7.06 & 3.59 & \textbf{6.48} & 5.17 & 8.37 \\
+ & \textbf{UBTree (64)} & \textbf{7.97} & \textbf{11.55} & \textbf{6.99} & \textbf{10.44} & \textbf{4.99} & \textbf{7.43} & \textbf{6.17} & \textbf{8.85} & \textbf{5.92} & 8.80 & \textbf{5.10} & \textbf{7.47} & \textbf{3.77} & 6.36 & \textbf{5.84} & \textbf{8.70} \\
+\bottomrule
+\end{tabular}
+}
+\vspace{2pt}
+
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}c l @{\hspace{1.0em}} cc cc cc @{\hspace{1.0em}} cc cc cc @{\hspace{1.0em}} cc @{\hspace{1.0em}} cc@{}}
+\toprule
+\multicolumn{18}{@{}l}{\textbf{Reasoning Models}} \\
+\UBTreeMainHeader
+\UBTreeMainGroupRow{\multirow{7}{*}{\shortstack{Qwen3-4B\\$T_{\mathrm{infer}}=0$}}}{Single-path}
+ & DFlash (16) & 5.18 & 7.28 & 4.53 & 6.45 & 3.67 & 5.26 & 3.91 & 5.46 & 3.72 & 5.17 & 3.37 & 4.68 & 2.99 & 4.64 & 3.91 & 5.56 \\
+\UBTreeMainGroupRow{}{Tree-based}
+ & EAGLE-3 (16) & 3.49 & 6.01 & 3.04 & 5.23 & 2.65 & 4.62 & 2.82 & 4.83 & 2.80 & 4.78 & 2.43 & 4.16 & 2.25 & 4.11 & 2.78 & 4.82 \\
+ & EAGLE-3 (64) & 4.19 & 7.24 & 3.75 & 6.48 & 3.29 & 5.77 & 3.52 & 6.05 & 3.51 & 6.04 & 3.04 & 5.28 & 2.74 & 5.07 & 3.44 & 5.99 \\
+ & DDTree (64) & 6.09 & 9.19 & 5.54 & 8.42 & 4.77 & 7.20 & 4.85 & 7.29 & 4.68 & 7.01 & 4.31 & 6.45 & 3.82 & 6.15 & 4.87 & 7.39 \\
+ & \textbf{UBTree (64)} & \textbf{7.64} & \textbf{10.95} & \textbf{6.99} & \textbf{10.01} & \textbf{5.73} & \textbf{8.53} & \textbf{6.21} & \textbf{8.85} & \textbf{5.98} & \textbf{8.54} & \textbf{5.45} & \textbf{7.75} & \textbf{4.71} & \textbf{7.22} & \textbf{6.10} & \textbf{8.84} \\
+\midrule
+\UBTreeMainGroupRow{\multirow{7}{*}{\shortstack{Qwen3-4B\\$T_{\mathrm{infer}}=1$}}}{Single-path}
+ & DFlash (16) & 4.80 & 6.77 & 4.36 & 6.18 & 3.57 & 5.15 & 3.76 & 5.23 & 3.55 & 4.93 & 3.21 & 4.47 & 2.89 & 4.40 & 3.73 & 5.30 \\
+\UBTreeMainGroupRow{}{Tree-based}
+ & EAGLE-3 (16) & 3.01 & 5.28 & 2.78 & 4.86 & 2.41 & 4.22 & 2.54 & 4.42 & 2.47 & 4.28 & 2.24 & 3.92 & 2.00 & 3.69 & 2.49 & 4.38 \\
+ & EAGLE-3 (64) & 3.64 & 6.57 & 3.34 & 6.00 & 2.98 & 5.37 & 3.17 & 5.66 & 3.06 & 5.48 & 2.77 & 4.99 & 2.35 & 4.49 & 3.04 & 5.51 \\
+ & DDTree (64) & 4.87 & 7.35 & 4.69 & 7.11 & 4.01 & 6.10 & 4.17 & 6.22 & 3.97 & 5.93 & 3.57 & 5.37 & 3.28 & 5.11 & 4.08 & 6.17 \\
+ & \textbf{UBTree (64)} & \textbf{6.56} & \textbf{9.50} & \textbf{6.12} & \textbf{8.78} & \textbf{5.12} & \textbf{7.47} & \textbf{5.44} & \textbf{7.74} & \textbf{5.18} & \textbf{7.41} & \textbf{4.57} & \textbf{6.61} & \textbf{4.10} & \textbf{6.17} & \textbf{5.30} & \textbf{7.67} \\
+\bottomrule
+\end{tabular}
+}
+\endgroup
+\vspace{0cm}
+\end{table*}
+
+
+\subsection{Academic-scale Experiment}
+\label{sec:exp-main}
+\label{sec:exp-setup}
+
+\noindent\textbf{Benchmarks.}
+We evaluate UBTree on Qwen3-4B and Qwen3-8B~\citep{yang2025qwen3} with thinking disabled (instruct models), and on Qwen3-4B with thinking enabled (reasoning models), under $T_{\mathrm{infer}}=\{0,1\}$. The benchmarks cover math (GSM8K~\citep{cobbe2021training}, MATH-500~\citep{lightman2024let}, and AIME), code (HumanEval~\citep{chen2021evaluating}, MBPP~\citep{austin2021program}, and LiveCodeBench~\citep{jain2025livecodebench}), and dialogue (MT-Bench~\citep{zheng2023judging}).
+
+\noindent\textbf{Implementation.}
+We train UBTree on OpenPerfectBlend~\citep{xu2024perfect} with regenerated target responses under $T_{\mathrm{train}}=1$. We retrain DFlash~\citep{chen2026dflash} proposer with block size 16 with SpecForge~\citep{li2026specforge} for 6 epochs till convergence, and then jointly train the proposer and selector for 2 epochs, with selector and backbone learning rates of $6\times10^{-4}$ and $2\times10^{-5}$, respectively. Unlike baselines that need different checkpoints for different decoding temperatures $T_{\mathrm{infer}}$, we use the same checkpoint of UBTree trained under $T_{\mathrm{train}}=1$ is used at $T_{\mathrm{infer}}=\{0,1\}$. Our evaluations use $1\times$NVIDIA Hopper GPU with batch size 1 and the \textit{transformers} backend. For tree construction, we follow DARTree~\citep{li2026dartree} with $B=64$ non-root nodes, a search width of $W=12$, and $K=64$ candidate tokens per position, but use a different depth bonus of $\zeta=0$. Training and evaluation protocols are detailed in Appendix~\ref{app:experimental-setup}.
+
+\noindent\textbf{Baselines.}
+We compare UBTree with single-path methods DFlash~\citep{chen2026dflash} and Domino~\citep{huang2026domino}, and tree-based EAGLE-3~\citep{li2026eagle}, DDTree~\citep{ringel2026accelerating}, and DARTree~\citep{li2026dartree}, with budgets in Table~\ref{tab:main-results}. We retrain EAGLE-3 and DFlash on the same OpenPerfectBlend dataset for 6 epochs at corresponding $T_{\mathrm{infer}}$ and report Domino results (with block size 17) from its original paper, trained on OpenPerfectBlend as well. We re-evaluate DDTree and DARTree using retrained DFlash and released Domino checkpoints, respectively, under their original setups. Due to lack of released checkpoints, Domino and DARTree are compared only for instruct models. For fair comparison, we cap the maximum draft depth of DARTree at 16 to match DDTree and UBTree, since the underlying Domino checkpoint uses a block size of 17 and would otherwise permit a larger maximum acceptance length.
+
+\noindent\textbf{Results.}
+\label{sec:exp-main-results}
+Table~\ref{tab:main-results} shows that UBTree achieves average speedups of $6.88\times$ and $6.94\times$ on Qwen3-4B and Qwen3-8B under greedy decoding, and $6.00\times$ and $5.84\times$ under temperature-1 sampling. It outperforms DARTree over all 28 benchmarks in speedups, improving the average by $7.4$--$13.4\%$. With thinking enabled on Qwen3-4B, UBTree outperforms DDTree by $25.3\%$ and $29.9\%$ in average speedup at $T_{\mathrm{infer}}=0$ and $1$, respectively. Our superiority especially stands out under $T_{\mathrm{infer}}=1$, validating the effectiveness of our high entropy adaptions.
+
+\noindent\textbf{Concurrent Serving.}
+\label{sec:exp-main-concurrency}
+Table~\ref{tab:concurrency-results} compares UBTree and baselines in SGLang~\citep{zheng2024sglang} at client concurrency $C\in\{1,8,16,32\}$. All methods use SGLang in BF16 on a single GPU with CUDA Graphs. Results are aggregated from the same benchmarks as in Section~\ref{sec:exp-setup}. Following DARTree~\citep{li2026dartree}, we employ an \textit{adaptive-tree} strategy that selects different tree budget $B$ and width $W$ according to the serving load. We tune \(B/W\) separately for each method and concurrency using the same candidate configuration set and selection criterion. At $C\in\{1,8,16,32\}$, UBTree uses $B/W=64/12,64/12,64/12,16/3$ for Qwen3-4B and $B/W=64/12,64/12,16/12,16/3$ for Qwen3-8B and DARTree uses $B/W=64/12,64/12,32/8,16/3$ on both models. UBTree achieves the highest throughput in all settings, outperforming the next-best method by $7.0$--$16.3\%$. At $C=32$, UBTree reaches 6560.4 and 5851.4 tokens/s on Qwen3-4B and Qwen3-8B, respectively, exceeding the strongest single-path baseline by $7.3\%$ and $7.7\%$.
+\begin{table*}[t]
+\centering
+\caption{Concurrent-serving results on Qwen3-4B and Qwen3-8B under $T_{\mathrm{infer}} = 1$. Each cell reports aggregate output tokens/s / speedup over the AR baseline row at the same concurrency.}
+\label{tab:concurrency-results}
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{@{}clcccc@{}}
+\toprule
+Model & Method & $C=1$ & $C=8$ & $C=16$ & $C=32$ \\
+\midrule
+\multirow{6}{*}{Qwen3-4B}
+& Autoregressive baseline                         & 253.5 / $1.00\times$  & 1404.9 / $1.00\times$ & 2208.3 / $1.00\times$ & 3307.4 / $1.00\times$ \\
+\cmidrule(l){2-6}
+& DFlash                      & 796.4 / $3.14\times$   & 2287.2 / $1.63\times$  & 3664.4 / $1.66\times$ & 6071.9 / $1.84\times$ \\
+& Domino                      & 816.3 / $3.22\times$   & 2258.9 / $1.61\times$  & 3636.5 / $1.65\times$ & 6115.5 / $1.85\times$ \\
+& DDTree                      & 844.6 / $3.33\times$   & 2390.8 / $1.70\times$  & 3669.8 / $1.66\times$ & 4810.4 / $1.45\times$ \\
+& DARTree (adaptive $B/W$)   & 978.5 / $3.86\times$   & 2405.1 / $1.71\times$  & 3770.3 / $1.71\times$ & 5619.9 / $1.70\times$ \\
+& UBTree (adaptive $B/W$)    & \textbf{1089.1 / $4.30\times$} & \textbf{2797.4 / $1.99\times$} & \textbf{4271.9 / $1.93\times$} & \textbf{6560.4 / $1.98\times$} \\
+\midrule
+\multirow{6}{*}{Qwen3-8B}
+& Autoregressive baseline                          & 180.9 / $1.00\times$   & 1126.2 / $1.00\times$  & 1865.9 / $1.00\times$  & 2770.9 / $1.00\times$ \\
+\cmidrule(l){2-6}
+& DFlash                      & 634.7 / $3.51\times$   & 2181.7 / $1.94\times$  & 3596.0 / $1.93\times$  & 5265.4 / $1.90\times$ \\
+& Domino                      & 676.2 / $3.74\times$   & 2137.9 / $1.90\times$  & 3582.7 / $1.92\times$  & 5435.2 / $1.96\times$ \\
+& DDTree                      & 686.8 / $3.80\times$   & 2013.9 / $1.79\times$  & 3303.5 / $1.77\times$  & 3603.6 / $1.30\times$ \\
+& DARTree (adaptive $B/W$)   & 824.4 / $4.56\times$   & 2280.1 / $2.02\times$  & 3514.5 / $1.88\times$  & 4844.9 / $1.75\times$ \\
+& UBTree (adaptive $B/W$)    & \textbf{881.7 / $4.87\times$} & \textbf{2644.4 / $2.35\times$} & \textbf{4069.9 / $2.18\times$} & \textbf{5851.4 / $2.11\times$} \\
+\bottomrule
+\end{tabular}
+\endgroup
+\end{table*}
+
+\begin{table*}[!th]
+\centering
+\caption{Speedup and acceptance length ($\tau$) on production-scale models. Each benchmark reports speedup and average acceptance length, and the Avg. columns are means over all benchmarks. M-500, HE, LCB, and MT-B denote MATH-500, HumanEval, LiveCodeBench, and MT-Bench.}
+\label{tab:production-results}
+\begingroup
+\small
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{0.95}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}c l @{\hspace{1.0em}} cc cc cc @{\hspace{1.0em}} cc cc cc @{\hspace{1.0em}} cc @{\hspace{1.0em}} cc@{}}
+\UBTreeWideResultHeader
+\multirow{3}{*}{Ling3-Tiny}
+& DSpark & 2.72 & 7.53 & 2.83 & 6.96 & 2.26 & 5.37 & 2.91 & 7.59 & 2.68 & 7.16 & 2.03 & 4.84 & 1.90 & 4.71 & 2.48 & 6.31 \\
+& DFlash & 2.66 & 6.57 & 2.64 & 5.74 & 2.26 & 4.76 & 2.77 & 6.39 & 2.47 & 5.87 & 1.95 & 4.11 & 1.86 & 4.11 & 2.37 & 5.36 \\
+& \textbf{UBTree} & \textbf{3.05} & \textbf{9.53} & \textbf{3.52} & \textbf{9.86} & \textbf{3.15} & \textbf{8.44} & \textbf{3.41} & \textbf{10.04} & \textbf{3.06} & \textbf{9.35} & \textbf{2.79} & \textbf{7.46} & \textbf{2.30} & \textbf{6.49} & \textbf{3.04} & \textbf{8.74} \\
+\midrule
+\multirow{3}{*}{Ling3-Flash}
+& DSpark & 2.90 & 8.00 & 3.25 & 7.69 & 2.88 & 6.39 & 3.01 & 8.03 & 2.73 & 6.89 & 2.48 & 5.53 & 1.82 & 4.11 & 2.73 & 6.66 \\
+& DFlash & 2.93 & 7.44 & 3.28 & 7.07 & 2.86 & 5.75 & 3.13 & 7.79 & 3.01 & 7.01 & 2.54 & 5.13 & 1.83 & 3.73 & 2.80 & 6.27 \\
+& \textbf{UBTree} & \textbf{3.23} & \textbf{9.70} & \textbf{3.76} & \textbf{9.58} & \textbf{3.50} & \textbf{8.18} & \textbf{3.48} & \textbf{10.40} & \textbf{3.41} & \textbf{9.55} & \textbf{3.19} & \textbf{7.53} & \textbf{2.29} & \textbf{5.45} & \textbf{3.27} & \textbf{8.63} \\
+\midrule
+\multirow{3}{*}{Qwen3.8-27B}
+& DSpark & \textbf{5.20} & 6.74 & 4.76 & 6.07 & 4.41 & 5.65 & \textbf{5.18} & 6.85 & 4.26 & 5.79 & 3.47 & 4.53 & 3.00 & 3.82 & 4.32 & 5.64 \\
+& DFlash 2 & 4.65 & 6.29 & 4.67 & 6.29 & 4.48 & 6.00 & 5.06 & 6.98 & 4.30 & 6.11 & 3.55 & 4.82 & 2.92 & 3.95 & 4.24 & 5.78 \\
+& \textbf{UBTree} & 5.05 & \textbf{7.59} & \textbf{5.28} & \textbf{7.50} & \textbf{5.07} & \textbf{7.33} & 5.14 & \textbf{7.66} & \textbf{4.67} & \textbf{7.32} & \textbf{4.44} & \textbf{6.54} & \textbf{3.84} & \textbf{5.61} & \textbf{4.78} & \textbf{7.08} \\
+\bottomrule
+\end{tabular}
+}
+\endgroup
+\end{table*}
+
+\subsection{Production-scale Experiment}
+\label{sec:exp-production}
+\label{sec:exp-serving}
+
+\noindent\textbf{Evaluation.}
+We evaluate UBTree on three production models: Ling3-Tiny (7.9B-A1.3B MoE), Ling3-Flash (124B-A5.1B MoE) and Qwen3.8-27B~\citep{qwen38}, on the same benchmarks as in Section~\ref{sec:exp-main}. We compare UBTree with DSpark~\citep{cheng2026dspark} and DFlash~\citep{chen2026dflash} on Ling3-Tiny and Ling3-Flash, and with DSpark and DFlash~2~\citep{inco2026dflash2} on Qwen3.8-27B. We construct target-specific training sets by regenerating responses with Qwen3.8-27B under thinking-disabled decoding. For baseline and UBTree training, Qwen3.8-27B uses OpenPerfectBlend~\citep{xu2024perfect} prompts, whereas all three methods on both Ling3-Tiny and Ling3-Flash use a supervised-finetuning corpus with 2.5M samples and 15B tokens under a 64K context length. We train DSpark for 6 epochs with learning rates of $6\times10^{-4}$ on Ling3-Tiny and $2\times10^{-4}$ on Ling3-Flash. For Qwen3.8-27B, we load the officially released Qwen3.8-27B DFlash~2 checkpoint and fine-tune both the DFlash~2 selector and the UBTree selector for 2 epochs with a learning rate of $3\times10^{-4}$ on our regenerated Qwen3.8-27B rollouts. For Ling3-Tiny and Ling3-Flash, we use block size 16 for all methods. For Ling3-Flash, we train DFlash for 5 epochs with a learning rate of $6\times10^{-4}$. UBTree is then trained based on the epoch-3 DFlash checkpoint for 2 epochs, with backbone and selector learning rates of $2\times10^{-5}$ and $6\times10^{-4}$, respectively. Our tree verification uses the setup in Section~\ref{sec:exp-main}.
+
+
+\noindent\textbf{SGLang Integration.}
+We implement UBTree in SGLang~\citep{zheng2024sglang}. DFlash and DSpark use SGLang's official implementation, while the Qwen3.8-27B implementations follow the official DFlash~2 codebase. We use TP degree 4 on four GPUs for Ling3-Flash and Qwen3.8-27B, and TP degree 1 on one GPU for Ling3-Tiny, with the same degree for the target and draft models. All experiments use batch size 1 and greedy drafter decoding with thinking disabled. For Ling3-Tiny and Ling3-Flash, CUDA Graphs and serving optimizations are enabled for all methods. The Ling3 models and Qwen3.8-27B use hybrid attention with Kimi Delta Attention~\citep{kimi2025linear} and Gated DeltaNet~\citep{yang2024gated} layers, respectively. Inspired by Bole~\citep{wang2026bole}, each node inherits recurrent and convolution states from its parent in tree verification, and only the states and KV entries on the accepted path are committed.
+
+\noindent\textbf{Results.}
+Table~\ref{tab:production-results} shows that UBTree achieves the highest acceptance length in all 21 model--benchmark comparisons and the highest speedup in 19 of them. Averaged over the seven benchmarks, UBTree reaches $3.04\times$, $3.27\times$, and $4.78\times$ speedup on Ling3-Tiny, Ling3-Flash, and Qwen3.8-27B, respectively.
+
+
+\subsection{Long-context Tasks}
+\label{sec:exp-long-context}
+
+\noindent\textbf{Setup.}
+We evaluate acceptance length on Ling3-Flash using LongBench-v2~\citep{bai2024longbenchv2} for long inputs and SWE-bench~\citep{jimenez2024swebench} for long-continuation agentic tasks. For SWE-bench, all methods replay identical records. Evaluation Protocols are detailed in Appendix~\ref{app:long-context-protocol}.
+
+\noindent\textbf{Results.}
+UBTree achieves the highest acceptance length in every context-length bin, exceeding the strongest baseline by $31.0$--$39.7\%$ on LongBench-v2 and $25.6$--$29.3\%$ on SWE-bench. These results show that UBTree retains its advantage under both long initial prompts and growing agent histories. Quantitative results are available in Appendix~\ref{app:long-context}.
+
+\begin{table*}[!th]
+\centering
+\caption{
+Selector, training-temperature, and training-objective ablations on Qwen3-4B
+with thinking disabled.
+\textbf{Top:} speedup and acceptance length ($\tau$) at
+$T_{\mathrm{infer}}=0$.
+\textbf{Middle:} acceptance length across training and inference temperatures,
+with the same checkpoints evaluated in both panels.
+\textbf{Bottom:} training-objective ablation with the fixed architecture and training temperature.
+}
+\label{tab:ablation-selector}
+\label{tab:ablation-temperature-tree}
+\label{kua}
+
+% ------------------------------------------------------------------
+% Selector ablation
+% ------------------------------------------------------------------
+\begingroup
+\small
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{0.95}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}p{4.0cm} @{\hspace{1.0em}} cc cc cc
+                @{\hspace{1.0em}} cc cc cc
+                @{\hspace{1.0em}} cc
+                @{\hspace{1.0em}} cc@{}}
+\UBTreeAblationHeader
+DFlash~2 selector$+$Tree
+    & 7.58 & 11.08 & 7.42 & 10.87 & 6.13 & 8.98
+    & 5.88 & 8.48 & 5.64 & 8.44 & 5.40 & 7.77
+    & 3.60 & 6.15 & 5.95 & 8.82 \\
+UBTree selector$+$Tree
+    & 8.16 & 12.11 & 7.83 & 11.67 & 6.79 & 10.06
+    & 6.73 & 9.61 & 6.21 & 9.54 & 6.04 & 8.78
+    & 4.26 & 7.23 & 6.57 & 9.86 \\
+\quad$+$$T_{\mathrm{train}}=1$
+    & \textbf{8.54} & \textbf{12.58}
+    & \textbf{8.18} & \textbf{12.15}
+    & \textbf{6.92} & \textbf{10.13}
+    & \textbf{7.07} & \textbf{10.22}
+    & \textbf{6.66} & \textbf{9.98}
+    & \textbf{6.37} & \textbf{9.24}
+    & \textbf{4.39} & \textbf{7.32}
+    & \textbf{6.88} & \textbf{10.23} \\
+\bottomrule
+\end{tabular}
+}
+\endgroup
+
+% ------------------------------------------------------------------
+% Temperature ablation
+% ------------------------------------------------------------------
+\begingroup
+\small
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{0.95}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}c rrrrrrrr @{\hspace{1.5em}} rrrrrrrr@{}}
+\toprule
+\multirow{3}{*}{$T_{\mathrm{train}}$}
+& \multicolumn{8}{c}{$T_{\mathrm{infer}}=0$: Acceptance length ($\tau$)}
+& \multicolumn{8}{c}{$T_{\mathrm{infer}}=1$: Acceptance length ($\tau$)} \\
+\cmidrule(lr){2-9}\cmidrule(lr){10-17}
+& \multicolumn{3}{c}{\textsc{Math}}
+& \multicolumn{3}{c}{\textsc{Code}}
+& \textsc{Chat} &
+& \multicolumn{3}{c}{\textsc{Math}}
+& \multicolumn{3}{c}{\textsc{Code}}
+& \textsc{Chat} & \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-8}
+\cmidrule(lr){10-12}\cmidrule(lr){13-15}\cmidrule(lr){16-16}
+& GSM8K & M-500 & AIME & HE & MBPP & LCB & MT-B & Avg.
+& GSM8K & M-500 & AIME & HE & MBPP & LCB & MT-B & Avg. \\
+\midrule
+0.8
+    & 12.58 & 12.12 & \textbf{10.57} & 10.00 & 9.82 & 9.15 & 7.26 & 10.21
+    & 11.72 & 10.47 & 7.52 & 9.39 & 9.17 & 7.63 & 6.58 & 8.93 \\
+1.0
+    & 12.58 & \textbf{12.15} & 10.13
+    & \textbf{10.22} & \textbf{9.98} & \textbf{9.24}
+    & \textbf{7.32} & \textbf{10.23}
+    & \textbf{11.79} & 10.54 & \textbf{7.63}
+    & 9.43 & 9.30 & 7.72 & 6.68 & \textbf{9.01} \\
+1.1
+    & \textbf{12.64} & 12.04 & 10.08 & 10.09 & 9.77 & 9.02 & 7.15 & 10.11
+    & 11.71 & 10.52 & 7.61 & \textbf{9.48} & 9.12 & 7.71 & 6.69 & 8.98 \\
+1.2
+    & 12.59 & 11.94 & 9.90 & 10.10 & 9.87 & 9.01 & 7.22 & 10.09
+    & 11.72 & \textbf{10.61} & 7.47 & 9.31
+    & \textbf{9.40} & \textbf{7.80} & \textbf{6.72} & 9.00 \\
+\bottomrule
+\end{tabular}
+}
+\endgroup
+
+% ------------------------------------------------------------------
+% Training-objective ablation: fake two-column layout
+% ------------------------------------------------------------------
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{0.95}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}clcrr @{\hspace{3em}} clcrr@{}}
+\toprule
+$T_{\mathrm{infer}}$ & Selector loss & $\beta$ & Speedup & $\tau$
+&
+$T_{\mathrm{infer}}$ & Selector loss & $\beta$ & Speedup & $\tau$ \\
+\midrule
+0 & Hard-label CE & 0.1 & 6.84 & 10.08
+&
+1 & Hard-label CE & 0.1 & 5.99 & 8.93 \\
+
+0 & Forward KL & 0.1 & 6.88 & 10.23
+&
+1 & Forward KL & 0.1 & 6.00 & 9.01 \\
+
+0 & Forward KL & 0 & 6.87 & 10.14
+&
+1 & Forward KL & 0 & 6.01 & 9.01 \\
+\bottomrule
+\end{tabular}
+}
+\endgroup
+
+\end{table*}
+
+
+
+\subsection{Ablation Studies}
+\label{sec:exp-ablation}
+
+ \textbf{Architecture \& High-temperature Training.} We first ablate our two designs, selector architecture and high-temperature training temperature, on Qwen3-4B under $T_{\mathrm{infer}}=0$ and setups in Section~\ref{sec:exp-setup}. As shown in Table~\ref{tab:ablation-selector} (Top), our selector architecture, combining deep codebooks and depth calibration, improves both speedup and acceptance length across all benchmarks, increasing their averages from $5.95\times$ to $6.57\times$ and from $8.82$ to $9.86$. A higher training temperature further helps reach an average speedup of $6.88\times$ and acceptance length of $10.23$, validating our tree-native training.
+ 
+ \textbf{Training Temperature Sweeping.} We then examine the optimal training temperature $T_{train}$ of UBTree on Qwen3-4B by varying $T_{\mathrm{train}}\in\{0.8,1.0,1.1,1.2\}$ and evaluating each checkpoint at $T_{\mathrm{infer}}\in\{0,1\}$ in Table~\ref{tab:ablation-temperature-tree} (Middle). Among the tested temperatures, $T_{\mathrm{train}}=1$ achieves the highest average acceptance length at both inference temperatures. 
+ 
+ \textbf{Training Objectives.} We also compare different choices of training objectives by the average speedup and acceptance length over seven benchmarks in Table~\ref{tab:ablation-temperature-tree} (Bottom). Both using the cross-entropy (CE) loss for the selector and disabling the CE loss for the proposer degrade the acceptance length at two inference temperatures. Additional ablation details are provided in Appendix~\ref{app:ablation-protocol}.
+
+

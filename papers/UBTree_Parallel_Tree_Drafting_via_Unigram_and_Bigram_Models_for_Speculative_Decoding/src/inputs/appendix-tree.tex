@@ -1,0 +1,108 @@
+\section{Tree Construction Details}
+\label{app:tree-construction}
+
+UBTree follows the search schedule of DARTree's pruned variant (Algorithm~1 in \citealp{li2026dartree}), reviewed in Section~\ref{sec:prelim-tree}. DARTree evaluates path-conditioned correction probabilities and updates correction states between depths; UBTree instead supplies precomputed proposer and selector scores, so these correction-state updates are not needed.
+
+\noindent\textbf{Path Scores.}
+For a fixed verified context $x_{\le t}$, we use the candidate sets from Section~\ref{sec:method-unigram} and combined scores from~\eqref{eq:ubtree-depth}. These scores incorporate both proposer logits and selector scores conditioned on the proposer's hidden states. For each predecessor $a\in\mathcal C_{i-1}$, normalization over successor candidates defines a conditional distribution, whose log-probabilities accumulate along a candidate path:
+\begin{equation}
+    \begin{aligned}
+        q_i^{\mathrm{bi}}(b\mid a,x_{\le t})
+        &=\frac{\exp s_i(a,b)}
+        {\sum_{v\in\mathcal C_i}\exp s_i(a,v)},
+        \qquad b\in\mathcal C_i,\\
+        \ell(y_{1:d})
+        &=\sum_{i=1}^{d}
+        \log q_i^{\mathrm{bi}}(y_i\mid y_{i-1},x_{\le t}).
+    \end{aligned}
+    \label{eq:ubtree-path}
+\end{equation}
+Here, $y_0=x_t$ and $1\le d\le\gamma$ is the path depth. The root represents the empty draft prefix $\epsilon$, with $\ell(\epsilon)=0$. Each non-root node is identified by its complete draft prefix $y_{1:d}$; identical tokens reached through different parents remain distinct nodes.
+
+\noindent\textbf{Depth Bonus.}
+Following DARTree's scoring form, the search permits a nonpositive depth bonus when ranking tree nodes. The reported UBTree evaluations use $\zeta=0$:
+\begin{equation}
+    \ell_\zeta(y_{1:d})=\ell(y_{1:d})+\zeta d,
+    \qquad \zeta=0.
+    \label{eq:ubtree-depth-bonus}
+\end{equation}
+We set $\ell_\zeta(\epsilon)=0$ and use $\zeta$ to distinguish this depth bonus from the training-loss weight $\beta$. The bonus is applied to path scores after probability normalization. It leaves rankings within each depth unchanged and penalizes deeper nodes during global pruning only when $\zeta<0$.
+
+\noindent\textbf{Depth-Wise Expansion.}
+Let $\mathcal F_d$ be the retained frontier at depth $d$, initialized by $\mathcal F_0=\{\epsilon\}$. At each depth, we extend every retained path with the candidates at that position and select the highest-scoring extensions:
+\begin{equation}
+    \begin{aligned}
+        \mathcal E_d
+        &=\{y_{1:d}:y_{1:d-1}\in\mathcal F_{d-1},\ y_d\in\mathcal C_d\},\\
+        \mathcal F_d
+        &=\operatorname{Top}_{W}(\mathcal E_d;\ell_\zeta),
+        \qquad d=1,\ldots,\gamma.
+    \end{aligned}
+    \label{eq:ubtree-frontier}
+\end{equation}
+We interpret $y_{1:0}=\epsilon$. The operator $\operatorname{Top}_{W}(\mathcal E_d;\ell_\zeta)$ retains up to $W$ nodes with the largest depth-penalized scores across all extensions at depth $d$, not $W$ children per parent. Scoring an extension adds its conditional log-probability from~\eqref{eq:ubtree-path} and $\zeta$ to its parent's score using the precomputed combined scores, without another selector evaluation.
+
+\noindent\textbf{Global Pruning.}
+The retained frontiers form a candidate supertree. We select at most $B$ non-root nodes from this supertree by the same depth-penalized score:
+\begin{equation}
+    \mathcal S=\bigcup_{d=1}^{\gamma}\mathcal F_d,
+    \qquad
+    \mathcal T=\{\epsilon\}\cup\operatorname{Top}_{B}(\mathcal S;\ell_\zeta).
+    \label{eq:ubtree-pruning}
+\end{equation}
+The root is kept separately and does not count toward $B$. Since every normalized probability is at most one and $\zeta\le0$, $\ell_\zeta(y_{1:d})\le\ell_\zeta(y_{1:d-1})$. Preferring ancestors when scores tie therefore ensures that every selected node retains all its ancestors, following the prefix-monotonicity argument in Lemma~1 of \citet{li2026dartree}. This selection is restricted to the materialized supertree $\mathcal S$; finite-width expansion can discard paths before global pruning.
+
+\noindent\textbf{Construction Summary.}
+  Algorithm~\ref{alg:ubtree-construction} summarizes tree construction
+  from precomputed proposer and selector scores, without further
+  selector evaluation. We use $y_{1:0}=\epsilon$ and $y_0=x_t$.
+  The operator $\operatorname{Top}_m$ retains up to $m$
+  highest-scoring nodes, preferring ancestors when scores tie.
+
+  \begin{algorithm}[t]
+  \caption{UBTree Construction from Precomputed Scores}
+  \label{alg:ubtree-construction}
+  \begin{algorithmic}[1]
+      \Statex \textbf{Input:}
+      Verified context $x_{\le t}$,
+      candidate sets $\{\mathcal C_i\}_{i=1}^{\gamma}$,
+      precomputed combined scores $\{s_i\}_{i=1}^{\gamma}$,
+      search width $W$, and non-root node budget $B$.
+      \Statex \textbf{Output:}
+      A prefix-closed tree $\mathcal T$
+      with at most $B$ non-root nodes.
+
+      \State $\zeta \gets 0$
+      \State Precompute all candidate-pair log-probabilities
+      $\log q_i^{\mathrm{bi}}$ using~\eqref{eq:ubtree-path}.
+      \State $\mathcal F_0 \gets \{\epsilon\}$,
+      $\ell_\zeta(\epsilon) \gets 0$,
+      $\mathcal S \gets \varnothing$
+
+      \For{$d=1,\ldots,\gamma$}
+          \State $\mathcal E_d \gets
+          \{y_{1:d} :
+          y_{1:d-1}\in\mathcal F_{d-1},\
+          y_d\in\mathcal C_d\}$
+          \ForAll{$y_{1:d}\in\mathcal E_d$}
+              \State $\ell_\zeta(y_{1:d}) \gets
+              \ell_\zeta(y_{1:d-1})
+              + \log q_d^{\mathrm{bi}}
+              (y_d\mid y_{d-1},x_{\le t})
+              + \zeta$
+          \EndFor
+          \State $\mathcal F_d \gets
+          \operatorname{Top}_{W}(\mathcal E_d;\ell_\zeta)$
+          \State $\mathcal S \gets
+          \mathcal S \cup \mathcal F_d$
+      \EndFor
+
+      \State $\mathcal T \gets
+      \{\epsilon\}\cup
+      \operatorname{Top}_{B}(\mathcal S;\ell_\zeta)$
+      \State \Return $\mathcal T$
+  \end{algorithmic}
+  \end{algorithm}
+
+\noindent\textbf{Verification via Tree-attention.}
+After tree construction, we verify the prefix-closed draft tree with at most \(B=64\) non-root nodes in a single target-model forward pass using tree attention. Each node is evaluated under its corresponding autoregressive prefix, and verification follows the child matching the target-model sample at each step until the first mismatch. The first unmatched sample is retained as the bonus token. After verification, the KV cache and recurrent states along the accepted path are carried forward to the next decoding round, while those of all other branches are discarded. Since every committed token is sampled from the target model under exactly the same prefix as in standard autoregressive decoding, the procedure is lossless.

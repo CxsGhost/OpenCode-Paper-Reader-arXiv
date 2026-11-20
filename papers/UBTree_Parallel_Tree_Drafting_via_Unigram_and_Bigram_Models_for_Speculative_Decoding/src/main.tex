@@ -1,0 +1,98 @@
+\PassOptionsToPackage{table}{xcolor}
+\documentclass[]{antgroup}
+\usepackage{antgroup}
+
+% Standard package includes
+\usepackage{latexsym}
+
+% For proper rendering and hyphenation of words containing Latin characters.
+\usepackage[T1]{fontenc}
+
+% This assumes your files are encoded as UTF8.
+\usepackage[utf8]{inputenc}
+
+% Common packages for NLP papers.
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{xspace}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{flafter}
+\usepackage{float}
+\usepackage{placeins}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta,calc,decorations.pathreplacing,positioning,shadows}
+\renewcommand{\topfraction}{0.98}
+\renewcommand{\dbltopfraction}{0.98}
+\renewcommand{\textfraction}{0.02}
+\renewcommand{\floatpagefraction}{0.90}
+\renewcommand{\dblfloatpagefraction}{0.90}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{8pt plus 1pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{7pt plus 2pt minus 2pt}
+\setlength{\intextsep}{7pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{0pt}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\input{math_commands.tex}
+
+\newcommand{\UBTreePending}{\textit{To be filled}}
+\newcommand{\xmark}{\ensuremath{\times}}
+\definecolor{pcdgreen}{HTML}{2F7D32}
+\definecolor{pcdgray}{HTML}{5F6368}
+\definecolor{pcdrow}{HTML}{F2F3F5}
+\definecolor{figtwoblue}{HTML}{5FA0D6}
+\definecolor{figtwoyellow}{HTML}{F3D582}
+\definecolor{lladablue}{HTML}{4F7FB8}
+\definecolor{lladaorange}{HTML}{F26B3A}
+\newcommand{\best}[1]{\textbf{#1}}
+\newcommand{\posgain}[1]{\textcolor{pcdgreen}{\textbf{+#1}}}
+
+\title{UBTree: Parallel Tree Drafting via Unigram and Bigram Models for Speculative Decoding}
+
+\author{\centering Chumeng Liang$^{1,2,*}$ Linxuan Wang$^{1,3,*}$, Xinyu Peng$^{1,*}$, Huabin Liu$^{1,\dagger}$, Xiaoxu Guo$^{1}$,\\ Yuxin Chen$^{2}$, Ge Liu$^{2}$, Guang Lin$^{3}$, Qifan Song$^{3}$, Jianguo Li$^{1,\dagger}$}
+\affiliation{\centering $^1$Inclusion AI \quad\centering $^2$University of Illinois Urbana-Champaign  \quad\centering $^3$Purdue University\\[1.5mm]
+\href{https://www.inclusion-ai.org/ubtree/}{\textcolor[cmyk]{0,1,0,0}{\texttt{https://www.inclusion-ai.org/ubtree/}}}}
+
+\begin{document}
+\maketitle
+\begingroup
+\renewcommand{\thefootnote}{}
+\footnotetext{\textsuperscript{*}Equal contribution. \textsuperscript{\ensuremath{\dagger}}Corresponding authors.\\
+\hspace*{1.8em}This work was done during Chumeng's and Linxuan's internship at Inclusion AI.}
+\endgroup
+
+\begin{abstract}
+Speculative decoding accelerates language model inference by verifying multiple draft tokens in a single target-model pass. Recent parallel drafters have achieved breakthrough performance in frontier production models, but their effectiveness deteriorates as the entropy of target distributions increases due to insufficient draft diversity. To overcome this bottleneck without sacrificing parallelism, we introduce \textbf{UBTree}, a parallel drafter that couples a \textbf{U}nigram proposer with a \textbf{B}igram selector to construct drafting \textbf{Tree}s. The unigram proposer is trained with the standard cross-entropy objective to generate candidate tokens independently for each position, while a lightweight bigram selector predicts transition scores between adjacent candidate pairs. Unlike the proposer, the selector is trained with a renormalized KL objective on high-temperature data. This \textit{tree-native} training broadens the supervision beyond the greedy path, encouraging plausible alternative branches that improve the chance of accepting additional tokens during tree verification. Across seven standardized benchmarks with Qwen3-4B and Qwen3-8B, UBTree achieves an average speedup of $5.84$--$6.94\times$ over autoregressive decoding and outperforms DARTree in all 28 comparisons. Production-scale evaluation further demonstrates UBTree's advantage over frontier baselines such as DSpark.
+\end{abstract}
+
+\input{inputs/intro}
+\input{inputs/prelim}
+\input{inputs/method}
+\input{inputs/exp}
+\input{inputs/relatedWork}
+\input{inputs/conclusion}
+
+% Custom bibliography entries only.
+\bibliographystyle{antgroup}
+\bibliography{custom}
+
+\clearpage
+\appendix
+\input{inputs/appendix-tree}
+\input{inputs/appendix-setup}
+\input{inputs/appendix-experiments}
+\input{inputs/appendix-related-work}
+
+\end{document}

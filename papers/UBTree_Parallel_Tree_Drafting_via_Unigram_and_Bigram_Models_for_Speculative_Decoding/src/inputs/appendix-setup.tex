@@ -1,0 +1,80 @@
+\section{Experimental Setup Details}
+\label{app:experimental-setup}
+
+We provide additional training and evaluation settings for the academic-scale experiments, long-context evaluations, and ablations in Section~\ref{sec:experiments}.
+
+\subsection{Training and Inference Configuration}
+\label{app:training-configuration}
+
+Table~\ref{tab:ubtree-configuration} summarizes the configuration for the academic-scale experiments. We initialize the depth-calibration parameters to $\rho_i=\kappa_i=0$, so the proposer logits and selector scores initially have unit weights. Academic-scale inference loads the target and drafter weights in BF16 and captures draft post-processing in a single CUDA Graph. For Ling3-Tiny and Ling3-Flash, UBTree uses 49 and 32 total verification nodes including the anchor, respectively.
+
+\begin{table}[t]
+\centering
+\caption{UBTree configuration for the academic-scale experiments, unless otherwise specified. The verification budget excludes the anchor.}
+\label{tab:ubtree-configuration}
+\begin{tabular}{ll}
+\toprule
+Setting & Value \\
+\midrule
+Proposer training & 6 epochs \\
+Joint proposer--selector training & 2 epochs \\
+Selector rank & 256 \\
+Codebook MLP hidden width & 1024 \\
+Training candidate support size & 256 \\
+\midrule
+Draft depth & 15 future positions plus an anchor \\
+Candidate tokens per position $K$ & 64 \\
+Search width $W$ & 12 \\
+Verification budget $B$ & 64 non-root nodes \\
+Depth bonus $\zeta$ & $0$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Evaluation and Timing Protocol}
+\label{app:evaluation-protocol}
+
+For our academic-scale evaluations, we use fixed seed-0 subsets with the sample counts listed in Table~\ref{tab:evaluation-samples}. Each configuration is evaluated once on the selected subset. Generation stops at EOS or after 2,048 new tokens. MT-Bench contains 80 two-turn dialogues, yielding 160 evaluated turns.
+
+For each question or dialogue turn, time per output token (TPOT) is computed from the elapsed decoding time and the output-token count within the same timing window. The same decoding-time measurement protocol is used for all locally evaluated academic-scale methods and the autoregressive baseline. Within each benchmark, speedup is the ratio of the mean autoregressive TPOT to the mean speculative-decoding TPOT. Acceptance length is averaged over questions or dialogue turns.
+
+\begin{table}[t]
+\centering
+\caption{Evaluation subset sizes. MT-Bench contains two-turn dialogues; the other counts refer to individual examples.}
+\label{tab:evaluation-samples}
+\begin{tabular}{lr}
+\toprule
+Benchmark & Examples / dialogues \\
+\midrule
+GSM8K & 128 \\
+MATH-500 & 128 \\
+AIME & 30 \\
+HumanEval & 128 \\
+MBPP & 128 \\
+LiveCodeBench & 128 \\
+MT-Bench & 80 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Long-context Evaluation Protocol}
+\label{app:long-context-protocol}
+
+\noindent\textbf{Shared Settings.}
+We compare UBTree with DSpark and DFlash on Ling3-Flash using tensor parallelism of degree 4 on four GPUs, greedy decoding, and thinking disabled. Both long-context evaluations use concurrency 1 with decode CUDA Graphs enabled. We measure root-inclusive acceptance length $\tau$ as the number of generated tokens per target verification call, including the target-produced token. All methods use a maximum draft depth of 15, giving a maximum acceptance length of 16. DSpark and DFlash verify a single chain, while UBTree uses a budget of 31 non-root tree nodes per round.
+
+\noindent\textbf{LongBench-v2.}
+We evaluate long-input generation on LongBench-v2~\citep{bai2024longbenchv2}. From the 503 source examples, we retain the same 401 requests with at most 260K prompt tokens for all methods. Generation stops at EOS or after 2,048 new tokens. We group requests by their prompt length before generation into six context-length bins with upper boundaries of 32K, 64K, 96K, 128K, 192K, and 260K tokens. Each bin contains the naturally occurring benchmark inputs in that length range. Table~\ref{tab:long-context-longbench} reports acceptance length and request counts for these bins, together with results over the full evaluation subset.
+
+\noindent\textbf{SWE-bench.}
+We evaluate acceptance as agent histories grow on SWE-bench~\citep{jimenez2024swebench}. We first run target-only inference on 30 cases and freeze the resulting 1,482 complete requests. Each method then replays the identical recorded messages, tool calls, and tool outputs with a fixed generation limit of 256 tokens. This shared replay protocol aligns the agent context across methods at every request. To match the context-length axis in Figure~\ref{fig:ubtree-teaser}(c), we group requests by the increase in prompt tokens relative to the first request of the corresponding case, using bins $\le0$, 0--4K, 4--8K, 8--16K, 16--32K, 32--64K, and 64--131K. The $\le0$ bin contains requests whose prompt length is no greater than the initial prompt, including context truncation or reconstruction events. Table~\ref{tab:long-context-swe} reports acceptance length and the number of cases represented in each bin; its Overall column reports request-pooled acceptance length over all 1,482 requests.
+
+As a complementary analysis, we summarize the same replay requests by trajectory progress. We divide each case chronologically into four stages containing approximately equal numbers of requests: 0--25\%, 25--50\%, 50--75\%, and 75--100\%. Within each case and stage, we compute acceptance length as total generated tokens divided by total target verification calls, then average equally across the 30 cases. These stages measure relative progress through an agent trajectory. Since the amount of context added per request varies across cases and requests, the stage boundaries do not correspond to fixed context lengths.
+
+\subsection{Ablation Protocol}
+\label{app:ablation-protocol}
+
+
+For the training-temperature ablation in Table~\ref{tab:ablation-temperature-tree}, we regenerate target responses at each $T_{\mathrm{train}}$ and use them for both proposer training and joint proposer--selector training. Each joint run starts from the proposer trained at the corresponding temperature. The target distribution for KL supervision uses the same $T_{\mathrm{train}}$, following Eq.~\eqref{eq:ubtree-training-distributions}. Across temperatures, we retain the same selector architecture, training configuration, and tree-search configuration. Each resulting checkpoint is evaluated at both $T_{\mathrm{infer}}=0$ and $T_{\mathrm{infer}}=1$. For the training-objective ablation, all variants start from the same proposer checkpoint and use identical training responses. Hard-label selector CE excludes positions whose sampled target token falls outside the training candidate support, whereas forward KL supervises all valid positions.
+
+\FloatBarrier
