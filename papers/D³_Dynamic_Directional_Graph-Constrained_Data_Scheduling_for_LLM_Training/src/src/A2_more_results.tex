@@ -1,0 +1,82 @@
+\clearpage
+\section{More Results and Analysis}
+\label{sec:app-more-results}
+\subsection{A Toy Example for Understanding $D^3$}
+\label{app:toy_influence_cycle}
+
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[width=0.75\linewidth]{icml2025/img/case0128.pdf}
+    \caption{Mechanistic illustration of $D^3$ scheduling on a non-transitive influence graph. Nodes $A, B$, and $C$ represent distinct training samples (or mini-batches), while directed edges quantify the pairwise directional advantages $S_{ij}$ derived from gradient alignment. The depicted cyclic dependency ($A \to B \to C \to A$) represents a fundamental scheduling conflict; $D^3$ resolves this by identifying the permutation that minimizes the total penalty of violated directional advantages, effectively breaking the cycle at the weakest link to ensure training stability.}
+    \label{app:example}
+\end{figure*}
+
+To demonstrate the robustness of our framework under inconsistent constraints, we consider a minimal $N=3$ case where dominance relations induce a directed cycle. At optimization step $t$, we assume the sample-wise influence matrix $\mathbf{A}^{(t)} \in \mathbb{R}^{3 \times 3}$ is given by
+$$
+\mathbf{A}^{(t)} =
+\begin{bmatrix}
+0 & -0.3 & 0.1 \\
+0.2 & 0 & -0.4 \\
+-0.1 & 0.3 & 0
+\end{bmatrix},
+$$
+where each entry $A^{(t)}_{ij} = \mathcal{I}_{i \to j}(t)$ represents the influence value following Definition~\ref{def:dynamic_influence_graph}. Under the dominance criterion where an edge $(i,j)$ exists if $\mathcal{I}_{i \to j}(t) < \mathcal{I}_{j \to i}(t)$, we observe a set of pairwise constraints: $A_{12} < A_{21}$ implies $(1,2) \in \mathcal{E}^{(t)}_{\mathrm{dom}}$, $A_{23} < A_{32}$ implies $(2,3) \in \mathcal{E}^{(t)}_{\mathrm{dom}}$, and $A_{31} < A_{13}$ implies $(3,1) \in \mathcal{E}^{(t)}_{\mathrm{dom}}$. Consequently, the dominance graph $\mathcal{G}^{(t)}_{\mathrm{dom}}$ forms a directed cycle $1 \to 2 \to 3 \to 1$, rendering any consistent topological ordering impossible.
+
+To resolve this conflict, we compute the directional advantage matrix $\mathbf{S}^{(t)} = \mathbf{A}^{(t)\top} - \mathbf{A}^{(t)}$, where $S^{(t)}_{ij}$ quantifies the net benefit of training $x_i$ before $x_j$:
+$$
+\mathbf{S}^{(t)} =
+\begin{bmatrix}
+0 & 0.5 & -0.2 \\
+-0.5 & 0 & 0.7 \\
+0.2 & -0.7 & 0
+\end{bmatrix}.
+$$
+Following the cost-minimization formulation in Section~\ref{sec:influence_optimization}, we seek an ordering $\sigma^{(t)\star} \in \mathcal{S}_3$, where $\sigma(k)$ denotes the position assigned to sample $x_k$, that minimizes the total penalty incurred by violated directional advantages:
+$$
+\sigma^{(t)\star} \;=\; \arg\min_{\sigma \in \mathcal{S}_3} \mathcal{C}(\sigma), 
+\qquad 
+\mathcal{C}(\sigma) \;=\; \sum_{i \ne j} \max\!\bigl(0,\, S^{(t)}_{ij}\bigr) \cdot \mathbb{I}\bigl[\sigma(j) < \sigma(i)\bigr].
+$$
+Only the three positive entries $S_{12}=0.5$, $S_{23}=0.7$, and $S_{31}=0.2$ can contribute to the cost, each penalizing an ordering that places its preferred successor ahead of its predecessor. Writing each permutation as the resulting sequence of samples and evaluating $\mathcal{C}(\sigma)$ over all $\sigma \in \mathcal{S}_3$ yields:
+$$
+\begin{aligned}
+\mathcal{C}([1,2,3]) &= S_{31} = 0.2, \quad & \mathcal{C}([1,3,2]) &= S_{23} + S_{31} = 0.9, \\
+\mathcal{C}([2,1,3]) &= S_{12} + S_{31} = 0.7, \quad & \mathcal{C}([2,3,1]) &= S_{12} = 0.5, \\
+\mathcal{C}([3,1,2]) &= S_{23} = 0.7, \quad & \mathcal{C}([3,2,1]) &= S_{12} + S_{23} = 1.2.
+\end{aligned}
+$$
+The optimal schedule is thus $\sigma^{(t)\star} = [1,2,3]$ with cost $0.2$. This result illustrates that when faced with cyclic dominance, our cost-minimization formulation naturally sacrifices the weakest conflicting edge (in this case, $(3,1)$ with $S_{31}=0.2$) so as to preserve the two stronger directional preferences. Such a mechanism ensures training stability and efficiency even when local gradient alignments and Hessian curvatures induce inconsistent sample dependencies.
+\hfill $\square$
+
+\subsection{Pre-training on Larger Models}
+We evaluate the scalability and effectiveness of D$^3$ by pre-training a 1.1B Llama-based model on 100B tokens of the Pile dataset. 
+As illustrated in Table~\ref{tab:llama_pretraining_results}, D$^3$ consistently outperforms both sample-level and domain-level baselines across nearly all evaluation dimensions. Specifically, D$^3$ achieves a significant reduction in perplexity (2.53), representing a 4.1\% relative improvement over the strongest baseline.
+
+\begin{table*}[t]
+\caption{Pre-training performance on the Pile. All models utilize the LlaMa-based (1.1B) architecture and are trained on 100B tokens. The ``Aggregated Avg.'' is the arithmetic mean of the few-shot commonsense reasoning benchmarks shown below (HellaSwag, PIQA, OBQA, COPA, and WinoGrande). Subscripts denote the relative improvement or degradation compared to the strongest baseline. Best results are highlighted in bold.}
+\label{tab:llama_pretraining_results}
+\centering
+\resizebox{0.9\textwidth}{!}{
+\begin{tabular}{llc ccccc c}
+\toprule
+\multirow{2}{*}{\textbf{Granularity}} & \multirow{2}{*}{\textbf{Method}} & \textbf{Opt.} & \multicolumn{5}{c}{\textbf{Common Sense Reasoning}} & \textbf{Aggregated} \\ \cmidrule(lr){3-3} \cmidrule(lr){4-8} \cmidrule(l){9-9} 
+ & & \textbf{PPL} $\downarrow$ & \textbf{Hella.} $\uparrow$ & \textbf{PIQA} $\uparrow$ & \textbf{OBQA} $\uparrow$ & \textbf{COPA} $\uparrow$ & \textbf{Wino.} $\uparrow$ & \textbf{Avg.} $\uparrow$ \\ \midrule
+
+% --- Sample-level Methods ---
+\multirow{2}{*}{Sample-level} 
+ & Uniform Sampling & 2.68 & 31.2 & 68.5 & 28.4 & 64.0 & 51.1 & 48.64 \\
+ & Dynamic Loss  & 2.64 & 31.8 & \textbf{69.2} & 29.6 & 65.5 & 52.5 & 49.72 \\ \midrule
+
+% --- Domain-level Methods ---
+\multirow{4}{*}{Domain-level} 
+ & RegMix  & 2.75 & 31.4 & 68.8 & 29.4 & 66.5 & \textbf{53.6} & 49.94 \\
+ & Data Mixing Law  & 2.74 & 31.3 & 68.4 & \textbf{30.2} & 65.9 & 51.3 & 49.42 \\
+ & DoReMi  & 2.71 & 31.6 & 68.7 & 29.8 & 66.0 & 51.4 & 49.50 \\
+ & DoGE  & 2.72 & 31.7 & 68.9 & 29.2 & 64.0 & 50.6 & 48.88 \\ \midrule \addlinespace[2pt]
+
+% --- Our Method ---
+\rowcolor[HTML]{F3F3F3} 
+\textbf{Ours} & \textbf{D$^3$} & \textbf{2.53} \scriptsize{\textcolor{red}{-4.1\%}} & \textbf{32.8} \scriptsize{\textcolor{red}{+3.1\%}} & 68.9 \scriptsize{\textcolor{green!60!black}{-0.4\%}} & \textbf{33.1} \scriptsize{\textcolor{red}{+9.6\%}} & \textbf{71.2} \scriptsize{\textcolor{red}{+7.1\%}} & 53.4 \scriptsize{\textcolor{green!60!black}{-0.4\%}} & \textbf{51.88} \scriptsize{\textcolor{red}{+3.9\%}} \\ \bottomrule
+\end{tabular}
+}
+\end{table*}

@@ -1,0 +1,24 @@
+\section{Related Work}
+\label{sec:related_work}
+
+We organize related work into three categories: (i) sample-level data selection (reweighting) methods, (ii) domain-level reweighting approaches, and (iii) empirical studies that investigate the effects of data ordering during LLM training.
+
+\subsection{Domain-Level Data Mixture Optimization}
+Domain-level optimization determines the optimal composition of macroscopic data sources (e.g., web, code, academic text) for pretraining, moving beyond simple heuristics. Inspired by scaling laws \citep{kaplan2020scaling}, recent studies introduce automated, optimization-driven frameworks. A seminal approach is DoReMi \citep{doremi}, which uses a small proxy model to derive domain weights via distributionally robust optimization.
+Subsequent methods enhance efficiency and scalability: REGMIX \citep{liu2024regmix} treats the problem as a regression task using micro-models, MixMin \citep{DBLP:conf/icml/ThudiRRTM25} formalizes mixture finding as a convex minimization problem. Notably, MixMin demonstrates that optimal mixtures found on small models can be scale-invariant.
+To reduce retraining costs, Chameleon \citep{DBLP:conf/icml/XieTC25} utilizes leverage scores in a learned embedding space for flexible domain reweighting, and Velocitune \citep{DBLP:conf/acl/LuoZLLGCC25} adaptively adjusts weights based on learning velocity, specifically targeting the complexities of domain-adaptive continual pre-training.
+In comprehensive empirical studies, \citet{DBLP:journals/corr/abs-2507-09404} propose scaling laws for optimal data mixtures, further establishing the theoretical foundation for these data-centric strategies.
+
+\paragraph{Sample-level Data Strategies.}
+Sample-level strategies prioritize individual training instances, offering finer-grained control than domain-level methods. 
+A key recent advance is the shift toward dynamic, online selection mechanisms. 
+GREATS \citep{DBLP:conf/nips/WangWSM024} applies greedy optimization via Taylor expansion to select high-quality batches in every iteration, while \citet{DBLP:conf/iclr/SowWB0JL25} introduces online loss-based reweighting to focus training on more informative samples. 
+To capture the complex interactions between data points, Group-MATES \citep{yu2025grouplevel} proposes group-level selection using a relational data influence model. Another paradigm leverages training artifacts and optimization frameworks to refine data importance. 
+AutoMixer \citep{DBLP:conf/acl/Chang0HVKSC25} utilizes checkpoint models to approximate data influence, whereas DWM \citep{DBLP:conf/icml/00560ZTH0T25} implements a bi-level optimization framework to update a Data Weighting Model dynamically. 
+Furthermore, to resolve potential conflicts between heterogeneous selection criteria, Multi-Actor Collaboration frameworks \citep{DBLP:conf/acl/Bai0WSZPZWQZYH25} have been proposed to integrate multiple prioritization rules through a central console. 
+However, most existing sample-level methods either incur heavy computational overhead due to second-order optimizations or lack a unified geometric principle to guide the data selection process, particularly during critical phases such as model annealing.
+
+\subsection{Data Curriculum in LLM training}
+Previous methods have empirically validated the importance of sample ordering in LLM training~\cite{Kim2024StrategicOrdering,Pouransari2024DatasetDecomposition,Jia2025CurriculumEffects}. Orca \cite{mukherjee2023orca} establishes a progressive learning paradigm that leverages complex explanation traces to enhance reasoning capabilities. 
+Recent research on contrastive post-training shows that a curriculum transitioning from easy preference pairs to hard ones yields step-function improvements in model alignment~\cite{DBLP:conf/emnlp/ZhouAZIZSXZ24}. 
+Despite these empirical successes, most curriculum strategies remain grounded in heuristic designs. There is still a lack of fundamental understanding regarding the underlying training dynamics, particularly how asymmetric gradient interactions between samples influence the optimization trajectory.

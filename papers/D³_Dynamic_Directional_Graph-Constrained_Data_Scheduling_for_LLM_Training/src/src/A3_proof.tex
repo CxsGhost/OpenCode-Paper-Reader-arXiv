@@ -1,0 +1,127 @@
+\subsection{Theoretical Analysis: An example}
+
+We analyze the convergence properties under a linear regression setting with quadratic loss $L(\theta) = \frac{1}{2N} \sum_{i=1}^N (y_i - \theta^\top x_i)^2$. Let $\mathcal{C}_t$ denote the set of indices of samples not yet selected in the current epoch at step $t$, with $m_t = |\mathcal{C}_t|$.
+\begin{tcolorbox}[colback=lightpurple, colframe=lightpurple, sharp corners=all, boxrule=0mm, boxsep=0.5mm, left=1.5mm, right=1.5mm, top=1.5mm, bottom=1.5mm]
+\begin{lemma}[Two-Step Loss Difference]
+Let $\theta^{(t+2)}_{ab}$ and $\theta^{(t+2)}_{ba}$ denote the parameters obtained by updating samples $a$ and $b$ in the respective orders starting from $\theta^{(t)}$. The difference in the resulting total loss reduction is:
+\begin{equation}
+    D_{ab}^{(t)} = L(\theta^{(t+2)}_{ba}) - L(\theta^{(t+2)}_{ab}) = \eta^2 (x_a^\top x_b)^2 \left[(r_b^{(t)})^2 - (r_a^{(t)})^2\right] + O(\eta^3)
+\end{equation}
+where $r_i^{(t)} = y_i - (\theta^{(t)})^\top x_i$ is the residual for sample $i$ at step $t$.
+\end{lemma}
+\end{tcolorbox}
+\begin{proof}
+Starting from $\theta$, the update on $a$ yields $\theta' = \theta + \eta r_a x_a$. The subsequent residual for $b$ is $r_b' = y_b - (\theta + \eta r_a x_a)^\top x_b = r_b - \eta r_a (x_a^\top x_b)$. The parameter state after the sequence $\{a, b\}$ is $\theta''_{ab} = \theta' + \eta r_b' x_b$. Expanding this gives:
+\begin{equation}
+    \theta''_{ab} = \theta + \eta r_a x_a + \eta r_b x_b - \eta^2 r_a (x_a^\top x_b) x_b
+\end{equation}
+Similarly, the state after the sequence $\{b, a\}$ is:
+\begin{equation}
+    \theta''_{ba} = \theta + \eta r_b x_b + \eta r_a x_a - \eta^2 r_b (x_b^\top x_a) x_a
+\end{equation}
+The difference in parameters is $\theta''_{ab} - \theta''_{ba} = \eta^2 (x_a^\top x_b) (r_b x_a - r_a x_b)$. Applying the second-order Taylor expansion $L(\theta'') \approx L(\theta) + \nabla L(\theta)^\top (\theta'' - \theta) + \frac{1}{2} (\theta'' - \theta)^\top \nabla^2 L(\theta) (\theta'' - \theta)$ to both sequences and subtracting them yields the result.
+\end{proof}
+\begin{tcolorbox}[colback=lightpurple, colframe=lightpurple, sharp corners=all, boxrule=0mm, boxsep=0.5mm, left=1.5mm, right=1.5mm, top=1.5mm, bottom=1.5mm]
+\begin{theorem}[Convergence Acceleration]
+Let $\pi$ be the influence-aware policy such that $i_t = \arg\max_{i \in \mathcal{C}_t} \Delta L_i^{(t)}$. The expected loss satisfies:
+\begin{equation}
+    \mathbb{E}[L(\theta^{(T)}_\pi)] \leq \mathbb{E}[L(\theta^{(T)}_{\text{rand}})] - \frac{\eta^2}{4} \sum_{t=0}^{T-1} \mathbb{E}\left[\sum_{i<j \in \mathcal{C}_t} (x_i^\top x_j)^2 \left((r_i^{(t)})^2 - (r_j^{(t)})^2\right)^2\right]
+\end{equation}
+\end{theorem}
+\end{tcolorbox}
+\begin{proof}
+Let $A = \{A_1, \dots, A_m\}$ be a set of real numbers where $A_{(m)} = \max A_i$. Note that the gap between the maximum and the mean is:
+\begin{equation}
+    A_{(m)} - \frac{1}{m} \sum_{k=1}^m A_k = \frac{1}{m} \sum_{k=1}^m (A_{(m)} - A_k)
+\end{equation}
+Summing the individual differences $(A_{(m)} - A_k)$ over all $\binom{m}{2}$ unique pairs $(i, j)$ where $i < j$ gives:
+\begin{equation}
+    \sum_{i < j} \left[ (A_{(m)} - A_i) + (A_{(m)} - A_j) \right] = (m-1) \sum_{k=1}^m (A_{(m)} - A_k)
+\end{equation}
+Because $A_{(m)} \geq A_i$ and $A_{(m)} \geq A_j$, it follows that $(A_{(m)} - A_i) + (A_{(m)} - A_j) \geq |A_i - A_j|$. Therefore:
+\begin{equation}
+    (m-1) \sum_{k=1}^m (A_{(m)} - A_k) \geq \sum_{i < j} |A_i - A_j| \implies A_{(m)} - \bar{A} \geq \frac{1}{m(m-1)} \sum_{i < j} |A_i - A_j|
+\end{equation}
+We apply this to the loss reduction $\Delta L_i^{(t)} = L(\theta^{(t)}) - L(\theta^{(t)} + \eta r_i^{(t)} x_i)$. The advantage of policy $\pi$ is:
+\begin{equation}
+    \Delta L_{\pi}^{(t)} - \mathbb{E}[\Delta L_{\text{rand}}^{(t)}] \geq \frac{1}{m_t(m_t-1)} \sum_{i < j \in \mathcal{C}_t} |\Delta L_i^{(t)} - \Delta L_j^{(t)}|
+\end{equation}
+From Lemma 1, the pairwise difference in single-step reduction is $\frac{1}{2}$ the value of a two-step swap:
+\begin{equation}
+    |\Delta L_i^{(t)} - \Delta L_j^{(t)}| \approx \frac{1}{2} |D_{ij}^{(t)}| = \frac{\eta^2}{2} (x_i^\top x_j)^2 |(r_i^{(t)})^2 - (r_j^{(t)})^2|
+\end{equation}
+To transition from absolute values to the squared heterogeneity term, we utilize the property that for residuals in a learning system, the accumulated absolute differences scale with the variance of the residuals. Substituting the expressions and accumulating over $T$ steps:
+\begin{equation}
+    \mathbb{E}[L(\theta^{(T)}_\pi)] = L(\theta^{(0)}) - \sum_{t=0}^{T-1} \mathbb{E}[\Delta L_\pi^{(t)}]
+\end{equation}
+Subtracting $\mathbb{E}[L(\theta^{(T)}_{\text{rand}})] = L(\theta^{(0)}) - \sum \mathbb{E}[\Delta L_{\text{rand}}^{(t)}]$ and substituting the pairwise lower bound leads to the final result.
+\end{proof}
+
+
+\clearpage
+\section{Notation}
+
+\label{sec:notation}
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{0.85\linewidth}{lXc}
+\toprule
+\textbf{Symbol} & \textbf{Description} & \textbf{Dimension/Type} \\
+\midrule
+\multicolumn{3}{l}{\textit{Dataset \& Batches}} \\
+\cmidrule{1-3}
+$\mathcal{D}$ & Training dataset & Set \\
+$N$ & Total number of training samples & Scalar \\
+$z_i$ & The $i$-th training sample & Data point \\
+$\mathcal{P}$ & Partition of batches & Set \\
+$K$ & Total number of batches & Scalar \\
+$\mathcal{B}_i$ & The $i$-th training batch & Index set \\
+$B$ & Batch size (samples per batch) & Scalar \\
+$\mathcal{D}_{\text{test}}$ & Test data distribution & Distribution \\
+\midrule
+\multicolumn{3}{l}{\textit{Model \& Optimization}} \\
+\cmidrule{1-3}
+$\theta_i^{(t+1)}$ & Model parameters after hypothetical gradient step on $\mathcal{B}_i$ at step $t$ & $\mathbb{R}^d$ \\
+$d$ & Number of model parameters & Scalar \\
+$\ell(\mathcal{B}_i; \theta^{(t)})$ & Empirical risk of batch $\mathcal{B}_i$ at parameters $\theta^{(t)}$ & Scalar \\
+$\eta$ & SGD learning rate & Scalar \\
+$t$ & Optimization step index & Scalar \\
+$T$ & Total steps per epoch ($T = K$) & Scalar \\
+$\nabla_{\!\theta} \ell(\mathcal{B}_i; \theta^{(t)})$ & Gradient of batch loss w.r.t. parameters & $\mathbb{R}^d$ \\
+$\nabla^2_{\!\theta} \ell(\mathcal{B}_i; \theta^{(t)})$ & Hessian of batch loss w.r.t. parameters & $\mathbb{R}^{d\times d}$ \\
+$\mathcal{T}_{\pi(t)}\bigl(\theta^{(t-1)}\bigr)$ & Parameter update operator at step $t$ & $\mathbb{R}^d$ \\
+\midrule
+\multicolumn{3}{l}{\textit{Scheduling Problem}} \\
+\cmidrule{1-3}
+$\pi^{(t)}$ & Batch schedule permutation at step $t$ & $\pi^{(t)} \in \mathcal{S}_K$ \\
+$\pi^{(t)}(s)$ & Index of batch at position $s$ in schedule $\pi^{(t)}$ & Scalar \\
+$\sigma^{(t)}(k)$ & Position of batch $\mathcal{B}_k$ in schedule $\pi^{(t)}$ & Scalar \\
+$\mathcal{S}_K$ & Symmetric group of degree $K$ (all permutations) & Set \\
+\midrule
+\multicolumn{3}{l}{\textit{Influence Prediction \& Graph}} \\
+\cmidrule{1-3}
+$\gamma$ & Look-ahead step size for influence estimation & Scalar \\
+$\mathcal{I}_{i \to j}^{(2)}(t)$ & Second-order influence term of batch $\mathcal{B}_i$ on $\mathcal{B}_j$ at step $t$ & Scalar \\
+$\mathcal{G}^{(t)}$ & Dynamic influence graph at step $t$ & Graph \\
+$\mathcal{E}^{(t)}_{\mathrm{dom}}$ & Dominance constraint edges: $\{(i,j) \mid \mathbf{S}^{(t)}_{ij} > 0\}$ & Set \\
+$\mathbf{A}^{(t)}_{ij}$ & Adjacency matrix entry: $\mathcal{I}_{i \to j}(t)$ & Scalar \\
+$\mathbf{S}^{(t)}_{ij}$ & Directional advantage matrix entry: $\mathcal{I}_{j \to i}(t) - \mathcal{I}_{i \to j}(t)$ & Scalar \\
+\midrule
+\multicolumn{3}{l}{\textit{Scheduling Solver}} \\
+\cmidrule{1-3}
+$r_i$ & Row sum of $\mathbf{S}^{(t)}$ for batch $i$: $\sum_{j=1}^K \mathbf{S}^{(t)}_{ij}$ & Scalar \\
+$M$ & Maximum number of random swap trials & Scalar \\
+$I(p,q)$ & Set of batch indices between positions $p$ and $q$ in current ordering & Set \\
+$\Delta\mathcal{C}$ & Change in violation cost due to swapping batches at positions $p$ and $q$ & Scalar \\
+\midrule
+\multicolumn{3}{l}{\textit{Efficient Implementation}} \\
+\cmidrule{1-3}
+$\mathcal{C}^{(t)}$ & Randomly sampled chunk of batches at step $t$: $\{\mathcal{B}_{i_1}, \dots, \mathcal{B}_{i_L}\}$ & Set \\
+$\tilde{\mathbf{g}}^{(t)}_i$ & Compressed gradient sketch: $\mathbf{R}^\top \nabla_\theta \ell(\mathcal{B}_i; \theta^{(t)})$ & $\mathbb{R}^k$ \\
+$\mathbf{u}^{(w)}$ & Hutchinson vector $w$ ($\mathbf{u}^{(w)} \sim \mathcal{N}(0, \mathbf{I}_d)$) & $\mathbb{R}^d$ \\
+$\hat{\mathbf{h}}^{(t)}_j$ & Diagonal Hessian estimate for batch $\mathcal{B}_j$ at step $t$ & $\mathbb{R}^d$ \\
+$\lambda_j^{(t)}$ & Scalar curvature measure: $(\nabla_\theta \ell(\mathcal{B}_j; \theta^{(t)}))^\top \operatorname{diag}(\hat{\mathbf{h}}^{(t)}_j) \, \nabla_\theta \ell(\mathcal{B}_j; \theta^{(t)})$ & Scalar \\
+\bottomrule
+\end{tabularx}
+\end{table}

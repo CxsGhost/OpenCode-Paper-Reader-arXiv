@@ -1,0 +1,8 @@
+\begin{abstract}
+Training data plays a central role in large language models (LLMs) optimization, motivating extensive research on data scheduling strategies.
+Most existing approaches concentrate on adjusting the overall data distribution but neglect the underlying interactions between samples during training. 
+However, we argue that such interactions cannot be overlooked, as real-world data samples frequently exhibit directional influences on each other, making the training order crucial. 
+Intuitively, we can prioritize train-units with greater influence to improves learning efficiency.
+In this work, we propose $D^3$, a \textbf{D}ynamic, \textbf{D}irectional graph-constrained \textbf{D}ata scheduling framework. $D^3$ formulates the complex interactions among train-units as a dynamic influence graph, where edges represent loss-based dependencies. It then solves a constrained optimization problem over this graph to derive the training order, which ensures that the data sequence respects the evolving information flow throughout training.
+Our approach is theoretically motivated and yields consistent improvements over existing data scheduling methods across both pre-training and post-training phases. Furthermore, for scalability, $D^3$ also employs an efficient approximation algorithm that keeps the additional computational overhead within a manageable range. For future research, the code is available at \url{https://github.com/xuyj233/D3}.
+\end{abstract}

@@ -1,0 +1,45 @@
+{
+  "title": "D³: Dynamic Directional Graph-Constrained Data Scheduling for LLM Training",
+  "title_arxiv_notation": "D$^3$: Dynamic Directional Graph-Constrained Data Scheduling for LLM Training",
+  "arxiv_id": "2605.31164",
+  "analyzed_version": "v1",
+  "submitted_at_utc": "2026-05-29T11:13:43Z",
+  "retrieved_on_local": "2026-11-20",
+  "timezone": "Asia/Shanghai",
+  "abstract_url": "https://arxiv.org/abs/2605.31164v1",
+  "source_url": "https://arxiv.org/src/2605.31164v1",
+  "pdf_url": "https://arxiv.org/pdf/2605.31164v1",
+  "source_format": "gzip-compressed tar archive",
+  "source_archive_bytes": 3926403,
+  "source_archive_sha256": "a0762de74031c1d38f2e41bd6c8df932612b40feaa5b74b762d61621d3a29e09",
+  "archive_members": 26,
+  "extraction": "解压前检查所有成员路径均位于 src 内，仅允许普通文件与目录；拒绝链接和特殊文件。",
+  "entrypoint": "src/main.tex",
+  "source_sections_read": [
+    "src/src/1_abstract.tex",
+    "src/src/2_introduction.tex",
+    "src/src/3_relatedwork.tex",
+    "src/src/4_method.tex",
+    "src/src/5_results.tex",
+    "src/src/6_conclusion.tex",
+    "src/src/A1_experimental_setting.tex",
+    "src/src/A2_more_results.tex",
+    "src/src/A3_proof.tex",
+    "src/src/impact_statement.tex"
+  ],
+  "figures_visually_checked": [
+    "src/icml2025/img/tradeoff.pdf",
+    "src/icml2025/img/hyperparameter_ablation.pdf"
+  ],
+  "figure_rendering": "使用 macOS sips 将源码中的单页 PDF 图件渲染到临时 PNG 后查看。",
+  "repository": {
+    "url": "https://github.com/xuyj233/D3",
+    "checked_on_local": "2026-11-20",
+    "latest_commit": "1c3110b713377deed2a44ab492556993e510cfa1",
+    "latest_commit_at_utc": "2026-06-04T05:13:30Z",
+    "visible_root_files": ["README.md"],
+    "status": "GitHub 页面与实时 API 根目录检查均仅见 README；说明工具包仍在准备，未见可运行实现。"
+  },
+  "evidence_boundary": "论文分数为作者报告，未独立训练复现；报告中的公式化简、四批次穷举及一维回归反例为本次独立核查。",
+  "backup_scope": "LaTeX、参考文献、样式文件与分析文档纳入本篇独立提交；源码 PDF 图件保留本地，依照仓库已有 *.pdf 忽略规则不纳入 Git；可按固定版本和归档哈希重新下载。"
+}

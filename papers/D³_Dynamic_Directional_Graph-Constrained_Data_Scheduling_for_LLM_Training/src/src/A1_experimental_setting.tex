@@ -1,0 +1,301 @@
+\section{Experimental Settings}
+\label{sec:exp_setting}
+
+\subsection{Benchmarks}
+Following standard protocols in the literature, we evaluate our method across two distinct stages: pre-training and post-training.
+\paragraph{Pretraining Evaluation.} 
+For the pre-training stage, we conduct a comprehensive evaluation focusing on both intrinsic language modeling and downstream reasoning capabilities. 
+Specifically, we first reserve $10\%$ of the pre-training data as a held-out validation set to PPL, which serves as a direct indicator of the model's convergence and linguistic mastery. 
+The statistical profile of the corpus used in this stage is summarized in Figure~\ref{fig:data_stats}. Complementing the internal PPL analysis, we further evaluate the model's capabilities across several fundamental benchmarks for linguistic understanding and commonsense reasoning. 
+Under a few-shot setting, we conduct evaluations on HellaSwag \citep{zellers2019hellaswag}, PIQA \citep{bisk2020piqa}, OpenBookQA \citep{mihaylov2018openbookqa}, COPA \citep{sarlin2020copa}, and WinoGrande \citep{sakaguchi2021winogrande}. 
+These tasks are designed to scrutinize the model's capacity for robust inference and world-knowledge retrieval, providing a holistic assessment of the pre-training quality without the need for task-specific fine-tuning.
+
+\paragraph{Posttraining Evaluation.} To evaluate the model's specialized capabilities after  post-training, we further benchmark its performance on complex math reasoning and code generation tasks. Specifically, we use GSM8K \citep{cobbe2021gsm8k} and MATH \citep{hendrycks2021math} to measure multi-step mathematical reasoning, and HumanEval \citep{chen2021evaluatinglargelanguagemodels} and MBPP \citep{austin2021program} to evaluate functional correctness in programming. Table \ref{tab:benchmarks} provides a comprehensive summary of the statistics and characteristics of these evaluation datasets.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{icml2025/img/token_statistics_visualization.pdf} 
+    \caption{Data statistics of the SlimPajama validation set used for PPL evaluation. (a) Token Frequency Word Cloud: visualizing common terms within the corpus. (b) Token Length Distribution: the samples follow a right-skewed distribution with a mean length of $1010.2$ and a median of $470.0$ tokens.}
+    \label{fig:data_stats}
+\end{figure}
+
+\begin{table*}[htbp]
+\centering
+\small
+\caption{
+Summary of evaluation benchmarks for Pre-training and Post-training stages. 
+All tasks are evaluated based on their respective standard metrics to ensure comparability with prior work.
+}
+\label{tab:benchmarks}
+\resizebox{0.82\textwidth}{!}{
+\begin{tabular}{llclll}
+\toprule
+\textbf{Stage} & \textbf{Benchmark} & \textbf{Size} & \textbf{Task Type} & \textbf{Domain Category} & \textbf{Metric} \\
+\midrule
+\multirow{5}{*}{\textbf{Pre-training}} 
+& HellaSwag & 10,042 & Multiple Choice & Commonsense Reasoning & Accuracy \\
+& PIQA      & 1,838  & Multiple Choice & Physical Commonsense  & Accuracy \\
+& OBQA      & 500    & Multiple Choice & Scientific Reasoning  & Accuracy \\
+& COPA      & 100    & Multiple Choice & Causal Reasoning      & Accuracy \\
+& WinoGrande& 1,267  & Multiple Choice & Linguistic Reasoning  & Accuracy \\
+\midrule
+\multirow{4}{*}{\textbf{Post-training}} 
+& GSM8K     & 1,319  & Question Answering & Grade School Math     & Exact Match \\
+& MATH      & 5,000  & Question Answering & Competition Mathematics & Exact Match \\
+& HumanEval & 164    & Code Generation    & Programming (Python)  & Pass@1 \\
+& MBPP      & 500    & Code Generation    & Programming (Python)  & Pass@1 \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
+
+
+\subsection{Training Datasets}
+Our selection of training corpora is strategically aligned with the parameter scale of the respective models. For GPT-2 Small and Medium, we employ SlimPajama, a highly refined and deduplicated corpus. Conversely, for the larger LLaMA-1.1B and LLaMA-3.2-3B models, we utilize The Pile. Given their significantly higher model capacity, these architectures are better suited to ingest the diverse and complex domain-specific knowledge (e.g., mathematics, legal documents, and scientific literature) provided by The Pile, thereby maximizing their multi-domain reasoning potential.  The specific data sources and their respective proportions within each dataset are summarized in Table~\ref{tab:dataset_mixture}.
+\begin{table}[t]
+\centering
+\caption{Detailed composition of our training datasets. Proportions are calculated based on byte size. Items marked with $\dagger$ indicate datasets with potential copyright restrictions.}
+\label{tab:dataset_mixture}
+\resizebox{0.52\textwidth}{!}{%
+% \small
+\begin{tabular}{lr | lr}
+\toprule
+\textbf{Data Source} & \textbf{Ratio (\%)} & \textbf{Data Source} & \textbf{Ratio (\%)} \\
+\midrule
+\multicolumn{4}{l}{\textit{SlimPajama-6B Mixture}} \\
+Common Crawl & 54.10 & ArXiv & 3.40 \\
+C4 & 28.70 & Wikipedia & 3.10 \\
+GitHub & 4.20 & StackExchange & 2.80 \\
+Books & 3.70 & & \\
+\midrule
+\midrule
+\multicolumn{4}{l}{\textit{The Pile Mixture}} \\
+Pile-CC & 18.21 & OpenSubtitles$^{\dagger}$ & 1.56 \\
+PubMed Central & 14.48 & Wikipedia (en) & 1.53 \\
+Books3$^{\dagger}$ & 12.14 & DM Mathematics & 1.24 \\
+OpenWebText2$^{\dagger}$ & 10.07 & Ubuntu IRC & 0.88 \\
+ArXiv & 9.01 & BookCorpus2$^{\dagger}$ & 0.76 \\
+Github & 7.63 & EuroParl & 0.74 \\
+FreeLaw & 6.15 & HackerNews & 0.63 \\
+Stack Exchange & 5.16 & YoutubeSubtitles$^{\dagger}$ & 0.60 \\
+USPTO Backgrounds & 3.67 & PhilPapers & 0.38 \\
+PubMed Abstracts & 3.09 & NIH ExPorter & 0.30 \\
+Gutenberg (PG-19) & 2.18 & Enron Emails & 0.14 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Backbone Models}
+We evaluate our proposed method across a spectrum of model scales and architectural designs, as summarized in Table~\ref{tab:model-arch}. Our experiments cover two representative families: the GPT-2 series Medium, representing classic decoder-only Transformers with absolute positional embeddings, and the Llama series (1.1B), incorporating modern advancements such as Rotary Positional Embeddings (RoPE), SwiGLU activation functions, and Grouped-Query Attention. 
+\begin{table}[ht]
+\centering
+\caption{Architectural configurations of the evaluated models. Models are grouped by family, covering a parameter range from 210M to 3B. $L$: Layers, $H$: Attention Heads, $d_{model}$: Embedding Dimension, $d_{ff}$: Hidden Dimension.}
+\label{tab:model-arch}
+\centering
+\resizebox{0.4\columnwidth}{!}{%
+\begin{tabular}{lcc}
+\toprule
+ &  \textbf{Llama-1.1B} & \textbf{GPT-2-Medium} \\
+\midrule
+Parameters      & 1.1B & 355M   \\
+Layers          & 22  & 36  \\
+Attention Heads & 32  & 24  \\
+Embedding Dim.  & 2048 & 768   \\
+Hidden Dim.     & 2048 & 3072  \\
+Max Seq. Length & 2048 & 512  \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+
+
+
+
+\subsection{Implement Details}
+\label{sec:impl_details}
+
+Our experimental framework is implemented using FP16 mixed-precision training to optimize computational throughput on a cluster equipped with two NVIDIA H200 GPUs. For model optimization, we employ the Adam optimizer with hyper-parameters $\beta_1 = 0.9$, $\beta_2 = 0.999$, and $\epsilon = 10^{-8}$, incorporating a weight decay coefficient of 0.01. The learning rate is managed via a cosine annealing scheduler, which begins with a 500-step linear warmup phase to a peak value of $5.0 \times 10^{-4}$, before decaying to a minimum of $1.0 \times 10^{-4}$. Regarding the configuration for influence estimation, we maintain a consistent batch size of 16 and fix the random seed to 32 to ensure reproducibility across all trials. A critical hyper-parameter in our framework is the scaling factor $\gamma$, which governs the intensity of the directional constraints. 
+Empirically, we observe that setting $\gamma$ proportional to the learning rate $\eta$, specifically $\gamma = 10^2 \eta$, yields the most stable and superior performance across various tasks. The maximum gradient dimension $k$ is specifically tuned for different architectures, set to 35,00 for GPT-series models and 5,000 for LlaMa-based experiments.  All other training configurations follow the standard settings of the respective foundation model baselines to ensure a fair comparison.
+
+\begin{algorithm}
+\caption{$D^{3}$: Influence-Aware Batch Scheduler}
+\label{alg:d3_app}
+\begin{algorithmic}[1]
+\REQUIRE Parameters $\theta^{(0)}$, data loader $\mathcal{D}$, learning rate $\eta$, 
+         look-ahead parameter $\gamma$, chunk size $L$, projection dim $k$
+\ENSURE Optimized parameters $\theta^{(T)}$
+\STATE Initialize random projection matrix $\mathbf{R} \in \mathbb{R}^{d \times k}$
+
+\FOR{step $t = 0$ \TO $T-1$}
+    \item[] \textit{// Phase 1: Compute compressed gradient information}
+    \STATE Sample $L$ batches $\{\mathcal{B}_\ell\}_{\ell=1}^L$ from $\mathcal{D}$
+    \STATE $\{\tilde{g}_\ell, \lambda_\ell\}_{\ell=1}^L \gets \textsc{Sketch}(\{\mathcal{B}_\ell\}, \theta^{(t)}, \mathbf{R})$
+    
+    \item[] \textit{// Phase 2: Build influence advantage matrix}
+    \STATE $\mathbf{S} \gets \textsc{Advantage}(\{\tilde{g}_\ell, \lambda_\ell\}, \gamma)$
+    
+    \item[] \textit{// Phase 3: Optimize ordering}
+    \STATE $\pi \gets \textsc{RSR}(\mathbf{S})$
+    
+    \item[] \textit{// Phase 4: Sequential update}
+    \STATE $\theta^{(t+1)} \gets \textsc{SGDUpdate}(\theta^{(t)}, \{\mathcal{B}_{\pi(r)}\}_{r=1}^L, \eta)$
+\ENDFOR
+\STATE \textbf{return} $\theta^{(T)}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Sketch (Phase 1)}
+\begin{algorithmic}[1]
+\REQUIRE Batches $\{\mathcal{B}_\ell\}$, parameters $\theta$, projection matrix $\mathbf{R}$
+\ENSURE Compressed gradients $\{\tilde{g}_\ell\}$, curvatures $\{\lambda_\ell\}$
+\FOR{each batch $\mathcal{B}_\ell$}
+    \STATE $g_\ell \gets \nabla_\theta \ell(\mathcal{B}_\ell; \theta)$
+    \STATE $\tilde{g}_\ell \gets \mathbf{R}^\top g_\ell$ \COMMENT{Compress gradient via random projection}
+    \STATE $\lambda_\ell \gets \textsc{EstimateCurvature}(g_\ell, \mathcal{B}_\ell, \theta)$ \COMMENT{Using Hutchinson method}
+\ENDFOR
+\STATE \textbf{return} $\{\tilde{g}_\ell, \lambda_\ell\}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Advantage (Phase 2)}
+\begin{algorithmic}[1]
+\REQUIRE Compressed gradients $\{\tilde{g}_\ell\}$, curvatures $\{\lambda_\ell\}$, look-ahead $\gamma$
+\ENSURE Advantage matrix $\mathbf{S} \in \mathbb{R}^{L \times L}$
+\STATE Initialize $\mathbf{S} \gets \mathbf{0}_{L \times L}$
+\FOR{$i = 1$ \TO $L$}
+    \FOR{$j = 1$ \TO $L$}
+        \STATE $\mathcal{I}_{i \to j} \gets -\gamma (\tilde{g}_j)^\top \tilde{g}_i + \frac{\gamma^2}{2} \lambda_j$
+        \STATE $\mathcal{I}_{j \to i} \gets -\gamma (\tilde{g}_i)^\top \tilde{g}_j + \frac{\gamma^2}{2} \lambda_i$
+        \STATE $\mathbf{S}_{ij} \gets \mathcal{I}_{j \to i} - \mathcal{I}_{i \to j}$
+    \ENDFOR
+\ENDFOR
+\STATE \textbf{return} $\mathbf{S}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{RSR (Phase 3)}
+\begin{algorithmic}[1]
+\REQUIRE Advantage matrix $\mathbf{S}$, maximum swaps $M = 100$
+\ENSURE Permutation $\pi$ representing the batch ordering
+\STATE Compute row sums $r_\ell \gets \sum_{j=1}^L \mathbf{S}_{\ell j}$ for $\ell=1,\dots,L$
+\STATE $\pi \gets \operatorname{argsort}(\{r_\ell\}, \text{descending})$ \COMMENT{Initial ordering by row sum}
+\FOR{$m = 1$ \TO $M$}
+    \STATE Randomly select indices $p, q$ with $1 \leq p < q \leq L$
+    \STATE Compute cost difference $\Delta\mathcal{C} \gets \mathbf{S}_{\pi(p),\pi(q)} + \sum_{k=p+1}^{q-1} (\mathbf{S}_{\pi(p),\pi(k)} + \mathbf{S}_{\pi(k),\pi(q)})$
+    \item[] \textit{// Swapping improves the objective}
+    \IF{$\Delta\mathcal{C} < 0$} 
+        \STATE Swap $\pi(p)$ and $\pi(q)$ in the permutation
+    \ENDIF
+\ENDFOR
+\STATE \textbf{return} $\pi$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{SGDUpdate (Phase 4)}
+\begin{algorithmic}[1]
+\REQUIRE Parameters $\theta$, ordered batches $\{\mathcal{B}_r\}$, learning rate $\eta$
+\ENSURE Updated parameters $\theta'$
+\STATE $\theta_{\text{current}} \gets \theta$
+\FOR{$r = 1$ \TO $\text{length}(\{\mathcal{B}_r\})$}
+    \STATE $\theta_{\text{current}} \gets \theta_{\text{current}} - \eta \cdot \nabla_\theta \ell(\mathcal{B}_r; \theta_{\text{current}})$
+\ENDFOR
+\STATE \textbf{return} $\theta_{\text{current}}$
+\end{algorithmic}
+\end{algorithm}
+
+
+
+\clearpage
+\section{Algorithmic Details of Candidate Solvers}
+\label{subsec:solver_details}
+
+In this section, we delineate the algorithmic foundations of the candidate solvers used to optimize the influence-aware scheduling objective. Each solver represents a distinct trade-off between computational complexity and the capacity to resolve non-transitive influence cycles. We consider three approaches: Row-Sum Sorting, Greedy Insertion, and the Random-Swap Refinement solver proposed in Section~\ref{subsec:solver}.
+
+\paragraph{Row-Sum Sorting (RS).}
+This baseline approach reduces the graph-structured optimization problem to a simple scalar ranking. For each batch $i$, we compute its aggregate advantage score as the row sum of the directional advantage matrix:
+\[
+u_i = \sum_{j=1}^{K} \mathbf{S}^{(t)}_{ij}.
+\]
+Since $\mathbf{S}^{(t)}_{ij} > 0$ indicates that placing batch $i$ before $j$ yields greater loss reduction than the reverse order, a larger $u_i$ suggests that batch $i$ exerts stronger global positive influence when scheduled earlier. The schedule $\pi$ is generated by sorting batches in \textbf{descending} order of $u_i$. The time complexity is $O(K^2)$ for computing all row sums plus $O(K \log K)$ for sorting, totaling $O(K^2)$.
+
+\paragraph{Greedy Insertion (GI).} 
+To better capture local dominance relations while maintaining tractability, the Greedy Insertion solver constructs the sequence incrementally. Starting with an empty schedule $\pi = [\,]$, at each step $s = 1, \dots, K$, the algorithm selects the batch that maximizes its total advantage over all remaining (unscheduled) batches:
+\[
+i^* = \arg\max_{i \in \mathcal{C}} \sum_{j \in \mathcal{C} \setminus \{i\}} \mathbf{S}^{(t)}_{ij},
+\]
+where $\mathcal{C}$ denotes the set of batches not yet scheduled. The selected batch $i^*$ is appended to $\pi$, and removed from $\mathcal{C}$. This process repeats until $\mathcal{C}$ is empty. The GI strategy has time complexity $O(K^2)$ but often produces higher-quality schedules than RS by considering pairwise relations during construction.
+
+\paragraph{Random-Swap Refinement (RSR).}
+As detailed in Section~\ref{subsec:solver}, our proposed solver begins with an initial ordering (e.g., from RS or GI) and iteratively improves it through random pairwise swaps. In each iteration, two distinct positions $p$ and $q$ ($p < q$) are chosen uniformly at random. Let $i = \pi(p)$ and $j = \pi(q)$. The change in total violation cost $\Delta\mathcal{C}$ resulting from swapping $i$ and $j$ is computed as:
+\[
+\Delta\mathcal{C} = \mathbf{S}^{(t)}_{ij} + \sum_{k \in I(p,q)} \bigl( \mathbf{S}^{(t)}_{ik} + \mathbf{S}^{(t)}_{kj} \bigr),
+\]
+where $I(p,q) = \{\pi(m) \mid p < m < q\}$ is the set of batches between positions $p$ and $q$ in the current schedule. If $\Delta\mathcal{C} < 0$, the swap is accepted; otherwise, the current schedule is retained. This process continues for a predefined number of iterations $T$, yielding a total complexity of $O(K^2 + TK)$. The RSR solver effectively escapes local optima and can resolve complex cycles through its stochastic exploration of the permutation space.
+
+\subsection{Numerical Illustration}
+\label{subsec:numerical_illustration}
+
+We provide a concrete illustration with $K=5$ micro-batches. The directional advantage matrix $\mathbf{S}$ contains a non-transitive cycle among batches 3, 4, and 5:
+\[
+\mathbf{S} = \begin{bmatrix}
+0 & -10 & 2 & 1 & 8 \\
+10 & 0 & 1 & 0 & 2 \\
+-2 & -1 & 0 & 10 & -5 \\
+-1 & 0 & -10 & 0 & 10 \\
+-8 & -2 & 5 & -10 & 0
+\end{bmatrix}.
+\]
+Our objective is to maximize $\mathcal{F}(\pi) = \sum_{i < j} \mathbf{S}_{\pi(i)\pi(j)}$.
+
+\paragraph{Row-Sum Sorting.} The row sums are $u = [1, 13, 2, -1, -15]$. Sorting in descending order yields $\pi_{\text{RS}} = [2, 3, 1, 4, 5]$. The objective value is $\mathcal{F}(\pi_{\text{RS}}) = 35$.
+
+\paragraph{Greedy Insertion.} The algorithm proceeds as follows. Step 1: $\mathcal{C}=\{1,2,3,4,5\}$. Batch 2 has the highest total advantage (13) and is scheduled first. Step 2: $\mathcal{C}=\{1,3,4,5\}$. Batch 1 has the highest advantage (11) and is scheduled second. Step 3: $\mathcal{C}=\{3,4,5\}$. Batch 3 is selected (advantage 5). Step 4: $\mathcal{C}=\{4,5\}$. Batch 4 is selected ($\mathbf{S}_{4,5}=10 > \mathbf{S}_{5,4}=-10$). Step 5: Batch 5 is appended. The final schedule is $\pi_{\text{GI}} = [2, 1, 3, 4, 5]$ with $\mathcal{F}(\pi_{\text{GI}}) = 35$.
+
+\paragraph{Random-Swap Refinement.} Starting from $\pi_0 = \pi_{\text{RS}} = [2,3,1,4,5]$, we perform sample swap trials. Trial 1 (swap positions 2 and 4): $i=3, j=4, I=\{1\}, \Delta\mathcal{C} = \mathbf{S}_{3,4} + (\mathbf{S}_{3,1}+\mathbf{S}_{1,4}) = 10 + (-2+1) = 9 > 0$, swap rejected. Trial 2 (swap positions 3 and 5): $i=1, j=5, I=\{4\}, \Delta\mathcal{C} = \mathbf{S}_{1,5} + (\mathbf{S}_{1,4}+\mathbf{S}_{4,5}) = 8 + (1+10) = 19 > 0$, rejected. Trial 3 (swap positions 1 and 3): $i=2, j=1, I=\{3\}, \Delta\mathcal{C} = \mathbf{S}_{2,1} + (\mathbf{S}_{2,3}+\mathbf{S}_{3,1}) = 10 + (1-2) = 9 > 0$, rejected. The schedule remains $[2,3,1,4,5]$ with $\mathcal{F}=35$. This example shows the solver's local search nature; with more trials it can escape suboptimal configurations (e.g., $[2,1,4,3,5]$ achieves $\mathcal{F}=37$).
+
+\clearpage
+\section{Formulations of Influence Estimation Methods}
+\label{sec:influence_derivations}
+
+This section formally defines the influence functions evaluated in our experiments. All methods are based on the training influence prediction (Definition~\ref{def:training_influence}) and its second-order approximation (Proposition~\ref{prop:influence_properties}), trading off computational accuracy against efficiency.
+
+\paragraph{Random Baseline}
+The random baseline follows a standard stochastic optimization procedure without any influence-based reordering. At each step $t$, a random permutation $\pi \in \mathcal{S}_K$ is generated to process training batches:
+\[
+\pi = \text{random\_permutation}([1, 2, \dots, K]).
+\]
+
+\paragraph{First-Order Symmetric Method}
+This method characterizes influence solely through first-order gradient interactions. Using the approximate first-order term, the influence of batch $i$ on batch $j$ is defined as:
+\[
+\mathcal{I}^{(1)}_{i \to j}(t) = -\eta \, \nabla_\theta \ell(\mathcal{B}_j; \theta^{(t)})^\top \nabla_\theta \ell(\mathcal{B}_i; \theta^{(t)}) = -\eta \langle g_i, g_j \rangle,
+\]
+where $g_i = \nabla_\theta \ell(\mathcal{B}_i; \theta^{(t)})$ denotes the mean gradient of batch $i$, and $\eta$ is the learning rate. This formulation is symmetric with respect to $i$ and $j$.
+
+\paragraph{Fisher Information Matrix Method}
+The Fisher method approximates the per-batch Hessian through the Fisher information matrix computed over all batches. First, the empirical Fisher matrix is calculated:
+\[
+\text{FIM} = \frac{1}{K} \sum_{k=1}^K g_k g_k^\top.
+\]
+The influence is then obtained by combining the first-order inner product with a FIM-weighted second-order term:
+\[
+\mathcal{I}_{\text{Fisher}, i \to j}(t) = -\eta \langle g_i, g_j \rangle + \frac{\eta^2}{2} g_i^\top \text{FIM} \, g_j.
+\]
+Here, the second-order term approximates $\mathcal{I}^{(2)}_{i \to j}(t)$ using the shared Fisher matrix instead of the batch-specific Hessian $\nabla^2 \ell(\mathcal{B}_j; \theta^{(t)})$.
+
+
+
+\paragraph{Diagonal Hessian via Hutchinson}
+The $D^3$ framework achieves its highest precision using Sophia-based estimation. We employ the Hutchinson randomized estimator to approximate a shared diagonal Hessian via $N=5$ samples of Hessian-vector products:
+\[
+\hat{h}_{\text{diag}} = \frac{1}{N} \sum_{k=1}^{N} u^{(k)} \odot (H u^{(k)}), \quad u^{(k)} \sim \mathcal{N}(0, I_d),
+\]
+where $H$ is the Hessian of the total loss. For each batch $j$, the curvature scalar is computed as $\lambda_j = g_j^\top \text{diag}(\hat{h}_{\text{diag}}) g_j$. The influence is then approximated as:
+\[
+\mathcal{I}_{\text{Sophia}, i \to j}(t) = -\eta \langle g_i, g_j \rangle + \frac{\eta^2}{2} \lambda_j.
+\]
+Compared to heuristic scaling, this formulation provides a more principled characterization of the loss landscape geometry, albeit using a shared Hessian approximation and batch-specific curvature scalars.

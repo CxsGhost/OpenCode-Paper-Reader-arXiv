@@ -1,0 +1,7 @@
+\vspace{-1mm}
+\section{Conclusion}
+In this work, we introduced $D^3$, a principled framework that optimizes the training trajectory of LLMs by exploiting the non-exchangeability of training samples. By formalizing second-order asymmetric interactions through a dynamic influence graph and employing scalable batch-level reordering, we demonstrate that ``when a model learns'' is as critical as ``what it learns." Empirical results across pre-training and reasoning benchmarks confirm that $D^3$ effectively accelerates convergence and improves performance, providing a path-dependent perspective for data-centric LLMs training.
+
+\vspace{-1mm}
+\section*{Limitations}
+While $D^3$ demonstrates significant empirical gains, certain constraints remain to be addressed in future work. The resource consumption could be further compressed through more advanced gradient flow techniques. More efficient ways to extract the scheduling signal, like layer-selective gradient compression in LLMs, have not been explored. Furthermore, our theoretical analysis of convergence acceleration is currently grounded in a simplified linear regression proxy to intuitively verify the method. Extending these guarantees to the high-dimensional, non-convex landscape of Transformers remains a fundamental theoretical challenge that warrants deeper investigation. 

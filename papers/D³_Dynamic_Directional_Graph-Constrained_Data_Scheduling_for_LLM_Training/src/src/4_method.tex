@@ -1,0 +1,257 @@
+\section{Methodology}
+
+In this section, we begin with a formal formulation of learning with data scheduling. In Section~\ref{sec:dynamic-conditioning}, we introduce the construction of an influence graph, which captures how loss curvatures induce asymmetric dependencies among training units. Subsequently, in Section~\ref{sec:influence_optimization}, we formulate the data scheduling task as a constrained optimization problem governed by the influence graph. Section~\ref{subsec:solver} presents an efficient solver for this problem. Finally, the implementation of $D^3$ is detailed in Section~\ref{sec:implementation}, which focuses on the practical approximations designed to ensure scalability and efficiency in large-scale training settings.
+
+\subsection{Problem Formulation}
+We formalize one epoch of LLM training as a discrete dynamical system over the parameter space $\Theta \subseteq \mathbb{R}^d$. 
+Given a training dataset $\mathcal{D} = \{z_i\}_{i=1}^N$, we consider a fixed partition into $K$ disjoint batches $\mathcal{P} = \{\mathcal{B}_1, \dots, \mathcal{B}_K\}$ of equal size $B = N/K$ (assuming $N$ is divisible by $K$). 
+The empirical risk on a batch $\mathcal{B} \in \mathcal{P}$ is defined as:
+\(
+    \ell(\mathcal{B}; \theta) \;=\; \frac{1}{B} \sum_{z \in \mathcal{B}} \ell(z; \theta).
+\) A data schedule is specified by a permutation $\pi \in \mathcal{S}_K$, where $\mathcal{S}_K$ denotes the symmetric group of degree $K$. 
+When $B = 1$ (hence $K = N$), the schedule operates at the sample level; for $B > 1$, it characterizes batch-level scheduling.
+At each discrete step $t \in \{1, \dots, T\}$, where $T = K$ for one epoch, the model state is updated by a stochastic gradient operator $\mathcal{T}_{\pi(t)}: \Theta \to \Theta$:
+\[
+    \theta^{(t)} \;=\; \mathcal{T}_{\pi(t)}\bigl(\theta^{(t-1)}\bigr) 
+    \;=\; \theta^{(t-1)} - \eta \, \nabla_{\!\theta}\, \ell\bigl(\mathcal{B}_{\pi(t)}; \theta^{(t-1)}\bigr),
+\]
+where $\eta > 0$ is the learning rate. 
+The terminal state after processing all $K$ batches is the composition:
+\[
+    \theta^{(T)}(\pi) \;=\; \bigl(\mathcal{T}_{\pi(T)} \circ \mathcal{T}_{\pi(T-1)} \circ \cdots \circ \mathcal{T}_{\pi(1)}\bigr)(\theta^{(0)}).
+\]
+Because gradient operators are generally non-commutative in non-convex landscapes, the terminal state $\theta^{(T)}(\pi)$ is path-dependent: different permutations $\pi$ lead to different final parameters and hence different generalization performance. 
+The data scheduling problem aims to find a permutation that minimizes the expected risk on a test distribution $\mathcal{D}_{\text{test}}$:
+\[
+    \pi^* \;=\; \arg\min_{\pi \in \mathcal{S}_K} 
+    \mathbb{E}_{z \sim \mathcal{D}_{\text{test}}}\Bigl[\,\ell\bigl(z; \theta^{(T)}(\pi)\bigr)\Bigr].
+\]
+We emphasize that this is a combinatorial optimization over $K!$ possible schedules, which is intractable for large $K$.
+Our work seeks efficient algorithms to approximate $\pi^*$ by exploiting the interaction between training batches. 
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.8\linewidth]{icml2025/img/pipeline0127new.pdf}
+    \caption{\textbf{Overview of the $D^3$ scheduling framework.} Given $B$ micro-batches and the current parameter state $\theta^{(t)}$, the scheduler evaluates pairwise interactions by computing batch gradients and second-order curvature terms. These interactions are formalized into a directional influence matrix $\mathbf{S}^{(t)}$, which induces a dynamic influence graph. A graph-based solver then optimizes the sequence over this graph to produce the learned training order $\pi^{(t)}$, which is applied during SGD updates to facilitate a more efficient optimization trajectory.}
+    \label{fig:pipeline}
+\end{figure*}
+\subsection{The Construction of Influence Graph}
+\label{sec:dynamic-conditioning}
+To characterize the interactions among training batches during optimization, we introduce the concept of training influence prediction. This measure, formally defined below, predicts how the loss of one training unit would change if the model were updated using the gradient of another one.
+\begin{tcolorbox}[colback=lightpurple, colframe=lightpurple, sharp corners=all, boxrule=0mm, boxsep=0.5mm, left=1.5mm, right=1.5mm, top=1.5mm, bottom=1.5mm]
+\begin{definition}[Training Influence Prediction]
+\label{def:training_influence}
+Let $\theta^{(t)}$ be the model parameters at optimization step $t$. Consider a hypothetical update using the gradient from batch $\mathcal{B}_i$:
+\[
+\theta_i^{(t+1)} \;:=\; \theta^{(t)} - \gamma \, \nabla_{\!\theta}\, \ell(\mathcal{B}_i; \theta^{(t)}),
+\]
+where $\gamma > 0$ is a look-ahead parameter that controls the step size for influence estimation. 
+The training influence of batch $\mathcal{B}_i$ on batch $\mathcal{B}_j$ at step $t$ is defined as:
+\[
+\mathcal{I}_{i \to j}(t) \;:=\; \ell\bigl(\mathcal{B}_j; \theta_i^{(t+1)}\bigr) - \ell\bigl(\mathcal{B}_j; \theta^{(t)}\bigr).
+\]
+\end{definition}
+\end{tcolorbox}
+By varying \(\gamma\), this formulation allows us to probe interactions at different temporal scales: small values of \(\gamma\) reflect short-term and local effects, while larger values of \(\gamma\) approximate accumulated and long-term influences.
+
+Intuitively, more negative influence values correspond to greater loss decrement on $\mathcal{B}_j;$ resulted from the gradient descent on $\mathcal{B}_i$. 
+We have the following second-order approximation of the training influence in Proposition~\ref{prop:influence_properties}, 
+which shows that training influence is symmetric to the first order but becomes asymmetric when curvature effects are considered.
+
+
+
+
+\begin{tcolorbox}[colback=lightpurple, colframe=lightpurple, sharp corners=all, boxrule=0mm, boxsep=0.5mm, left=1.5mm, right=1.5mm, top=1.5mm, bottom=1.5mm]
+\begin{proposition}[Local Structure of Influence Prediction]
+\label{prop:influence_properties}
+Assume that $\ell(\cdot;\theta)$ is twice differentiable. 
+A second-order Taylor expansion gives
+{\small
+\begin{equation*}
+    \begin{aligned} \mathcal{I}_{i \to j}(t) &= -\gamma \, \underbrace{\nabla_\theta \ell(\mathcal{B}_j;\theta^{(t)})^\top \nabla_\theta \ell(\mathcal{B}_i;\theta^{(t)})}_{\mathcal{I}_{i \to j}^{(1)}(t)} \\ &\quad + \frac{\gamma^2}{2} \underbrace{\nabla_\theta \ell(\mathcal{B}_i;\theta^{(t)})^\top \nabla_\theta^2 \ell(\mathcal{B}_j;\theta^{(t)}) \nabla_\theta \ell(\mathcal{B}_i;\theta^{(t)})}_{\mathcal{I}_{i \to j}^{(2)}(t) }\\ &\quad+ o(\gamma^2). \end{aligned}
+\end{equation*}
+}
+\end{proposition} 
+\end{tcolorbox}
+Obviously, the first-order influence term is pairwise symmetric: 
+\(
+\mathcal{I}_{i \to j}^{(1)}(t) = \mathcal{I}_{j \to i}^{(1)}(t),
+\)
+while the second-order influence term is asymmetric: 
+\(
+\mathcal{I}_{i \to j}^{(2)}(t) \ne \mathcal{I}_{j \to i}^{(2)}(t),
+\)
+due to the per-batch Hessian $\nabla_\theta^2 \ell(\mathcal{B}_j;\theta^{(t)})$. 
+
+At the same time, since $\mathcal{I}_{i \to j}(t)$ depends on the current parameter state $\theta^{(t)}$, the above interaction evolves throughout optimization, naturally inducing a dynamic and directed relation among training samples, 
+which can be further characterized as a dynamic directed graph structure.
+
+% As shown in Definition~\ref{def:dynamic_influence_graph}, 
+
+
+\begin{tcolorbox}[colback=lightpurple, colframe=lightpurple, sharp corners=all, boxrule=0mm, boxsep=0.5mm, left=1.5mm, right=1.5mm, top=1.5mm, bottom=1.5mm]
+\begin{definition}[Influence Graph]
+\label{def:dynamic_influence_graph}
+At step $t$, the influence graph is a
+directed weighted graph $\mathcal{G}^{(t)} = (\mathcal{V}, \mathcal{E}^{(t)})$,
+where each node $i \in \mathcal{V}$ corresponds to a training batch $\mathcal{B}_i$.
+A directed edge $(i,j) \in \mathcal{E}^{(t)}$ exists if
+$\mathcal{I}_{i \to j}(t) \neq 0$, with weight
+$\mathcal{I}_{i \to j}(t)$.
+The graph evolves over time through its dependence on $\theta^{(t)}$.
+Equivalently, $\mathcal{G}^{(t)}$ can be encoded by an adjacency matrix
+$\mathbf{A}^{(t)} \in \mathbb{R}^{K \times K}$ with entries
+\(
+\mathbf{A}^{(t)}_{ij} = \mathcal{I}_{i \to j}(t).
+\)
+\end{definition}
+\end{tcolorbox}
+\subsection{Influence Graph-Constrained Optimization}
+\label{sec:influence_optimization}
+The influence graph $\mathcal{G}^{(t)}$ (Definition~\ref{def:dynamic_influence_graph}) captures asymmetric dependencies among batches, but it does not directly prescribe an ordering for sequential training. To determine an optimal sequence, we transform the graph into a linear chain that respects strong directional preferences while resolving conflicts from cycles. We formalize these preferences using a directional advantage matrix that quantifies the relative benefit of training one batch before another.
+
+\begin{tcolorbox}[colback=lightpurple, colframe=lightpurple, sharp corners=all, boxrule=0mm, boxsep=0.5mm, left=1.5mm, right=1.5mm, top=1.5mm, bottom=1.5mm]
+\begin{definition}[Influence Advantage Graph]
+\label{def:influence_advantage_graph}
+Given the influence graph $\mathcal{G}^{(t)}$ with adjacency matrix $\mathbf{A}^{(t)}$, 
+we define the influence advantage graph as the same structure augmented with a directional advantage matrix 
+\[
+\mathbf{S}^{(t)} := \mathbf{A}^{(t)\top} - \mathbf{A}^{(t)},
+\]
+where $\mathbf{S}^{(t)}_{ij} = \mathcal{I}_{j \to i}(t) - \mathcal{I}_{i \to j}(t)$ quantifies the advantage of training $\mathcal{B}_i$ before $\mathcal{B}_j$.
+\end{definition}
+\end{tcolorbox}
+
+An edge $(i,j)$ with positive directional advantage $\mathbf{S}^{(t)}_{ij} > 0$ corresponds to $\mathcal{I}_{i \to j}(t) < \mathcal{I}_{j \to i}(t)$,
+indicating that training batch $\mathcal{B}_i$ before $\mathcal{B}_j$ yields greater cumulative loss improvement than the reverse order.
+The set of dominance constraints is therefore
+{
+\setlength{\abovedisplayskip}{8pt}
+\setlength{\belowdisplayskip}{8pt}
+\[
+\mathcal{E}^{(t)}_{\mathrm{dom}} := \{(i,j) \mid \mathbf{S}^{(t)}_{ij} > 0\} = \{(i,j) \mid \mathcal{I}_{i \to j}(t) < \mathcal{I}_{j \to i}(t)\}.
+\]
+}
+
+Transforming the fully connected influence advantage graph into a linear chain incurs a cost. Each edge with positive directional advantage that is contradicted by the ordering contributes a penalty. 
+
+Formally, let $\pi^{(t)} \in \mathcal{S}_K$ be a batch ordering, where $\pi^{(t)}(s)=k$ indicates that batch $\mathcal{B}_k$ is placed at position $s$. 
+Define its inverse mapping $\sigma^{(t)}: \{1,\dots,K\} \to \{1,\dots,K\}$ by $\sigma^{(t)}(k)=s$ whenever $\pi^{(t)}(s)=k$; then $\sigma^{(t)}(k)$ gives the position of batch $\mathcal{B}_k$.
+Both $\pi^{(t)}$ and $\sigma^{(t)}$ are bijections and belong to $\mathcal{S}_K$, representing the same ordering. Using $\sigma^{(t)}$ as the decision variable, the scheduling problem minimizes the total penalty from violated directional advantages:
+{
+\setlength{\abovedisplayskip}{8pt}
+\setlength{\belowdisplayskip}{8pt}
+\[
+\sigma^{(t)\star} = \arg\min_{\sigma \in \mathcal{S}_K} \sum_{i \ne j} \max\!\bigl(0, \,\mathbf{S}^{(t)}_{ij}\bigr) \cdot \mathbb{I}\bigl[\sigma(j) < \sigma(i)\bigr].
+\]
+}
+If $\mathbf{S}^{(t)}_{ij} > 0$ (i.e., edge $(i,j)$ favors $i$ before $j$) but $\sigma(j) < \sigma(i)$ in the ordering, the edge is violated and incurs cost $\mathbf{S}^{(t)}_{ij}$.
+When the graph is acyclic, there exists an ordering with zero cost, corresponding to a topological sort of the graph; otherwise, cycles force trade-offs, and the optimal ordering minimizes the total violation penalty.
+
+
+\subsection{Solving the Scheduling Optimization}
+\label{subsec:solver}
+
+We propose a lightweight solver, Random-Swap Refinemen (RSR), to approximately minimize the violation cost. 
+The solver operates in two stages: first, it computes an initial ordering based on the advantage matrix row sums; second, it refines this ordering through random pairwise swaps.
+
+\paragraph{Initial ordering via row sums.}
+For each batch $i$, compute the row sum $r_i = \sum_{j=1}^K \mathbf{S}^{(t)}_{ij}$. 
+Since a positive entry $\mathbf{S}^{(t)}_{ij}$ indicates that placing $i$ before $j$ is beneficial, a larger $r_i$ suggests that batch $i$ has a global advantage when scheduled earlier. 
+We therefore sort the batches in decreasing order of $r_i$ to obtain an initial permutation $\pi_0$.
+
+
+\paragraph{Random-swap refinement.}
+Starting from $\pi_0$, we perform up to $M$ random pairwise swap trials. 
+In each trial, we randomly choose two distinct positions $p$ and $q$ (with $p<q$) and consider swapping the batches at these positions. 
+Let $i = \pi(p)$ and $j = \pi(q)$. 
+The change in violation cost $\Delta\mathcal{C}$ due to swapping $i$ and $j$ can be computed efficiently by observing that only the relative order of $i$ and $j$ with respect to each other and to the batches between them changes. 
+Specifically, let $I(p,q) = \{\pi(k) \mid p < k < q\}$ be the set of batches between positions $p$ and $q$. 
+Then:
+{
+\setlength{\abovedisplayskip}{8pt}
+\setlength{\belowdisplayskip}{8pt}
+\[
+\Delta\mathcal{C} = \mathbf{S}^{(t)}_{ij} + \sum_{k \in I(p,q)} \bigl(\mathbf{S}^{(t)}_{ik} + \mathbf{S}^{(t)}_{kj}\bigr).
+\]
+If $\Delta\mathcal{C} < 0$, the swap is accepted and $\pi$ is updated accordingly.
+}
+
+\paragraph{Complexity analysis.}
+While this random‑swap heuristic does not guarantee global optimality, it provides a computationally efficient method to construct a high‑quality ordering that respects most directional advantages. The initial ordering requires computing all row sums and sorting, which takes $O(K^2)$ time. Each swap trial evaluates $\Delta\mathcal{C}$ in $O(|I(p,q)|)$ time, bounded by $O(K)$ in the worst case. Hence, the total time for $M$ trials is $O(MK)$, and the overall complexity of the solver is $O(K^2 + MK)$.
+
+
+
+\subsection{The Detailed Implementation of $D^3$}\label{sec:implementation}
+
+Efficient training influence scheduling for LLMs must address two scaling issues: a large sample count $N$ and high-dimensional gradients $\mathbb{R}^d$ (with $d \sim 10^9$–$10^{12}$). Computing pairwise influences and solving the exact ordering problem is infeasible at this scale. We therefore introduce two approximations: chunk-wise internal reordering and gradient compression for influence propagation. 
+
+\paragraph{Chunk-wise Internal Reordering.}
+To scale to large $K$, we adopt a stochastic chunking strategy. At each step $t$, we randomly sample $L \ll K$ batches to form a chunk $\mathcal{C}^{(t)}$. The two-stage solver is then applied within $\mathcal{C}^{(t)}$ to reorder these $L$ batches based on their $L \times L$ advantage sub-matrix. Batches outside the chunk keep their relative order. This reduces per-step complexity from $O(K^2)$ to $O(L^2 + ML)$ and ensures all batches are gradually refined over time through repeated sampling.
+
+
+\paragraph{Gradient information compression.}
+To handle extreme gradient dimensionality, we project each batch gradient into a low-dimensional manifold using a fixed Gaussian random matrix $\mathbf{R} \in \mathbb{R}^{d \times k}$ ($k \ll d$). This Johnson–Lindenstrauss projection approximately preserves inner products with high probability~\cite{DBLP:conf/pods/Achlioptas01}. For the gradient of batch $\mathcal{B}_i$, denoted as $\mathbf{g}^{(t)}_i = \nabla_\theta \ell(\mathcal{B}_i; \theta^{(t)})$, we compute its low-dimensional sketch $\tilde{\mathbf{g}}^{(t)}_i = \mathbf{R}^\top \mathbf{g}^{(t)}_i \in \mathbb{R}^k$. The first-order influence term can then be efficiently approximated as:
+{
+\setlength{\abovedisplayskip}{8pt}
+\setlength{\belowdisplayskip}{8pt}
+\[
+\mathcal{I}^{(1)}_{i \to j}(t) = \bigl(\mathbf{g}^{(t)}_j\bigr)^\top \mathbf{g}^{(t)}_i \;\approx\; \bigl(\tilde{\mathbf{g}}^{(t)}_j\bigr)^\top \tilde{\mathbf{g}}^{(t)}_i.
+\]
+}
+This compressed inner product allows us to compute the advantage matrix entries $\mathbf{S}^{(t)}_{ij}$ with $O(dk + k)$ memory and time per pair, instead of $O(d)$.
+
+\paragraph{Hessian approximation.}
+For the second-order term, we avoid the full Hessian by adopting a diagonal approximation via Hutchinson estimation~\cite{DBLP:conf/iclr/Liu0HL024}. Using $W$ Hutchinson vectors $\mathbf{u}^{(w)} \sim \mathcal{N}(0, \mathbf{I}_d)$, we estimate the diagonal Hessian for batch $\mathcal{B}_j$ as
+{
+\setlength{\abovedisplayskip}{8pt}
+\setlength{\belowdisplayskip}{8pt}
+\[
+\hat{\mathbf{h}}^{(t)}_j = \frac{1}{W} \sum_{w=1}^{W} \mathbf{u}^{(w)} \odot \bigl( \nabla^2_\theta \ell(\mathcal{B}_j; \theta^{(t)}) \, \mathbf{u}^{(w)} \bigr),
+\]
+}
+where $\odot$ denotes the Hadamard product. To avoid storing the $d$-dimensional vector $\hat{\mathbf{h}}^{(t)}_j$ for every batch, we project the curvature onto the gradient direction, obtaining a scalar measure:
+\[
+\lambda_j^{(t)} = \bigl(\mathbf{g}^{(t)}_j\bigr)^\top \operatorname{diag}\bigl(\hat{\mathbf{h}}^{(t)}_j\bigr) \, \mathbf{g}^{(t)}_j.
+\]
+We then approximate the second-order influence term as $\mathcal{I}^{(2)}_{i \to j}(t) \;\approx\; \frac{\gamma^2}{2} \, \lambda_j^{(t)}$. Combining with the compressed first-order term yields the final efficient influence estimate:
+{
+\setlength{\abovedisplayskip}{8pt}
+\setlength{\belowdisplayskip}{8pt}
+\[
+\mathcal{I}_{i \to j}(t) \;\approx\; - \gamma \, \bigl(\tilde{\mathbf{g}}^{(t)}_j\bigr)^\top \tilde{\mathbf{g}}^{(t)}_i \;+\; \frac{\gamma^2}{2} \, \lambda_j^{(t)}.
+\]
+}
+In practice, we use a small $W = 5$ which provides a good efficiency-accuracy trade-off.
+
+\paragraph{The Overall Pipeline.} Based on the above approximations, as shown in Algorithm~\ref{alg:d3} and Figure~\ref{fig:pipeline}, $D^3$ operates through four sequential phases at each training step. We begin by sampling candidate micro-batches and computing their low-dimensional gradient representations. These representations are then used to construct a preference matrix based on directional influence scores between batches. The matrix is subsequently fed to the RSR solver to determine the optimal training order. Finally, model parameters are updated sequentially.
+
+\begin{algorithm}
+\caption{The Overall Pipeline of $D^3$}
+\label{alg:d3}
+\begin{algorithmic}[1]
+\REQUIRE Parameters $\theta^{(0)}$, data loader $\mathcal{D}$, learning rate $\eta$, look-ahead parameter $\gamma$, chunk size $L$, projection dim $k$
+\ENSURE Optimized parameters $\theta^{(T)}$
+
+\STATE Initialize random projection matrix $\mathbf{R} \in \mathbb{R}^{d \times k}$
+
+\FOR{step $t = 0$ \textbf{to} $T-1$}
+    \item[] \textit{// Phase 1: Compute compressed gradient information}
+    \STATE Sample $L$ batches $\{\mathcal{B}_\ell\}_{\ell=1}^L$ from $\mathcal{D}$
+\STATE $\{\tilde{g}_\ell, \lambda_\ell\}_{\ell=1}^L \gets 
+      \textsc{Sketch}($
+\STATE $\qquad \{\mathcal{B}_\ell\}, \theta^{(t)}, \mathbf{R})$
+    \item[] \textit{// Phase 2: Build influence advantage matrix}
+    \STATE $\mathbf{S} \gets \textsc{Advantage}(\{\tilde{g}_\ell, \lambda_\ell\}, \gamma)$
+    
+    \item[] \textit{// Phase 3: Optimize ordering}
+    \STATE $\pi \gets \textsc{RSR}(\mathbf{S})$
+    
+    \item[] \textit{// Phase 4: Sequential update}
+    \STATE $\theta^{(t+1)} \gets \textsc{SGDUpdate}(\theta^{(t)}, \{\mathcal{B}_{\pi(r)}\}_{r=1}^L, \eta)$
+\ENDFOR
+
+\STATE \textbf{return} $\theta^{(T)}$
+\end{algorithmic}
+\end{algorithm}
+
+

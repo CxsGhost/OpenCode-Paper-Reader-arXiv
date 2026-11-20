@@ -1,0 +1,157 @@
+\section{Experiments}
+In this section, we first describe the benchmarks and baselines to ensure reproducibility and fair comparison. The following subsections then present analyses of pretraining and post-training performance, component ablation studies, the effects of key hyperparameters, and computational efficiency. Extended experimental details and additional results are provided in Appendices~\ref{sec:exp_setting} and~\ref{sec:app-more-results}, respectively.
+\begin{table*}[htbp]
+\centering
+\caption{Pre-training performance on SlimPajama. All models utilize the GPT-2 Medium (355M) architecture and are trained on 100B tokens. The ``Aggregated Avg.'' is the arithmetic mean of the few-shot commonsense reasoning benchmarks shown below (HellaSwag, PIQA, OBQA, COPA, and WinoGrande). Subscripts denote the relative improvement or degradation compared to the strongest baseline. Best results are highlighted in bold. Detailed dataset statistics and model configurations are provided in Appendix ~\ref{sec:exp_setting}, while extended results on larger-scale pre-training are discussed in Appendix~\ref{sec:app-more-results}.}
+\label{tab:pretraining_results}
+\vspace{-1mm} 
+% \renewcommand{\arraystretch}{1.1}
+\resizebox{0.9\textwidth}{!}{
+\begin{tabular}{llc ccccc c}
+\toprule
+\multirow{2}{*}{\textbf{Granularity}} & \multirow{2}{*}{\textbf{Method}} & \textbf{Opt.} & \multicolumn{5}{c}{\textbf{Common Sense Reasoning}} & \textbf{Aggregated} \\ \cmidrule(lr){3-3} \cmidrule(lr){4-8} \cmidrule(l){9-9} 
+ & & \textbf{PPL} $\downarrow$ & \textbf{Hella.} $\uparrow$ & \textbf{PIQA} $\uparrow$ & \textbf{OBQA} $\uparrow$ & \textbf{COPA} $\uparrow$ & \textbf{Wino.} $\uparrow$ & \textbf{Avg.} $\uparrow$ \\ \midrule
+
+% --- Sample-level Methods ---
+\multirow{2}{*}{Sample-level} 
+ & Uniform Sampling & 3.13 & 26.1 & 55.5 & 11.7 & 58.0 & 49.9 & 40.24 \\
+ & Dynamic Loss  & 3.10 & 26.6 & \textbf{56.8} & 13.8 & 59.0 & 50.1 & 41.26 \\ \midrule
+
+% --- Domain-level Methods ---
+\multirow{4}{*}{Domain-level} 
+ & RegMix  & 4.51 & 26.1 & 55.6 & 13.2 & 60.0 & 50.0 & 40.98 \\
+ & Data Mixing Law  & 4.50 & 26.5 & 54.5 & 13.0 & 62.0 & 49.1 & 41.02 \\
+ & DoReMi  & 3.30 & 26.4 & 55.7 & 12.2 & 59.0 & 49.9 & 40.64 \\
+ & DoGE  & 3.31 & 26.2 & 55.8 & 11.5 & 62.0 & 50.4 & 41.18 \\ \midrule \addlinespace[2pt]
+
+% --- Our Method ---
+\rowcolor[HTML]{F3F3F3} 
+\textbf{Ours} & \textbf{D$^3$} & \textbf{2.97} \scriptsize{\textcolor{red}{-4.2\%}} & \textbf{27.3} \scriptsize{\textcolor{red}{+2.6\%}} & 55.7 \scriptsize{\textcolor{green!60!black}{-1.9\%}} & \textbf{15.2} \scriptsize{\textcolor{red}{+10.1\%}} & \textbf{63.5} \scriptsize{\textcolor{red}{+7.6\%}} & \textbf{51.1} \scriptsize{\textcolor{red}{+2.0\%}} & \textbf{42.56} \scriptsize{\textcolor{red}{+3.1\%}} \\ \bottomrule
+\end{tabular}
+}
+\end{table*}
+\subsection{Experimental Settings}
+\paragraph{Benchmarks.}
+We assess pre-training performance by measuring language modeling quality, with perplexity (PPL) as the primary metric. Following prior works~\cite{liu2024regmix,rethinking_2026}, we also benchmark on HellaSwag~\cite{zellers2019hellaswag}, PIQA~\cite{bisk2020piqa}, OBQA~\cite{mihaylov2018openbookqa}, COPA~\cite{sarlin2020copa}, and WinoGrande~\cite{sakaguchi2021winogrande} for commonsense reasoning. In post-training, we assess reasoning on more complex tasks, using GSM8K~\cite{cobbe2021gsm8k} and MATH~\cite{hendrycks2021math} for math reasoning, HumanEval~\cite{chen2021evaluatinglargelanguagemodels} and MBPP for coding.
+\paragraph{Baselines.}
+We validate our method across both pre-training and post-training stages, specifically focusing on supervised fine-tuning (SFT). For pre-training, we compare Uniform Sampling and Dynamic Loss~\cite{sow2025dynamic} with representative domain reweighting baselines RegMix~\cite{liu2024regmix}, Data Mixing Law~\cite{ye2024mixinglaws}, DoReMi~\cite{doremi} and DoGE~\cite{fan2023doge}. The experiments follow the standard scaling laws by training GPT-2 architecture~\cite{kaplan2020scaling} on subsets of SlimPajama~\cite{soboleva2023slimpajama}, and training LLaMA-based models~\cite{grattafiori2024llama} on the Pile~\cite{gao2021pile}. In the post-training phase, following previous work~\cite{DBLP:conf/icml/Liang00LWCH25}, we select baselines across three key dimensions: (i) curriculum ordering, comparing easy-to-hard versus hard-to-easy sequences categorized by initial loss values; (ii) multi-domain joint tuning, which follows a progressive curriculum learning taxonomy~\cite{soviany2022curriculum}; and (iii) single-domain specialization limits (DSL), which establish performance ceilings for code, math, and general instruction following.
+The training set encompasses CodeAlpaca~\cite{codealpaca_2023}, GSM8K-RFT~\cite{gsm8k_2021}, and Alpaca-GPT4~\cite{alpaca_2023}. 
+
+
+\subsection{Main Results}
+
+\paragraph{Pre-training Performance.} 
+As summarized in Table~\ref{tab:pretraining_results}, $D^3$ outperforms all sample-level and domain-level baselines in both overall language modeling quality and aggregated reasoning performance. It achieves a 4.2\% relative reduction in perplexity over the strongest baseline and obtains the highest scores in four out of five evaluation benchmarks. While showing a slight degradation on PIQA compared to the dynamic loss baseline, $D^3$ delivers substantial gains on complex reasoning tasks, notably OBQA (+10.1\%) and COPA (+2.4\% over the strongest domain baseline). These results demonstrate two core advantages of our approach. First, $D^3$ effectively addresses the granularity limitation of domain-level reweighting methods such as DoReMi and RegMix, which assign uniform utility weights to all samples within a domain. By implementing batch-level scheduling, $D^3$ captures fine-grained, intra-domain utility diversity without incurring the prohibitive computational cost of per-sample selection. Second, the pronounced improvements on OBQA and COPA suggest that our dynamic graph-constrained scheduling shapes beneficial data trajectories. Unlike static mixing approaches, $D^3$ navigates the data manifold under structural constraints, potentially prioritizing foundational knowledge transitions that enhance performance on later complex reasoning tasks.
+
+\begin{table*}[htbp]
+\centering
+\caption{Performance comparison of various data scheduling strategies during SFT on Llama-3-8B. Subscripts denote the relative improvement compared to the strongest baseline across all categories. Best results are highlighted in bold.}
+\label{tab:sft_results}
+% \renewcommand{\arraystretch}{1.2}
+\resizebox{0.75\textwidth}{!}{
+\begin{tabular}{l l cc cc c}
+\toprule
+\multirow{2}{*}{\textbf{Paradigm}} & \multirow{2}{*}{\textbf{Method}}
+& \multicolumn{2}{c}{\textbf{Reasoning}}
+& \multicolumn{2}{c}{\textbf{Coding}}
+& \textbf{Aggregated} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(l){7-7}
+& & GSM8K $\uparrow$ & MATH $\uparrow$ & HumanEval $\uparrow$ & MBPP $\uparrow$ & Avg. $\uparrow$ \\
+\midrule
+\multirow{2}{*}{Curriculum}
+& Loss low$\to$high & 64.3 & 24.1 & 45.8 & 50.5 & 46.2 \\
+& Loss high$\to$low & 43.7 & 15.2 & 38.4 & 42.1 & 34.9 \\
+\midrule
+\multirow{2}{*}{Training}
+& DSL (Baseline)    & 63.8 & 24.6 & 46.5 & 51.2 & 46.5 \\
+& MTL               & 62.2 & 23.5 & 44.2 & 49.8 & 44.9 \\
+\midrule \addlinespace[2pt]
+\rowcolor[HTML]{F3F3F3}
+\textbf{Ours} & \textbf{D$^3$}
+& \textbf{66.3} \scriptsize{\textcolor{red}{+3.1\%}} & \textbf{27.4} \scriptsize{\textcolor{red}{+11.4\%}} & \textbf{50.2} \scriptsize{\textcolor{red}{+8.0\%}} & \textbf{54.6} \scriptsize{\textcolor{red}{+6.6\%}} & \textbf{49.6} \scriptsize{\textcolor{red}{+6.7\%}} \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
+\paragraph{Post-trainig Performance.} 
+The SFT results in Table~\ref{tab:sft_results} reveal several key insights into effective data scheduling.
+First, they challenge the notion of a static optimal data order: both fixed curriculum strategies (loss low$\to$high and high$\to$low) underperform our adaptive approach, confirming that dynamic sequencing based on real-time model state is more critical than predefined difficulty levels.
+Second, the pronounced gains on structured tasks, notably MATH (+11.4\%) and HumanEval (+8.0\%) suggest that $D^3$'s graph-constrained scheduling effectively guides the model to acquire formal reasoning and coding patterns.
+Third, $D^3$'s superiority over standard MTL demonstrates that explicitly managing inter-task interference through fine-grained batch scheduling yields better coordination than naive data mixing. Importantly, $D^3$ achieves this while maintaining computational efficiency, as it avoids the prohibitive cost of per-sample selection. These findings collectively indicate that $D^3$ strikes an effective balance between domain specialization and multi-task generalization, advancing the Pareto frontier of model performance across diverse capabilities.
+
+
+\subsection{Ablation Study}
+\label{sec:ablation}
+We evaluate alternative configurations of $D^3$'s core modules to assess each component's contribution. To this end, we analyze each design variant along two primary dimensions: evaluating its downstream performance and measuring its computational efficiency.
+
+\paragraph{Impact of Influence Graph Approximations}
+The fidelity of the influence estimator is a critical determinant of the scheduling quality in the $D^3$ framework. Figure \ref{fig:method_tradeoff} illustrates the Pareto frontier between perplexity reduction and relative training overhead across different approximation strategies. As observed, the first-order symmetric method incurs negligible computational cost but yields only limited performance gains. This limitation stems from its inability to characterize the asymmetric curvature of the loss landscape, which is essential for identifying directional influence between batches.
+\begin{figure}[htbp]
+    \centering
+    \resizebox{0.85\columnwidth}{!}{%
+        \includegraphics{icml2025/img/tradeoff.pdf}
+    }
+\caption{Performance-efficiency trade-off of various influence estimation methods on GPT-2 Medium trained on SlimPajama. The plot depicts the perplexity ($y$-axis) versus the relative training computation overhead ($x$-axis) compared to the baseline. }
+\label{fig:method_tradeoff}
+\end{figure}
+
+A significant gap is observed between the Fisher Information Matrix (FIM)~\cite{DBLP:conf/iclr/XieSS21} and the Diagonal Hessian approach. While the Fisher method introduces a moderate overhead of approximately 1.3$\times$, its perplexity improvement remains suboptimal compared to the diagonal Hessian. Theoretically, the Fisher matrix serves as a statistical expectation of the Hessian under specific distribution assumptions. However, in the context of dynamic data scheduling, the scheduler requires a precise characterization of instantaneous interactions. The Fisher approximation tends to smooth out local curvature fluctuations, thereby providing less reliable signals for micro-batch reordering during the non-stationary phases of training.
+
+In contrast, the $D^3$ framework utilizing the diagonal Hessian estimation achieves a breakthrough in the optimal lower-right quadrant of the frontier. By directly sampling the local Hessian via the Hutchinson estimator, $D^3$ successfully captures the asymmetric dominance relations between samples. As highlighted in Figure \ref{fig:method_tradeoff}, this high-fidelity estimation leads to a 5.1\% reduction in perplexity relative to the baseline. Although this precision comes with an 89.0\% increase in relative training overhead per step, the substantial gain in convergence quality justifies the investment. This result confirms that the benefit of transitioning from passive stochastic sampling to influence-constrained active ordering outweighs the additional cost of second-order computation, ultimately facilitating more efficient foundation model pre-training.
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[width=0.85\linewidth]{icml2025/img/hyperparameter_ablation.pdf}
+    \vspace{-3pt}
+\caption{Ablation studies on approximation hyper-parameters. 
+(a) Effect of the gradient projection dimension $k$ on model performance. The red star identifies the optimal dimensionality ($k \approx 3500$) for maximizing the signal-to-noise ratio in influence estimation, resulting in an 8.1\% reduction in perplexity. 
+(b) Impact of the scheduling window size $L$ on convergence quality. Increasing the scheduling resolution enables a more global optimization of the influence objective, achieving a peak gain of 9.3\% at $L=60$.}
+    \label{fig:ablation_results}
+\end{figure*}
+
+\paragraph{Impact of Different Optimizers}
+The success of the $D^3$ framework depends heavily on efficiently solving the induced optimization problem to find a high-quality training sequence. We evaluate several candidate solvers for this optimization problem, primarily focusing on the Row-Sum and Greedy Insertion baselines in comparison with our proposed Random-Swap Refinement. As evidenced by the results in Table~\ref{tab:solver-efficiency}, RSR achieves the most favorable optimization trajectory and produces the lowest perplexity among all tested methods. Although RSR increases training time, its superior performance justifies the overhead for those prioritizing final model quality.
+\begin{table}[htbp]
+  \centering
+  \caption{Efficiency and performance comparison of batch ordering solvers for GPT-2 Medium pre-training. Experiments are conducted on NVIDIA H200 GPUs.}
+  \vspace{-1mm} 
+  \label{tab:solver-efficiency}
+  \resizebox{0.7\columnwidth}{!}{
+    \begin{tabular}{lcc}
+      \toprule
+      \textbf{Method} & \textbf{GPU Hours} & \textbf{PPL ($\downarrow$)} \\
+      \midrule
+      Random (Baseline)      & 5.53  & 3.13 \\
+      Row-Sum                & 9.82  & 3.04 \\
+      Greedy Insertion       & 10.15 & 3.17 \\
+      RSR                    & 10.45 & 2.97 \\
+      \bottomrule
+    \end{tabular}
+  }
+  \vspace{-1mm}
+\end{table}
+
+
+\subsection{Hyperparameter Study}
+We conduct experiments on the key hyper-parameters of $D^3$ to understand their influence on training dynamics. First, we examine the gradient projection dimension $k$, which defines the low-dimensional manifold for influence estimation. As shown in Figure~\ref{fig:ablation_results}(a), performance is sensitive to this dimensionality: values below $1000$ fail to capture sufficient gradient interactions, while dimensions exceeding $10000$ introduce stochastic noise that masks the influence signal. The peak performance at $k = 3500$, resulting in an 8.1\% perplexity reduction, identifies the optimal signal-to-noise ratio for characterizing batch interactions. Second, we evaluate the impact of the scheduling window $L$ on convergence quality. Figure~\ref{fig:ablation_results}(b) illustrates that perplexity consistently decreases as the window expands, achieving a 9.3\% gain at $L=60$. This trend highlights the necessity of a global perspective in batch sequencing; a larger window allows the solver to coordinate sequences over a broader horizon, effectively mitigating the ``short-sighted'' conflicts found in local heuristics. These results suggest that increasing the scheduling resolution is a robust lever for enhancing the training efficiency of large-scale foundation models.
+
+
+% \subsection{Computational Cost Study}
+
+% \begin{table}[h]
+% \centering
+% \caption{Computational cost and training efficiency analysis on Llama-3-8B. Overhead is measured as the percentage of additional wall-clock time per step compared to Random Shuffle. TTA (Time-to-Accuracy) denotes the total training time required to reach a validation PPL of 11.0.}
+% \label{tab:cost_analysis}
+% \resizebox{\columnwidth}{!}{
+% \begin{tabular}{@{}lcccc@{}}
+% \toprule
+% \textbf{Method} & \textbf{Step Time (s)} & \textbf{Overhead} & \textbf{Mem. (GB)} & \textbf{TTA (Hours)} \\ \midrule
+% Random Shuffle & - & -- & - & - \\
+% DoReMi \cite{xie2023doremi} & - & - & - & - \\
+% GRAPE \cite{anonymous2025grape} & - & - & - & - \\
+% \rowcolor[HTML]{F3F3F3} 
+% \textbf{Ours (k=512)} & \textbf{-} & \textbf{-} & \textbf{-} & \textbf{-} \\
+% \rowcolor[HTML]{F3F3F3} 
+% \textbf{Ours (k=1024)} & - & - & - & - \\ \bottomrule
+% \end{tabular}%
+% }
+% \end{table}
