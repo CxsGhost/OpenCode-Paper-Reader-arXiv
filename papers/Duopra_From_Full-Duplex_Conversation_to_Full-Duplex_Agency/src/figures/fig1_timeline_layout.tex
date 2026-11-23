@@ -1,0 +1,22 @@
+\begin{figure*}[t]
+\centering
+\figbox{figures/fig1_timeline.pdf}{\textwidth}{2.7in}
+\caption{Frontend responsibility in an evolving FDB v3 request
+(\texttt{ecommerce\_19}; schematic). Execution can be offloaded, but
+initiating a faithful request remains a frontend responsibility.
+The user corrects both the product (laptop to tablet) and the
+quantity (two to one); \tool{add\_to\_cart} depends on the product
+ID returned by \tool{search\_products}.
+(a) When domain schemas are available only to the backend,
+the frontend may need successive hand-offs to convey the evolving
+request, making it harder to preserve corrections and tool
+dependencies.
+(b) With schemas visible, Duopra can issue the corrected
+domain-tool calls directly without a hand-off, while
+\tool{query}$(\textit{task})$ remains available.
+Crossed-out values and curved arrows denote superseded requests.
+Table~\ref{tab:cases}(a) reports an observed delegated success
+on this request.}
+
+\label{fig:timeline}
+\end{figure*}

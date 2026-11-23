@@ -1,0 +1,35 @@
+
+\begin{table}[tbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\rowcolor{tablehead}
+FDB v1.0 metric & Reported & Ours \\
+\midrule
+Turn-taking TOR$\uparrow$
+  & 88.2 & 86.3\,$\pm$\,4.0 \\
+\midrule[0.25pt]
+Pause TOR, real$\downarrow$
+  & 46.3 & 38.7\,$\pm$\,1.8 \\
+\midrule[0.25pt]
+Interruption TOR$\uparrow$
+  & 98.5 & 99.2\,$\pm$\,1.4 \\
+\bottomrule
+\end{tabular}
+
+\caption{
+FDB v1.0 reproduction check on MiniCPM-o~4.5
+for the three takeover rates used in our analysis,
+compared with \citet[Table~1]{adaptduplex2026}.
+Ours: mean\,$\pm$\,std over three seeds;
+rates in \%.
+All three differ from the reported values by
+less than 10 percentage points.
+TOR: takeover rate;
+$\uparrow$/$\downarrow$: higher/lower is better.
+}
+\label{tab:calibration}
+\end{table}

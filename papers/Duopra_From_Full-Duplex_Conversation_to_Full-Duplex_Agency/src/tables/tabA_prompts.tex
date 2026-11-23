@@ -1,0 +1,48 @@
+\begin{table*}[tp]
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.14}
+\newcommand{\duoprapromptsep}{%
+  \arrayrulecolor{black!22}%
+  \specialrule{0.32pt}{3.5pt}{3.5pt}%
+  \arrayrulecolor{black}%
+}
+\begin{tabular}{@{}
+  >{\raggedright\arraybackslash\bfseries}p{0.155\textwidth}
+  @{\hspace{9pt}}
+  >{\raggedright\arraybackslash}p{0.805\textwidth}
+@{}}
+\toprule
+\rowcolor{tablehead} Field & Verbatim content \\
+\midrule
+\textbf{Thinker system prefix} &
+\texttt{Streaming Omni Conversation.} \\
+\midrule
+\rowcolor{tablealt}\multicolumn{2}{@{}l@{}}{\textbf{Backend tool \tool{assistant.query} in training}} \\
+\duoprapromptsep
+Description &
+Delegate a complete, self-contained task to a frozen background assistant. This tool has exactly ONE argument: task, a string. Put the actual complete request and all known facts inside that string. Do not pass separate city, date, account, period or other business-tool fields to assistant.query. Use a visible direct tool for a simple supported request.\par\smallskip For several goals, result dependencies, conditions, or a capability available only in the background, send all active steps, constraints and already-heard values in task. Required values may come from the user, explicit session context, defaults, or a named preceding result. Ask only for an essential required value that has none of these sources; optional fields may use their defaults. Keep final corrections and exclude abandoned requests.\par\smallskip The background cannot hear this conversation. No transcript, previous select or hidden facts are added to task. Only registered capabilities and session permissions apply.\par\smallskip After done, need\_info or error, answer honestly from delivered observations, ask for genuinely missing information, or retry at most once after an error. Do not speak routing fields or private JSON. \\
+\duoprapromptsep
+Argument &
+\texttt{task}, a string of 1--1,600 characters: Complete active request, all known values, ordered steps, conditions and result dependencies. \\
+\duoprapromptsep
+Result &
+\texttt{status} (\textsf{done}, \textsf{need\_info} or \textsf{error}), \texttt{answer}, \texttt{steps}, \texttt{missing\_information}; the backend LLM writes all but \texttt{steps}, which the runtime fills from its call log. \\
+\midrule
+\rowcolor{tablealt}\multicolumn{2}{@{}l@{}}{\textbf{Backend tool \tool{assistant.query} in the FDB v3 adapter (Qwen3-8B)}} \\
+\duoprapromptsep
+Description &
+Ask the Qwen3-8B task assistant to solve a request using the available tools. Useful for multi-step tasks, combining different tool capabilities, or reasoning about returned results. Pass the complete already-heard query and relevant known facts. The assistant can return a grounded answer or ask for missing information. \\
+\duoprapromptsep
+Argument &
+\texttt{query}, a string of 1--1,000 characters: Already-heard user request and relevant known facts. \\
+\midrule
+\rowcolor{tablealt}\multicolumn{2}{@{}l@{}}{\textbf{Backend agent at evaluation}} \\
+\duoprapromptsep
+Instruction &
+Complete the delegated task using only the provided functions and supplied conversation facts. Do not invent required arguments. Ask a concise clarification if information is missing. Use returned values as evidence; never claim a call succeeded if it failed. Call additional functions when the task needs multiple steps. Give a concise final answer in the language of the request. All functions are deterministic benchmark simulations. \\
+\bottomrule
+\end{tabular}
+\caption{Verbatim system prefix, backend-tool schema text and evaluation-backend instruction. Tool schemas enter the thinker's context as observations. The backend tool is registered as \tool{assistant.query} and abbreviated as \tool{query} throughout the paper. Appendix~\ref{app:prompts} describes the tool context and the backend's inputs during training and evaluation.}
+\label{tab:prompts}
+\end{table*}

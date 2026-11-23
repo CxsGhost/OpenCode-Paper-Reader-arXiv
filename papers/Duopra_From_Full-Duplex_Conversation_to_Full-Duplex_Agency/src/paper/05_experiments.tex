@@ -1,0 +1,112 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\input{tables/tab1_main}
+
+We answer the question of Section~\ref{sec:intro} by first establishing the outcome and then explaining it:
+
+
+\textbf{RQ1:} Does Duopra acquire reliable task agency?
+
+\textbf{RQ2:} What limits task success in full-duplex interaction agents?
+
+\textbf{RQ3:} How does training turn initiation into complete execution?
+
+\textbf{RQ4:} Can task agency coexist with conversational agency?
+
+
+
+\subsection{Experimental Setup}
+\label{sec:setup}
+
+\paragraph{Benchmarks.}
+FDB v3 \citep{lin2026fdbv3} contains 100 disfluent English recordings and 12 simulated APIs; 66, 18 and 16 recordings require one, two and three calls, respectively.
+FDB v1.0 \citep{lin2025fullduplexbench} evaluates turn-taking, pauses, backchannels and interruptions through takeover rates (TOR); FDB v1.5 and VoiceBench provide additional conversational and spoken-answer measures (Appendix~\ref{app:eval}).
+
+\paragraph{Systems and exposures.}
+We evaluate two frontend--backend baselines, RV-Audio~+ Harness and DuplexOmni, with the same Qwen3-8B backend and simulated APIs; RV-Audio and MiniCPM-o~4.5 without tools serve as controls.
+Published results of commercial and open-source systems provide external reference points (Table~\ref{tab:main}).
+Duopra-SFT, Duopra-RL1 and Duopra-RL denote thinker checkpoints after Stages~1, 2a and 2b; Duopra pairs the Duopra-RL thinker with the Stage-3 projector on every benchmark (Table~\ref{tab:model-configurations}).
+Each Duopra checkpoint runs under one of the exposures of Section~\ref{sec:problem}: Direct (domain tools only), Backend (\tool{query} only) or Both.
+The frozen backend is Qwen3-8B or DeepSeek-V4.1-Flash (DeepSeek).
+
+\paragraph{Evaluation protocol.}
+All our runs use one streaming pipeline, with three decoding seeds per FDB v3 recording (300 sessions per checkpoint and exposure).
+A session passes only if its executed calls match the gold calls, with correct arguments and no missing or extra call; Pass@1 is the share of passed sessions, and response quality and factual-answer latency are measured separately.
+Qwen3.8-27B judges arguments and responses.
+Paired 95\% confidence intervals resample recordings with their three runs kept together and do not estimate training-run variability (Appendix~\ref{app:eval}).
+Additional outcomes and cases appear in Appendix~\ref{app:results}.
+
+\subsection{Main Results (RQ1)}
+\label{sec:overall}
+
+\paragraph{Both execution routes succeed.}
+Table~\ref{tab:main} summarizes all results.
+Duopra improves over both frontend--backend baselines whether it calls domain tools itself (Direct) or delegates through \tool{query} (Backend).
+With the backend fixed to Qwen3-8B, replacing the frontend of RV-Audio~+ Harness with Duopra raises Pass@1 from 4.7\% to 44.7\%, and the paired 95\% interval of this gain excludes zero (Table~\ref{tab:ablation}b).
+Without any inference-time backend, Duopra performs comparably to its delegated configurations, so the trained frontend both executes tasks natively and supplies executable requests to a frozen backend.
+
+\paragraph{Published reference points.}
+Published results come from other evaluation setups and judges, so they provide context rather than a ranking.
+In this context, Duopra performs on par with Gemini Live~2.5 and remains behind GPT-Realtime and Gemini Live~3.1 (Table~\ref{tab:main}a,b).
+
+\paragraph{Native execution under Both.}
+When domain tools and \tool{query} are both visible, Duopra performs similarly to Direct and almost never delegates; nearly all of its successes come from its own domain calls (Appendix~\ref{app:results}).
+Its task agency thus resides in the frontend and does not depend on calling the backend when the required tools are visible.
+
+\subsection{Initiation vs.\ Execution (RQ2)}
+\label{sec:diagnosis}
+
+Having established that a frontend can acquire task agency, we locate where some baselines lose it.
+Following Section~\ref{sec:problem}, Pass@1 factors into call coverage (Call), the share of sessions with an executed domain-tool call, and conditional success (Pass$|$call) among those sessions (Table~\ref{tab:main}; Figure~\ref{fig:decomp}).
+A hand-off to \tool{query} need not produce a domain-tool call.
+
+\paragraph{Initiation limits the baseline.}
+RV-Audio~+ Harness hands off in only 11.0\% of sessions, so even perfect backend execution could not lift its Pass@1 above this hand-off ceiling.
+With the same backend, it differs from Duopra far more in Call than in Pass$|$call (Table~\ref{tab:main}).
+
+\paragraph{Where the gain comes from.}
+Matched sessions locate the gain (Appendix~\ref{app:results}).
+On the few sessions in which RV-Audio~+ Harness executes a domain call, Duopra is no more successful than the baseline.
+Its gain comes from the remaining sessions, which the baseline never executes and nearly half of which Duopra passes.
+Duopra thus improves Pass@1 by initiating requests that previously went unserved.
+
+\paragraph{Effect of the exposure.}
+Restricting the frontend to \tool{query} costs both accuracy and time: with Qwen3-8B, Backend yields significantly more wrong-argument sessions than Both, and with either backend LLM it delays the factual answer (Table~\ref{tab:ablation}b; Appendix~\ref{app:latency}).
+These outcomes reflect both the frontend's request formulation and the backend's execution.
+
+\paragraph{Effect of the backend.}
+With Duopra fixed, replacing Qwen3-8B by DeepSeek raises conditional success but lowers call coverage, and the resulting change in Pass@1 is not significant (Table~\ref{tab:ablation}b).
+A stronger backend improves the execution of initiated requests but cannot supply the requests themselves.
+In frontend--backend agents, task success is therefore limited first by initiation: execution can be offloaded, but initiating a faithful request remains a frontend responsibility.
+
+\subsection{From Initiation to Completion (RQ3)}
+\label{sec:failures}
+
+\input{figures/fig3_analysis_layout}
+
+Since the bottleneck lies in initiation, we next examine how training removes it and which failures remain.
+
+\paragraph{From calls to completions.}
+Stage~2a makes the policy call tools more often, yet its Pass@1 barely changes (Figure~\ref{fig:analysis}a): calling more is not completing more.
+Duopra then improves significantly over Duopra-RL1 (Table~\ref{tab:ablation}b), with the largest gains on multi-call requests, which Duopra-RL1 never completes (Figure~\ref{fig:analysis}b).
+The share of sessions whose executed tool names and counts match the gold calls rises accordingly.
+Training thus first increases initiation and then converts it into complete execution.
+
+\paragraph{Residual errors.}
+As no-call sessions decline, sessions with the correct tools but a wrong argument become the largest failure class (Figure~\ref{fig:analysis}a).
+Selecting the required tools and preserving the user's values are separate requirements for faithful execution.
+Table~\ref{tab:cases} illustrates both: a corrected request executed correctly, and an order ID in which the letter O becomes a zero.
+
+\subsection{Conversation and Speech (RQ4)}
+\label{sec:cost}
+
+Task agency must not come at the expense of the conversational agency that makes the model full-duplex, or of the intelligibility of its speech.
+
+\paragraph{Turn-taking control.}
+Duopra improves on RV-Audio in all three FDB v1.0 takeover rates: it takes the turn more often when the user finishes or interrupts, and less often during pauses (Table~\ref{tab:main}).
+The retention is behavior-specific rather than uniform, however: Duopra responds to fewer interruptions than Duopra-RL1, and none of the post-trained checkpoints produces backchannels on the tested items (Appendix~\ref{app:results}).
+
+\paragraph{Projector repair.}
+With the Duopra-RL thinker held fixed, replacing the base projector with the Stage-3 projector more than halves Chinese CER and lowers English WER on the projector-selection set (Table~\ref{tab:stage3-speech}), and it moves the talker conditioning back toward that of RV-Audio (Figure~\ref{fig:projector}).
+Task agency can thus coexist with key conversational agency in one causal policy, although spontaneous backchanneling remains to be recovered.

@@ -1,0 +1,16 @@
+\begin{table}[tbp]
+\centering\footnotesize
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{lcccc}
+\toprule
+\rowcolor{tablehead} & \multicolumn{2}{c}{Error rate (\%)} & \multicolumn{2}{c}{ECAPA cosine}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+\rowcolor{tablehead}Projector & CER$\downarrow$ & WER$\downarrow$ & zh$\uparrow$ & en$\uparrow$\\
+\midrule
+Base projector & 6.01 & 9.74 & 0.778 & 0.636\\
+\rowcolor{oursfill}Stage-3 projector & \textbf{2.58} & \textbf{7.66} & \textbf{0.782} & \textbf{0.648}\\
+\bottomrule
+\end{tabular}
+\caption{Speech repair on the 221-utterance projector-\emph{selection} set (122 Chinese / 6,156 characters; 99 English / 2,833 words). Both rows use the same Duopra-RL thinker, fixed text and synthesis schedule; only its projector differs. ECAPA cosine: similarity to the native voice.}
+\label{tab:stage3-speech}
+\end{table}

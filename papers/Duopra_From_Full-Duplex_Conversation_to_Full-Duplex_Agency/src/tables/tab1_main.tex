@@ -1,0 +1,48 @@
+\begin{table*}[!t]
+\centering\footnotesize
+\setlength{\tabcolsep}{2.9pt}
+\renewcommand{\arraystretch}{1.06}
+\begin{tabular}{@{}llcccccc@{\hspace{8pt}}ccc@{}}
+\toprule
+\rowcolor{tablehead}& & \multicolumn{6}{c}{\begin{tabular}[c]{@{}c@{}}Task agency\\FDB v3\end{tabular}} & \multicolumn{3}{c}{\begin{tabular}[c]{@{}c@{}}Conversational agency\\FDB v1.0 TOR\end{tabular}}\\
+\cmidrule(lr){3-8}\cmidrule(l){9-11}
+\rowcolor{tablehead}System & Backend LLM & Call$\!\uparrow$ & Pass$|$call$\!\uparrow$ & Tool$\!\uparrow$ & Arg.$\!\uparrow$ & Resp.$\!\uparrow$ & Pass@1$\!\uparrow$ & Turn$\!\uparrow$ & Pause$\!\downarrow$ & Intr.$\!\uparrow$\\
+\midrule
+\multicolumn{11}{@{}l}{\textit{(a) Commercial systems, published results}}\\
+GPT-Realtime                           & \na        & \na  & \na  & 87.6 & 68.0 & 79.2 & 60.0 & \na & \na & \na\\
+Gemini Live 3.1                        & \na        & \na  & \na  & 81.7 & 58.8 & 71.8 & 54.0 & \na & \na & \na\\
+MOSS-Live$^{m}$                        & \na        & \na  & \na  & \na  & \na  & \na  & 51.0 & \na & \na & \na\\
+Gemini Live 2.5                        & \na        & \na  & \na  & 78.6 & 59.3 & 55.4 & 49.0 & \na & \na & \na\\
+Cascaded                               & \na        & \na  & \na  & 80.3 & 56.2 & 60.0 & 45.0 & \na & \na & \na\\
+Grok                                   & \na        & \na  & \na  & 79.7 & 54.2 & 61.7 & 43.0 & \na & \na & \na\\
+Ultravox v0.7                          & \na        & \na  & \na  & 79.4 & 51.3 & 51.0 & 41.0 & \na & \na & \na\\
+\midrule
+\multicolumn{11}{@{}l}{\textit{(b) Open-source systems, published results}}\\
+\citeauthor{hu2026frontendbackend}$^{h}$ & Qwen3-235B & \na  & \na  & 71.7 & 55.2 & 67.0 & 48.0 & \na & \na & \na\\
+DuplexAgent-RSI$^{x}$                  & \na        & \na  & \na  & 97.4 & 57.0 & \na  & 47.0 & \na & \na & \na\\
+RV-Audio, offline$^{o}$                & \na        & \na  & \na  & 82.0 & 52.2 & \na  & 42.0 & \na & \na & \na\\
+Gander                                 & GPT-5.6    & \na  & \na  & 75.9 & 50.3 & 49.0 & 40.0 & \na & \na & \na\\
+NemotronLabs VoiceChat                 & \na        & \na  & \na  & 82.5 & 42.2 & \na  & 33.0 & \na & \na & \na\\
+\midrule
+\multicolumn{11}{@{}l}{\textit{(c) Baselines, our streaming pipeline}}\\
+MiniCPM-o~4.5 (no tools)               & none     & \na  & \na  & 0.0  & 0.0  & 28.6 & 0.0  & \textbf{86.3} & 38.7 & \textbf{99.2}\\
+RV-Audio (no tools)                    & none     & \na  & \na  & 0.0  & 0.0  & 17.0 & 0.0  & 59.1 & 18.1 & 79.5\\
+RV-Audio + Harness                     & Qwen3-8B & 10.3 & 45.2 & 9.5  & 5.9  & 22.9 & 4.7  & \na  & \na  & \na\\
+DuplexOmni                             & Qwen3-8B & \na  & \na  & 60.0 & 27.5 & 42.0 & 17.0 & \na  & \na  & \na\\
+\midrule
+\multicolumn{11}{@{}l}{\textit{(d) Duopra, our streaming pipeline}}\\
+\rowcolor{oursfill}Duopra-SFT (Direct) & none     & 44.7 & 58.2 & 39.2 & 30.1 & 56.8 & 26.0 & 75.1 & 9.3 & 97.0\\
+\rowcolor{oursfill}Duopra-RL1 (Direct) & none     & 56.3 & 47.3 & 44.7 & 32.2 & 59.1 & 26.7 & 75.6 & 5.6 & 96.5\\
+\rowcolor{oursfill}Duopra (Direct)     & none     & 81.3 & 58.6 & 76.7 & 56.2 & 66.3 & 47.7\gain{+43.0} & & & \\
+\rowcolor{oursfill}Duopra (Backend)    & Qwen3-8B & \textbf{86.7} & 51.5 & \textbf{81.8} & \textbf{57.0} & \textbf{70.6} & 44.7\gain{+40.0} & & & \\
+\rowcolor{oursfill}Duopra (Backend)    & DeepSeek & 77.0 & \textbf{64.1} & 71.8 & 55.0 & 69.0 & \textbf{49.3}\gain{+44.7} & \multirow{-3}{*}{75.6} & \multirow{-3}{*}{\textbf{5.4}} & \multirow{-3}{*}{91.3}\\
+\bottomrule
+\end{tabular}
+\caption{Main results (\%). With the same backend, Duopra outperforms both frontend--backend baselines on FDB v3, and it improves all three FDB v1.0 takeover rates of RV-Audio.
+Call: share of sessions with an executed domain-tool call; Pass$|$call: Pass@1 among those sessions (Pass@1 = Call $\times$ Pass$|$call); Tool: tool-name F1 (judge-free); Arg./Resp.: judged argument accuracy and response quality; Turn, Pause and Intr.: FDB v1.0 takeover rates (TOR) after the user finishes, during real pauses and after interruptions, calibrated on MiniCPM-o~4.5 (Table~\ref{tab:calibration}).
+(a,b)~Published results \citep{lin2026fdbv3,mosi2026mosslive,hu2026frontendbackend,shen2026duplexagentrsi,venus2026realtimevenus,orantqing2026gander,nemotronlabs2026voicechat} use their sources' evaluation setups and judges (Table~\ref{tab:cited}); they are reference points, not a common-protocol ranking.
+(c,d)~Our streaming pipeline: means over three decoding seeds (300 FDB v3 sessions per configuration; standard deviations and paired 95\% intervals in Appendix~\ref{app:results}) with the Qwen3.8-27B judge. Exposures follow Section~\ref{sec:problem}; RV-Audio + Harness and DuplexOmni use their own frontend--backend interfaces. FDB v1.0 involves no tools, so one evaluation covers the three Duopra rows.
+Green subscripts: Pass@1 gain over RV-Audio + Harness. Bold: best in (c,d). \na: not reported or not applicable.
+$^{m}$Tool-call success, not Pass@1. $^{h}$Tool-selection accuracy, not F1. $^{x}$On VoiceChat (49.0 on Qwen-Realtime), with exact-string argument matching. $^{o}$Offline inference with tool definitions in the prompt.}
+\label{tab:main}
+\end{table*}

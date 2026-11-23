@@ -1,0 +1,142 @@
+
+\begin{table*}[tp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.16}
+
+% Light separators between time units
+\newcommand{\unitrule}{%
+  \arrayrulecolor{black!25}%
+  \specialrule{0.3pt}{3pt}{3pt}%
+  \arrayrulecolor{black}%
+}
+
+\begin{tabularx}{\textwidth}{@{}
+  >{\centering\arraybackslash}p{0.045\textwidth}
+  >{\raggedright\arraybackslash}p{0.425\textwidth}
+  >{\raggedright\arraybackslash}X
+@{}}
+\toprule
+\rowcolor{tablehead}
+Unit & Input: user audio and observations & Thinker output \\
+\midrule
+
+\textbf{1} &
+\textit{Is my flight CA1701 \dots}
+\par\smallskip
+\textit{Tool schema:}
+\par
+\tok{<backend>}
+\texttt{\{"tools":[\{}%
+\texttt{"name":"flight.status",}\newline
+\texttt{"parameters":\{"required":}\newline
+\texttt{["flight","date"],...\},}\newline
+\texttt{"version":"2",...\},...\}]\}}
+\tok{</backend>}
+&
+\tok{<|listen|>} \\
+
+\unitrule
+
+\textbf{2} &
+\textit{\dots delayed tomorrow?}
+&
+\tok{<|listen|>} \\
+
+\unitrule
+
+\textbf{3} &
+\textit{(silence)}
+&
+\tok{<|speak|>}
+\textbf{Let me check.}
+\tok{<|chunk\_eos|>} \\
+
+\unitrule
+
+\textbf{4} &
+\textit{(silence)}
+&
+\tok{<|speak|>}
+\tok{<delegate>}
+\newline
+\texttt{\{"op":"call","call\_id":"c1",}
+\newline
+\texttt{"tool":"flight.status",}
+\newline
+\texttt{"arguments":\{"flight":"CA1701",}
+\newline
+\texttt{"date":"2026-11-06"\},}
+\newline
+\texttt{"schema\_version":"2"\}}
+\newline
+\tok{</delegate>}
+\tok{<|chunk\_eos|>} \\
+
+\unitrule
+
+\textbf{5} &
+\textit{(silence)}
+&
+\tok{<|speak|>}
+\tok{<|turn\_eos|>}
+\tok{<|chunk\_eos|>} \\
+
+\unitrule
+
+\textbf{6} &
+\textit{(silence)}
+\par\smallskip
+\textit{Tool result:}
+\par
+\tok{<backend>}
+\newline
+\texttt{\{"call\_id":"c1",}
+\newline
+\texttt{"payload":\{"result":\{}
+\newline
+\texttt{"delay\_minutes":20,}
+\newline
+\texttt{"status":"delayed"\},...\}\}}
+\newline
+\tok{</backend>}
+&
+\tok{<|speak|>}
+\textbf{It's twenty minutes}
+\tok{<|chunk\_eos|>} \\
+
+\unitrule
+
+\textbf{7} &
+\textit{(silence)}
+&
+\tok{<|speak|>}
+\textbf{late.}
+\tok{<|turn\_eos|>}
+\tok{<|chunk\_eos|>} \\
+
+\bottomrule
+\end{tabularx}
+
+\caption{
+Illustrative Stage-1 training session from
+Figure~\ref{fig:method}, shown in 1-s units.
+}
+\label{tab:sample}
+
+\vspace{2pt}
+\begin{minipage}{0.98\textwidth}
+\raggedright\footnotesize
+\textit{Notes.}
+User audio is shown as text.
+Bold text is spoken; private
+\tok{<delegate>} actions are not.
+Tool schemas and results are abbreviated for display;
+the original observations use canonical JSON.
+The session date is 2026-11-05, making
+``tomorrow'' 2026-11-06.
+Training loss applies to thinker-generated tokens,
+excluding input, observations and forced boundaries.
+\end{minipage}
+\end{table*}

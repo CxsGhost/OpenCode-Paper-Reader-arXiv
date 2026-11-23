@@ -1,0 +1,96 @@
+\section{Duopra}
+\label{sec:method}
+
+\input{figures/fig2_method_layout}
+
+Duopra is a full-duplex interaction model built on RV-Audio \citep{venus2026realtimevenus}. It replaces the base model's private free-text delegation requests with structured JSON actions. Figure~\ref{fig:method} outlines the three training stages.
+
+\subsection{Unified Action Space}
+\label{sec:model}\label{sec:action}
+
+Duopra retains the base model's streaming loop. In each 1-s unit, the language model, or \emph{thinker}, generates duplex control tokens and public text $w_t$. The \tok{<|listen|>} and \tok{<|speak|>} tokens represent the turn state $m_t$ in Eq.~\eqref{eq:policy}. The speech generator, or \emph{talker}, voices the text conditioned on the thinker's hidden states \citep{xu2025qwen25omni}. To act within the same stream, Duopra encodes $a_t$ in Eq.~\eqref{eq:policy} as JSON in the thinker's private \tok{<delegate>} span. Duopra uses a \tool{select} action to retrieve tool schemas and a \tool{call} action to invoke an exposed tool. The runtime validates each call and inserts its result as a \tok{<backend>} observation at the first unit boundary after the result returns.
+
+The backend is one more tool: Duopra delegates through the same \tool{call} operation by invoking \tool{query}. It supplies a natural-language task description that contains the user's latest values, requested steps, and dependencies. Appendix~\ref{app:prompts} specifies the training and evaluation interfaces.
+
+
+\subsection{Stage 1: Protocol Supervised Fine-Tuning}
+\label{sec:training}\label{sec:sft}
+
+In Stage~1, we fine-tune the thinker on a mixture of tool-use demonstrations and capability-retention dialogues, represented as streams of 1-s units (Appendix~\ref{app:tasks}). The tool-use demonstrations include listening, asking for missing required values, retrieving schemas, issuing structured calls, and reporting tool results. In the flight-status example in Table~\ref{tab:sample}, the private call and the public answer occupy separate units, with the tool result arriving before the answer.
+
+For a demonstration $d$, let $z_j^*$ be the reference thinker token at position $j$ and $H_j^*$ the stream prefix available at that position. The prefix includes user audio, observations (tool schemas and results), boundary tokens inserted by the runtime, and earlier reference outputs. The loss covers only the thinker's reference output positions $\mathcal{M}(d)$, which include public text, private actions, and duplex control tokens. We minimize
+\begin{equation}
+\label{eq:sft}
+\mathcal L_{\mathrm{SFT}}=-\mathbb{E}_{d}
+\!\left[\frac{\sum_{j\in\mathcal{M}(d)}\log\pi_\theta(z_j^*\mid H_j^*)}
+{|\mathcal{M}(d)|}\right].
+\end{equation}
+
+We update the thinker's transformer layers and final normalization, keeping its embeddings and output head, the audio encoder, and speech generation modules fixed. The resulting Duopra-SFT checkpoint initializes Stage~2.
+
+
+\subsection{Stage 2: Full-Duplex Reinforcement Learning}
+\label{sec:rl}
+
+\paragraph{Streaming rollouts.}
+For each training task, we sample $G=8$ rollouts of the policy using the same scripted user audio and tool catalog. The runtime executes direct calls against simulated domain tools and sends Stage-2b delegations to a frozen Qwen3.8-27B backend. It inserts the resulting observations into the rollout's stream. The scorer compares the logged calls with the gold calls $\Cgold$ and reads action timing from the same log. A judge assesses spoken claims against the observations available when the claims were made, and the scorer validates the judge's cited evidence (Appendix~\ref{app:reward}).
+
+\paragraph{Training curriculum.}
+\label{sec:stage2a}\label{sec:stage2b}
+Stage~2a trains on tasks involving direct calls, corrections, clarification, interruptions, and backchannels, and yields Duopra-RL1. Stage~2b adds five task families involving dependent and conditional calls, backend delegation under varying tool visibility, and recovery from failures, while replaying Stage-2a tasks; it yields Duopra-RL (Appendix~\ref{app:tasks}).
+
+\paragraph{Reward design.}
+\label{sec:reward}
+Let $\operatorname{family}(\tau)$ denote the task family of rollout $\tau$.
+The sets $\mathcal{D}_{\mathrm{2a}}$ and $\mathcal{D}_{\mathrm{2b}}$ contain
+the Stage-2a families and the five families added in Stage~2b, respectively.
+The rollout reward is
+\begin{equation}
+\label{eq:reward}
+ r(\tau)=
+ \begin{cases}
+ R_{\mathrm{A}}(\tau), & \operatorname{family}(\tau)\in\mathcal{D}_{\mathrm{2a}},\\
+ R_{\mathrm{B}}(\tau), & \operatorname{family}(\tau)\in\mathcal{D}_{\mathrm{2b}}.
+ \end{cases}
+\end{equation}
+
+The Stage-2a reward $R_{\mathrm A}$, which also scores the replayed Stage-2a tasks in Stage~2b, combines family-specific rewards and penalties for action timing, necessary clarification, tool and argument correctness, grounded answers, and conversational control. Action timing starts at the end of the user's request, and stopping time is measured from the onset of an interruption, with deadlines ${k_{\mathrm{act}}=3}$ and ${k_{\mathrm{stop}}=2}$ units, respectively. With sufficient information, acting within $k_{\mathrm{act}}$ units earns $+0.1$. Using a value that the user has corrected incurs $-0.6$ per value.
+
+The Stage-2b reward $R_{\mathrm B}$ scores the outcome of the full request. Complete execution with a grounded answer earns $1.2$ for action within three units of the request end, $1.1$ for action after three and within eight units, and $0.9$ for later action, before any applicable delegation cost. An honest report of partial completion earns a base reward of $0.1+0.15c$, where $c$ is the fraction of requested steps executed correctly. A fabricated result earns~$-0.95$. Domain calls from either route count toward completion, and duplicate execution incurs a penalty. Appendix~\ref{app:reward} gives the full scoring rules.
+
+\paragraph{Policy objective.}
+We use the rollout rewards to update the thinker's LoRA adapters \citep{hu2022lora} with Dr.~GRPO \citep{liu2025drgrpo}. In a retained group, $I$ indexes the scored rollouts. Rollout $i$ has reward $r_i=r(\tau_i)$ and advantage $A_i=r_i-|I|^{-1}\sum_{k\in I}r_k$. Let $\mathcal{M}(\tau_i)$ index the sampled thinker tokens in that rollout. At position $j$, $\rho_{ij}$ is the sampled token's probability under the current policy divided by its probability under the policy used for sampling. We write $\bar\rho_{ij}$ for this ratio clipped to $[1-\epsilon,1+\epsilon]$, and $K_{ij}$ for the per-token KL estimator against Duopra-SFT. We maximize
+\begin{equation}
+\label{eq:grpo}
+\begin{split}
+\mathcal J_{\mathrm{RL}}(\theta) &= \mathbb E\!\left[
+ \frac{1}{|I|L}\sum_{i\in I}\sum_{j\in\mathcal{M}(\tau_i)} s_{ij}\right],\\
+ s_{ij}&=\min(\rho_{ij}A_i,\bar\rho_{ij}A_i)-\beta K_{ij}.
+\end{split}
+\end{equation}
+
+The expectation is over retained groups, with a fixed token normalizer $L$ and KL weight $\beta$. Appendix~\ref{app:impl} specifies group filtering, the KL estimator, and hyperparameters.
+
+\subsection{Stage 3: Projector-Only Talker Repair}
+\label{sec:projector}
+
+Thinker training changes the hidden states used to condition the talker, which can degrade intelligibility (Section~\ref{sec:cost}).
+We use the RV-Audio checkpoint before Duopra post-training as the reference and denote its projector, the base projector, by $P_{\phi_0}$. At spoken-token position $j$, the talker receives the sum of the token's text embedding and the normalized projector output.
+We run the base thinker and the Duopra-RL thinker on the same stream prefix and cache their hidden states $h_j^{\mathrm{orig}}$ and
+$h_j^{\mathrm{RL}}$, respectively.
+The target is $u_j^0=\mathrm{L2norm}(P_{\phi_0}(h_j^{\mathrm{orig}}))$,
+where $\mathrm{L2norm}$ normalizes a vector to unit $L_2$ norm.
+The trainable projector gives
+$u_j^\phi=\mathrm{L2norm}(P_\phi(h_j^{\mathrm{RL}}))$.
+We optimize
+\begin{equation}
+\label{eq:projector}
+\mathcal L_{\mathrm{proj}}=
+\mathbb{E}_{j}\!\left[1-\cos(u_j^\phi,u_j^0)\right]
++\lambda\lVert\phi-\phi_0\rVert_2^2 .
+\end{equation}
+
+The cosine term aligns the projected Duopra-RL states with the
+reference directions from RV-Audio. The L2-SP term
+\citep{li2018explicit} regularizes the projector weights toward
+the base weights $\phi_0$.

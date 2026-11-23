@@ -1,0 +1,71 @@
+
+\begin{table*}[tp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.16}
+
+% Light horizontal separator between task families
+\newcommand{\familyrule}{%
+  \arrayrulecolor{black!25}%
+  \specialrule{0.3pt}{4pt}{4pt}%
+  \arrayrulecolor{black}%
+}
+
+\begin{tabularx}{\textwidth}{@{}
+  >{\raggedright\arraybackslash}p{0.16\textwidth}
+  >{\raggedright\arraybackslash}p{0.33\textwidth}
+  >{\raggedright\arraybackslash}X
+@{}}
+\toprule
+\rowcolor{tablehead}
+Family & Task pattern & Expected behavior \\
+\midrule
+
+\textbf{D1}\newline Single step &
+A disfluent spoken request requiring one tool call. &
+Call the tool directly if visible; otherwise use
+\tool{query}. Act within 3 units after the request ends. \\
+
+\familyrule
+
+\textbf{D2}\newline Multi-step &
+Independent steps, result dependencies
+(``the cheapest one''), or conditional branches. &
+Complete all steps directly, or delegate a task
+specifying the steps, conditions, and dependencies. \\
+
+\familyrule
+
+\textbf{D3}\newline Corrections &
+A value is corrected or a request is abandoned
+mid-sentence. &
+Use the latest value and skip abandoned requests. \\
+
+\familyrule
+
+\textbf{D4}\newline Sufficiency &
+Four variants: complete information, a missing
+required value, missing optional values, or a
+value obtained from a previous step. &
+Ask only for missing required information;
+otherwise proceed with the available values
+and tool results. \\
+
+\familyrule
+
+\textbf{D5}\newline Recovery &
+The backend requests missing information,
+returns an error or partial result, or a tool
+fails transiently. &
+Request missing values, retry a recoverable
+failure once, or report partial completion
+accurately. \\
+
+\bottomrule
+\end{tabularx}
+
+\caption{Stage-2b task families
+(Section~\ref{sec:stage2b}).}
+\label{tab:families}
+\end{table*}

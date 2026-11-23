@@ -1,0 +1,76 @@
+\begin{table*}[tp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.14}
+
+% Subtle separators between complete cases.
+\newcommand{\caserule}{%
+  \arrayrulecolor{black!25}%
+  \specialrule{0.3pt}{4pt}{4pt}%
+  \arrayrulecolor{black}%
+}
+
+\begin{tabularx}{\textwidth}{@{}
+  >{\raggedright\arraybackslash}p{0.37\textwidth}
+  >{\raggedright\arraybackslash}p{0.29\textwidth}
+  >{\raggedright\arraybackslash}X
+@{}}
+\toprule
+\rowcolor{tablehead}
+User request & Executed calls & Agent's speech \\
+\midrule
+
+\textbf{(a) Backend; pass}\par\smallskip
+\textit{Um... so you know... search for a laptop --- wait... no,... um...... um, I actually need a tablet, not a laptop. And add 2 of them to the cart. Actually, just add 1 instead, I only have budget for one right now.}
+&
+\tool{search\_products}\par
+(query: tablet)\par\smallskip
+\tool{add\_to\_cart}\par
+(product\_id: tablet\_001, quantity: 1)\par\smallskip
+Both at 30.5\,s.
+&
+I will search for a tablet and add one to your cart. The tablet tablet premium has been successfully added to your cart. The total price is \$99. \\
+
+\caserule
+
+\textbf{(b) Both; pass}\par\smallskip
+\textit{Um... so hmm... hmm... well... could you track order B-O-B for me first? Then... um,... um, I also want to search for a nice watch under 200 dollars. And once you find something good, uh, go ahead and add it to my cart.}
+&
+\tool{track\_order}\par
+(order\_id: BOB) at 36.0\,s\par\smallskip
+\tool{search\_products}\par
+(query: watch, max\_price: 200) at 43.2\,s\par\smallskip
+\tool{add\_to\_cart}\par
+(product\_id: PROD1, quantity: 1) at 51.0\,s
+&
+I will track the order and search for a watch. Your order B B is out for delivery. I found a watch named Watch Premium for \$190. The watch has been added to your cart. \\
+
+\caserule
+
+\textbf{(c) Backend; wrong argument}\par\smallskip
+\textit{Hmm... um... so like... first, search for a gaming mouse ---... um, I want to see what you have. Then add the cheapest option to my cart so I can buy it later. And while you're at it, could you also track my order P-O-9-9-9? I've been waiting on that one.}
+&
+\tool{search\_products}\par
+(query: gaming mice) at 29.0\,s\par\smallskip
+\tool{add\_to\_cart}\par
+(product\_id: PROD1, quantity: 1) at 30.3\,s\par\smallskip
+\tool{track\_order}\par
+(order\_id: P0999) at 31.4\,s
+&
+I will search for gaming mice. Add the cheapest one to your cart and check the status of order P0999. The order P09999 is currently out for delivery. The Gaming Mouse Gaming Mice Premium has been added to the cart with a total cost. \\
+
+\caserule
+
+\textbf{(d) Backend; no call}\par\smallskip
+\textit{Uh... like, you know... um... so search for a coffee maker first. If you find one that's under 50 dollars, go ahead and add 2... um, to the cart because they'd make great gifts. But if everything's over 50, just forget the coffee maker and track order W-W-W for me instead.}
+&
+\textit{none}
+&
+I will search for a coffee maker under fifty dollars and add two to the cart. If everything is over fifty, I will forget the coffee maker and track order www for me instead. \\
+
+\bottomrule
+\end{tabularx}
+\caption{Selected hard FDB v3 sessions from Duopra with Qwen3-8B as the backend (seed 641; case (d): seed 643). User requests are evaluation-record transcripts; agent speech is transcribed by ASR and retains recognition errors. Call times are measured from session onset. In (c), the executed order ID substitutes zero for the user's letter O.}
+\label{tab:cases}
+\end{table*}

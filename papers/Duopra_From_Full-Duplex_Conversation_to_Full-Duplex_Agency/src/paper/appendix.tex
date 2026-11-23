@@ -1,0 +1,398 @@
+\FloatBarrier
+\section{Implementation and Training Details}
+\label{app:impl}
+\input{tables/tabA_hparams}
+
+Table~\ref{tab:hparams} summarizes the model configuration and the training settings for all three stages.
+
+\subsection{Base Model}
+Duopra builds on the 9B RV-Audio model (Section~\ref{sec:method}).
+Its thinker controls the duplex stream with \tok{<|listen|>}, \tok{<|speak|>}, \tok{<|chunk\_eos|>} and \tok{<|turn\_eos|>}.
+The talker generates s3tokenizer audio tokens \citep[CosyVoice~2;][]{du2024cosyvoice2}, which Token2wav \citep[Step-Audio~2;][]{wu2025stepaudio2,stepfun2025stepaudio2code} converts to 24\,kHz speech.
+
+\subsection{Stage 1: Protocol SFT}
+Stage~1 initializes from RV-Audio and fine-tunes all transformer layers and the final normalization of the thinker.
+The trainable and frozen components are listed in Table~\ref{tab:hparams}.
+The cross-entropy loss gives equal weight to public text, private actions and duplex control tokens, averaging first over target tokens within a session and then over sessions.
+Audio, observations and host-inserted tokens serve as context; the latter comprise unit delimiters and chunk endings forced by the per-unit length budget.
+Training uses AdamW \citep{loshchilov2019adamw} with a peak learning rate of $2\times10^{-6}$, 5\% warm-up, a floor of $2\times10^{-7}$ and an effective batch of 32 sessions.
+Duopra-SFT is the checkpoint after 400 updates, corresponding to 12,800 sessions drawn from the pool in Appendix~\ref{app:tasks}.
+
+\subsection{Stage 2: Full-Duplex RL}
+
+\paragraph{Rollout environment.}
+Each training task defines a tool catalog, visible schemas, gold calls $\Cgold$ and a prerecorded user-audio stream.
+The $G$ rollouts of a task share these inputs, including the timing of follow-up utterances such as an answer to a clarification question. The synthesis and trajectory-construction procedures are documented
+in Appendix~\ref{app:tasks}.
+The policy processes the stream in 1-s units while the runtime executes its private actions on simulated domain tools or on the frozen backend agent (Appendix~\ref{app:prompts}).
+Each result is injected at the first unit boundary after it returns.
+The runtime records executed calls and injected observations for reward computation (Appendix~\ref{app:reward}).
+
+\paragraph{KL estimator.}
+In Eq.~\eqref{eq:grpo}, we compute $K_{ij}=v_{ij}-\log v_{ij}-1$
+\citep{shao2024deepseekmath}, where
+$v_{ij}=\pi_{\mathrm{ref}}(z_{ij}\mid H_{ij})/
+\pi_\theta(z_{ij}\mid H_{ij})$.
+Here, $z_{ij}$ is the sampled token, $H_{ij}$ is its prefix, and
+$\pi_{\mathrm{ref}}$ is the Duopra-SFT reference policy.
+
+\subsection{Stage 3: Projector-Only Talker Repair}
+We cache paired hidden states $(h_j^{\mathrm{orig}},h_j^{\mathrm{RL}})$ from the base thinker and the Duopra-RL thinker at each spoken-token position~$j$.
+The base projector $P_{\phi_0}$ supplies the target direction
+$u_j^0=\mathrm{L2norm}(P_{\phi_0}(h_j^{\mathrm{orig}}))$.
+We fit the 3,737,088-parameter projector $P_\phi$ to these targets, keeping the thinker, talker body, $\mathrm{emb}_{\mathrm{text}}$ and vocoder fixed.
+For a batch $\mathcal B$ of $N$ sampled spoken-token positions, the minibatch estimate of Eq.~\eqref{eq:projector} is
+\begin{equation}
+\begin{split}
+\mathcal{L}_{\mathrm{proj}}(\phi)={}&\frac{1}{N}\sum_{j\in\mathcal B}
+ \big[1-\cos(u_j^\phi,u_j^0)\big]\\
+&+\lambda\,\lVert\phi-\phi_0\rVert_2^2.
+\end{split}
+\label{eq:projector-minibatch}
+\end{equation}
+
+The cosine term aligns projected states with their reference directions, and the L2-SP penalty \citep{li2018explicit} anchors the projector parameters to the base weights $\phi_0$.
+The penalty uses the summed squared parameter differences with $\lambda=0.01$.
+
+
+
+\subsection{Compute}
+\label{app:compute}
+Training runs on Kunlun P800 accelerators.
+Stage~1 uses eight accelerators for 400 updates with an effective batch of 32 sessions.
+Stage~2 runs full-session rollouts and LoRA updates on separate workers, with 32 groups of eight rollouts per update.
+Stage~3 fits the 3.7M-parameter projector to cached features for 450 minibatch updates.
+
+\section{Training Data and Tasks}
+\label{app:tasks}
+\input{tables/tabA_datacard}
+
+The training data progress from demonstrations of the action protocol to tasks requiring conversational control, planning and delegation.
+Table~\ref{tab:datacard} gives the size and composition of each dataset.
+
+\subsection{Tool Catalogs}
+The initial registry contains 56 domain tools across seven domains: mobility, daily-life services, culture and recreation, personal services, factual information, environment, and facilities.
+Each domain contains eight tools, such as \tool{flight.status}, \tool{parcel.status} and \tool{currency.reference}, specified by a purpose, typed required and optional arguments, and a result schema.
+Stage~1 adds 16 device and sensor tools and partitions the resulting 72 definitions into 40 training, 16 validation and 16 test tools.
+Stage~2a uses 52 tools: the 40 training tools, 10 additions for RL and two tools with rich results.
+Stage~2b expresses 32 tool functions through 84 catalogs with distinct namespaces and argument spellings, yielding 2,688 schemas.
+Of these catalogs, 64 are used for training and 20 for validation.
+The coordination interfaces \tool{select} and \tool{query} are additional to these domain-tool counts.
+
+\subsection{Stage-1 Data}
+The Stage-1 pool contains 12,800 sessions, with a Chinese--English ratio of 70:30.
+Table~\ref{tab:datacard} reports the task proportions.
+
+\subsection{Stage-2a Tasks}
+Stage~2a combines tool use with conversational control in 7,908 tasks, 70.5\% of which are Chinese.
+The eight families cover clarification-to-answer chains; direct calls and tool discovery; clarification of missing information; responses to requests requiring no tool or an unavailable capability; corrections and cancellations; redirection and backchannels; transitions from speech to tool use; and stopping and resuming.
+Their proportions are given in Table~\ref{tab:datacard}.
+
+
+\subsection{Stage-2b Tasks}
+\input{tables/tabA_families}
+Stage~2b adds tasks for multi-step planning and recovery from backend errors and transient failures, which the Stage-2a policy rarely completes (Table~\ref{tab:families}).
+
+
+\paragraph{Schemas and tool visibility.}
+Each task uses a catalog with randomly namespaced tool names, such as \tool{pineridge.parcelStatus}, and paraphrased argument names.
+These variants encourage the policy to interpret the delivered schema, following the schema-variation approach of SGD-X \citep{lee2022sgdx}.
+All required tools are visible to the frontend in 587 training tasks (54\%), some are available exclusively through the backend in 317 (29\%), and all are available exclusively through the backend in 183 (17\%).
+
+
+
+\section{Action Interface and Prompts}
+\label{app:prompts}
+\input{tables/tabA_sample}
+\input{tables/tabA_prompts}
+
+Table~\ref{tab:sample} illustrates the interface in a flight-status request.
+The thinker listens for two units, says ``Let me check,'' calls \tool{flight.status}, ends its turn, and reports the result after the observation arrives at unit~6.
+Table~\ref{tab:prompts} reproduces the system prefix and tool descriptions.
+
+\subsection{Actions and Observations}
+Duopra uses \tok{<delegate>}\,\dots\,\tok{</delegate>} for private JSON actions and \tok{<backend>}\,\dots\,\tok{</backend>} for returned observations, extending the stream format of RV-Audio (Section~\ref{sec:action}).
+Both direct tool calls and backend requests use this same interface.
+A \tool{select} action contains \texttt{\{op, call\_id, query\}} and retrieves the schemas of the three most relevant tools; its \texttt{query} field is the schema-search string.
+A \tool{call} action contains \texttt{\{op, call\_id, tool, arguments, schema\_version\}}, with a JSON object for \texttt{arguments} and an optional \texttt{schema\_version}.
+The runtime validates each call against a schema delivered at initialization or retrieved by \tool{select}, returning a structured error for invalid actions.
+Each observation carries the action's \texttt{call\_id} and enters the stream at the first unit boundary after completion.
+The frontend then uses the delivered result to formulate its response.
+Private actions remain in the thinker's autoregressive history, while a per-unit mask restricts the talker's conditioning to public speech.
+
+\subsection{Tool Context and the Backend Tool}
+Training and evaluation retain the native system prefix, ``Streaming Omni Conversation.''
+Tool schemas enter as observations and supply the tool-specific instructions, including those governing delegation.
+The initial schemas form the first observation as canonical JSON (Table~\ref{tab:sample}, unit~1), and \tool{select} retrieves further schemas.
+Under Direct, the frontend receives the visible domain-tool schemas; Both adds \tool{query}; Backend exposes \tool{query} and assigns domain tools to the backend (Appendix~\ref{app:eval}).
+Training tasks select schemas from their catalogs; FDB v3 uses its 12 benchmark APIs.
+
+The backend tool is registered as \tool{assistant.query}, abbreviated to \tool{query} in the paper.
+It accepts one natural-language string, named \texttt{task} in training and \texttt{query} in the FDB v3 adapter.
+Its training description specifies the information-sufficiency criterion and the situations suited to delegation, while a capability list states the information required by each backend function.
+The concrete backend tool names and schemas remain in the backend's catalog $\FB$.
+For example, one request is ``Retrieve the autumn-term dates for Riverside Upper School District in Nanjing for academic year 2026, then check whether the returned start date is a public holiday in China.''
+This request uses \tool{school.term\_dates} followed by \tool{holiday.calendar}, explicitly supplying the first result as the second call's input.
+Such task descriptions convey known values, ordered steps, conditions and dependencies, including values to be obtained by earlier steps.
+
+The backend is a frozen LLM decoded at temperature~0: Qwen3.8-27B for Stage-2b rollouts and Qwen3-8B or DeepSeek-V4.1-Flash for evaluation.
+It executes the request with its own tools $\FB$, which can extend beyond the frontend's domain tools $\Fcat$.
+During training, its input consists of the \texttt{task} string and its tool schemas.
+Its response is a JSON object with three fields: \texttt{status} ($\textsf{done}$, $\textsf{need\_info}$ or $\textsf{error}$), \texttt{answer} and \texttt{missing\_information}.
+The last field lists at least one missing fact for $\textsf{need\_info}$ and is empty for $\textsf{done}$; malformed responses count as failed tasks.
+The runtime augments this response with \texttt{steps} from the executed-call log.
+At evaluation, the backend receives the instruction in Table~\ref{tab:prompts}, the current request and earlier request--reply pairs from the session, and may execute at most six tool calls per request.
+The adapter returns its response as the corresponding observation.
+Thus, the frontend's task descriptions provide the backend's access to the user's request in both settings.
+
+\section{Reward Specification}
+\label{app:reward}
+\input{tables/tabA_reward}
+\input{tables/tabA_judge}
+
+Table~\ref{tab:reward} lists the reward components used in Eq.~\eqref{eq:reward}. Table~\ref{tab:judge} gives the instructions for the reward judge.
+
+\subsection{Scoring Evidence}
+The scorer combines runtime checks with semantic labels from Qwen3.8-27B \citep{qwen2026qwen38}.
+Runtime logs and the unit timeline establish action validity, executed tools and arguments, repeated calls, and the timing of speech and actions.
+Argument grounding is checked against the user's latest stated values, earlier tool results and session context.
+The LLM judge evaluates claims in the public response using the observations available when those claims were made.
+Its inputs include the public text, observations permitted for each requested goal, and a catalog of numeric result fields; its instruction is reproduced in Table~\ref{tab:judge}.
+
+The judge returns structured labels for covered goals, fabricated results, false refusals, false claims of completion and spoken private metadata.
+Each covered goal requires a proof containing the goal index, observation index, evidence type (result or observed failure) and a verbatim quote.
+The output also identifies disclosures of unfinished steps and links stated result numbers, dates, times and identifiers to their supporting evidence fields.
+The accompanying reason is limited to twelve words.
+The scorer validates the output schema, verifies that quotes occur in the public text, and checks that each cited observation supports the specified goal and precedes the statement.
+It then parses the quoted numeric values and compares them with the cited fields after normalizing Chinese and Arabic numerals, spoken digit sequences, time expressions and full-width characters.
+For example, ``three nine five'' can mean 395, and ``six twelve'' can express the clock component of 18:12.
+
+Validated labels determine result-readout credit, fabrication and completion status; the deterministic outcome mapping then assigns the scalar reward.
+Invalid judgments leave a rollout unscored and invoke the group-filtering procedure in Appendix~\ref{app:impl}.
+The remaining reward components follow runtime rules, with semantic judgments used for value normalization and for distinguishing continued content from a new response after interruption.
+
+\subsection{Outcome Tiers}
+For Stage-2a task families, $R_{\mathrm A}$ sums the applicable
+components in Table~\ref{tab:reward}, with clipping to $[-1,1.2]$
+and any applicable family-specific caps.
+
+For the five new Stage-2b task families, $R_{\mathrm B}$ uses the outcome scores in Section~\ref{sec:reward}. When a call is required and none is executed, the score is $-0.85$ if the policy speaks and $-0.90$ if it stays silent.
+
+\subsection{Timing and Backend Responsibility}
+Timing rewards use 1-s units on the input-audio timeline.
+Interruption, cancellation and correction deadlines start at the onset of the corresponding user utterance; response and action deadlines start at the end of the request.
+The acting and stopping deadlines are $k_{\mathrm{act}}=3$ and $k_{\mathrm{stop}}=2$ units, respectively (Section~\ref{sec:problem}).
+The control reward penalizes both delayed stops after interruptions and unnecessary stops after backchannels or background noise.
+
+Unexpected backend failures are filtered when the delegated task is faithful and sufficient and the frontend's own calls and claims are correct.
+This filtering separates backend execution faults from the frontend decisions optimized by RL.
+Scripted errors, requests for missing information and partial completions in family D5 remain part of training, where the frontend must recover or report the outcome accurately.
+
+\subsection{Routing and Duplicate Work}
+For multi-step tasks, execution credit is determined by the fraction $c$ of steps completed correctly, aggregating direct calls and calls executed by the backend.
+The route is selected by the policy through its action interface.
+Two additional terms encourage efficient execution: a $-0.2$ penalty for duplicated work and a $-0.05$ latency cost for successful delegation of a single-step request whose tool is visible.
+For Stage-2b task families, these terms enter the outcome mapping: the latency cost is deducted from a complete-success score, whereas duplicated work or a protocol fault places the rollout in a lower outcome tier with bounded deductions.
+
+\section{Evaluation Protocol}
+\label{app:eval}
+
+\subsection{Tool Exposures, Backends and Models}
+We evaluate three tool exposures: Direct provides the frontend with the domain tools, Both adds \tool{query}, and Backend provides \tool{query} while assigning the domain tools to the backend's catalog $\FB$.
+The evaluation backends are Qwen3-8B and DeepSeek-V4.1-Flash; the latter has 552B backbone parameters and 16B active parameters per decoded token \citep{deepseekai2026deepseekv41flash}.
+Both backends are frozen, use temperature~0 and execute at most six tool calls per \tool{query} request.
+Stage-2b training uses Qwen3.8-27B as the backend.
+The FDB v3 adapter names the backend tool's single natural-language argument \texttt{query}, corresponding to \texttt{task} in the training schema.
+
+Table~\ref{tab:model-configurations} lists the thinker and projector used in each evaluation.
+
+\begin{table}[tbp]
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{ll>{\raggedright\arraybackslash}p{0.45\columnwidth}}
+\toprule
+\rowcolor{tablehead}Model & Thinker & Projector \\
+\midrule
+Duopra-SFT & after Stage~1 & base \\
+\dmid & after Stage~2a & base; used on FDB v1.0, FDB v1.5, VoiceBench and FDB v3 (Direct) \\
+Duopra-RL & after Stage~2b & base; used for the projector drift analysis (Figure~\ref{fig:projector}b) \\
+Duopra & Duopra-RL  &
+Stage-3 projector (all benchmarks)\\
+\bottomrule
+\end{tabular}
+\caption{Thinker and projector configurations used in evaluation.
+All results labelled Duopra on FDB v3, FDB v1.0, FDB v1.5 and
+VoiceBench use the Stage-3 projector.
+Projector ablations in Appendix~\ref{app:projector} are specified separately.}
+\label{tab:model-configurations}
+\end{table}
+
+\subsection{FDB v3 Metrics}
+FDB v3 \citep{lin2026fdbv3} contains 100 English recordings from 12 speakers, including non-native accents, fillers, pauses and self-corrections.
+The requests use 12 simulated APIs and are followed by 30\,s of ambient noise.
+There are 36 easy, 34 medium and 30 hard requests; 66 require one call, 18 require two and 16 require three.
+We run each configuration with three decoding seeds, yielding 300 sessions, and apply the benchmark's scoring with Qwen3.8-27B at temperature~0 as the argument and response judge.
+The original benchmark uses GPT-4o \citep{openai2024gpt4o}.
+
+\paragraph{Pass@1.}
+A session passes when its execution log contains every gold call with correct arguments and no additional call, counting calls made by either the frontend or the backend.
+This criterion includes calls made before a user correction: executing a superseded call makes the session fail.
+The Call measure in Table~\ref{tab:main} and Figure~\ref{fig:decomp} counts sessions with an executed domain-tool call; \tool{query} records a hand-off to the backend.
+
+\paragraph{Tool, argument and response scores.}
+Tool is the F1 between the multisets of executed and gold tool names, and Arg. is the judge's argument accuracy.
+Both scores are averaged over all sessions, with zero assigned to sessions without an executed call.
+Resp. is the judged quality of the spoken response, averaged over sessions with a scored response, following the benchmark's aggregation.
+Take is the fraction of sessions with a recorded response.
+
+\paragraph{Outcome classes.}
+We assign each session to one class in the following order: pass; no executed call; missing call; extra call; correct tools with a wrong argument.
+When available, the no-call class is further divided into sessions with and without speech (Table~\ref{tab:fdbv3-runs}).
+All outcome rates use the full set of sessions as their denominator.
+The pass and wrong-argument classes together give the share whose executed tool names and counts match the gold calls, the judge-independent measure used in Section~\ref{sec:failures}.
+
+\subsection{Statistics and Latency}
+\paragraph{Paired comparisons.}
+We estimate 95\% confidence intervals for differences using 20,000 paired bootstrap resamples of the 100 recordings.
+Each resample draws recordings with replacement and retains all three decoding seeds of each selected recording in both configurations; the interval uses the 2.5th and 97.5th percentiles of the resulting differences.
+For an individual configuration, we report the mean and sample standard deviation over its three seeds.
+Differences are calculated from unrounded session counts.
+
+\paragraph{Factual-answer latency.}
+We compare latency between Duopra's tool exposures for each backend.
+The benchmark scorer measures the time until the agent delivers the factual answer \citep{lin2026fdbv3}; this measure includes the serving runtime and tool execution, rather than measuring action-initiation timing.
+We compute this measure for each seed and report its mean and sample standard deviation; the comparison appears in Appendix~\ref{app:latency}.
+
+\subsection{Baselines}
+\paragraph{RV-Audio~+ Harness.}
+We run the streaming RV-Audio model with its Harness, using Qwen3-8B as the backend and the same simulated tools as Duopra.
+The published FDB v3 score of 42.0\% \citep[Table~7]{venus2026realtimevenus} uses offline inference with tool definitions in the prompt, according to a repository collaborator;\footnote{Reply in a public issue of the repository, November 2026.} our evaluation uses the streaming delegation interface.
+
+\paragraph{DuplexOmni.}
+DuplexOmni \citep{huang2026duplexomni} uses Qwen3-8B as its pluggable thinking layer with the same simulated tools.
+Its three runs pass 15, 17 and 19 of the 100 requests (17.0\,$\pm$\,2.0\%).
+Across these runs, it passes 31 of 108 easy, 15 of 102 medium and 5 of 90 hard sessions (28.7\,$\pm$\,3.2\%, 14.7\,$\pm$\,2.9\% and 5.6\,$\pm$\,1.9\%, respectively; mean\,$\pm$\,std over seeds).
+
+\subsection{Published Results}
+\label{app:published}
+\input{tables/tabA_cited}
+Table~\ref{tab:cited} records the sources and evaluation settings of the published results in Table~\ref{tab:main}.
+
+
+\subsection{Turn-Taking and General Ability}
+\input{tables/tabA_calibration}
+We evaluate FDB v1.0 \citep{lin2025fullduplexbench} with its official scripts and Parakeet transcripts \citep{rekesh2023fastconformer}, using 727 inputs per seed and three seeds.
+Output audio is recorded on a clock aligned with the input audio, as required by the pause and turn-boundary metrics.
+We check the pipeline on MiniCPM-o~4.5 \citep{cui2026minicpmo45} against \citet[Table~1]{adaptduplex2026}.
+
+
+MiniCPM-o~4.5, RV-Audio and the three Duopra checkpoints run through the same streaming pipeline.
+We also evaluate these five systems on FDB v1.5 \citep{lin2025fdbv15} (498 scenes and 996 recordings per seed) and VoiceBench \citep{chen2024voicebench} (7,783 items per seed), using three seeds per system and Qwen3.8-27B for judge-based metrics.
+These evaluations compare conversational behavior and general ability across our training stages.
+Most of RV-Audio's multiple-choice responses on VoiceBench are unparsed by the scorer; its reported score includes these parsing failures.
+
+\section{Additional Results}
+\label{app:results}
+
+\subsection{Initiation vs.\ Execution (RQ2)}
+
+\paragraph{Coverage vs.\ conditional success.}
+Figure~\ref{fig:decomp} shows why Pass@1 alone can conceal the failure source: a frontend may rarely reach an executed call, whereas another may call frequently but still fail conditional on calling. The identity Pass@1 = Call $\times$ Pass$|$call holds for every configuration; the latter factor is conditioned on a different called subset in each row.
+
+\begin{figure*}[t]
+\centering
+\figbox{figures/figA_decomp.pdf}{\textwidth}{2.3in}
+\caption{FDB v3 Pass@1 decomposed into Call (sessions with an executed domain-tool call) and Pass$|$call (success conditional on such a call; 95\% recording-level bootstrap intervals). The configurations are ordered by Pass@1 and use 300 sessions each (100 recordings, three decoding seeds). Low Call constrains success even when Pass$|$call is moderate. FE--BE: RV-Audio's request interface; backend: Qwen3-8B unless DeepSeek is named.}
+\label{fig:decomp}
+\end{figure*}
+
+\paragraph{Matched sessions locate the gain.}
+For RV-Audio~+ Harness, the 31 sessions with a domain call yield 14 baseline passes and 12 Duopra passes; Duopra's net benefit instead comes from the other 269 sessions, where it succeeds on 122 requests that the baseline never executes. For Duopra-RL1 (Backend), Duopra passes 56 versus 60 on the 101 baseline-called sessions and 78 of the remaining 199 baseline-no-call sessions.
+
+\paragraph{Hand-offs vs.\ executed calls.}
+The RV-Audio~+ Harness frontend sends 34 hand-offs across 33 sessions, but domain tools run in only 31. Accordingly, its hand-off ceiling is based on 33 sessions, while its Call uses 31 (Table~\ref{tab:main}; Figure~\ref{fig:decomp}). With DeepSeek, Duopra's conditional success rises while its call coverage falls.
+
+\input{tables/tabA_fdbv3_runs}
+
+\paragraph{Tool visibility and routing.}
+Table~\ref{tab:fdbv3-runs} reports the complete session outcomes. Under Both, Duopra delegates in one Qwen3-8B session and none with DeepSeek. Of its 133 successes with Qwen3-8B, at least 132 therefore occur without delegation; at least 27 of the 28 multi-call successes do so. All 134 DeepSeek-Both successes occur without delegation. Duopra-RL1 also rarely delegates under Both but succeeds less often; therefore, low delegation frequency by itself does not establish routing competence. Under Backend, restricting the frontend to \tool{query} tests whether its requests suffice for backend execution rather than its ability to choose between routes.
+
+\paragraph{Latency and argument fidelity.}
+\label{app:latency}
+Backend has higher factual-answer latency than Both with either backend LLM, and for Qwen3-8B it also has a higher wrong-argument share. The observed latency is measured until the factual answer, including runtime and tool execution (Appendix~\ref{app:eval}). The respective latency values are 14.85$\pm$0.53 vs.\ 10.42$\pm$0.33\,s for Qwen3-8B, and 13.60$\pm$0.60 vs.\ 9.95$\pm$0.93\,s for DeepSeek (Backend vs.\ Both, decoding-seed mean$\pm$std). The wrong-argument comparisons are given in Table~\ref{tab:ablation}b; they describe the tested exposures rather than a controlled cost of delegation.
+
+\subsection{Training Stages and Failure Modes (RQ3)}
+\input{tables/tabA_ablation}
+
+\paragraph{Invocation vs.\ completion.}
+Table~\ref{tab:ablation} shows that the intermediate Duopra-RL1 checkpoint increases the frequency of calls but scarcely changes task success relative to Duopra-SFT. Duopra improves Pass@1 most on medium, hard, and multi-call requests. As Stage~2b also introduces new tasks and reward rules, this comparison attributes the observed change to the overall training stage, not to a single reward term.
+
+
+\paragraph{Shifting error classes.}
+In Figure~\ref{fig:analysis}, no-call sessions decline markedly across checkpoints, and requests requiring several calls become solvable more often. However, incorrect arguments remain common once the correct tool set is reached. The figure and Table~\ref{tab:fdbv3-runs} separate those error classes rather than treating every unsuccessful session as a failure to act.
+
+\subsection{Turn-Taking and General Ability (RQ4)}
+\input{tables/tabA_retention}
+
+\paragraph{Behavior-specific retention.}
+Table~\ref{tab:retention} shows improvements in several turn-taking and overlap metrics in our pipeline, but not uniform retention of conversational ability. All three post-trained checkpoints produce no backchannels on the tested FDB v1.0 items; FDB v1.5 instead measures whether speech continues after a \emph{user's} backchannel, which is a distinct behavior. Interruption response also declines from Duopra-RL1 to Duopra. VoiceBench results provide a separate check on broader spoken-answer ability, with parsing limitations for the base model noted in Appendix~\ref{app:eval}.
+
+\subsection{Talker Conditioning and Repair (RQ4)}
+\label{app:projector}
+At spoken-token position $j$, talker conditioning is
+$c_j=\mathrm{emb}_{\mathrm{text}}(\mathrm{token}_j)+\mathrm{L2norm}(P_\phi(h_j))$,
+where the thinker states and projector parameters are taken from the evaluated configuration. We test both the change in this signal after thinker training and the effect of repairing only its projector (Section~\ref{sec:projector}).
+
+\begin{figure*}[t]
+\centering
+\figbox{figures/figA_projector.pdf}{\textwidth}{1.85in}
+\caption{Talker conditioning and speech errors across training stages. (a)~CER and WER on 88 fixed-text samples for RV-Audio
+(\textit{Original}), Duopra-RL1 with the base projector, and Duopra
+with the Stage-3 projector.
+(b)~Mean and 5th-percentile cosine similarity to the talker conditioning
+of RV-Audio on 2,000 session replays with
+identical prefixes. Duopra-RL uses the base projector, and Duopra uses
+the Stage-3 projector with the same Duopra-RL thinker.
+The dashed line marks cosine similarity of~1.}
+\label{fig:projector}
+\end{figure*}
+
+
+
+
+
+\paragraph{Conditioning drift.}
+Figure~\ref{fig:projector}b compares the thinker checkpoints using the base projector. Their mean cosines to the talker conditioning of RV-Audio (\textit{original} in the figure) are 0.935 (Duopra-SFT) and 0.929 (Duopra-RL), whereas the Stage-3 projector brings that cosine to 0.974 on the same replay analysis. The 88 fixed-text speech samples in panel (a) compare different thinker--projector pairs and therefore cannot by themselves isolate the projector's causal effect.
+
+\paragraph{Repair with a fixed thinker.}
+For the Stage-2b thinker, mean cosine on the feature validation set rises from 0.930 to 0.973 after repair; this set is distinct from the 2,000-session replay analysis above. We select the final projector from four candidates using 221 fixed-trajectory utterances, and report pooled CER/WER on that \emph{selection set} in Table~\ref{tab:stage3-speech}. Text, control tokens, unit boundaries, speaker and synthesis settings are fixed in this comparison; the base-projector row is the ablation and the Stage-3 row is Duopra.
+
+\input{tables/tabA_stage3}
+
+\paragraph{Selection-set intelligibility.}
+Table~\ref{tab:stage3-speech} shows lower Chinese character and English word error rates with the repaired projector, alongside small ECAPA cosine changes. Because the same utterances selected the candidate, the reported reduction should be interpreted as selection-set evidence rather than an independent generalization estimate.
+
+\subsection{Case Examples}
+\label{app:cases}
+\input{tables/tabA_cases}
+Table~\ref{tab:cases} illustrates both successful routes and two failure modes on hard FDB v3 requests. The request in case (a) matches the public \tool{ecommerce\_19} scenario used schematically in Figure~\ref{fig:timeline}. The backend can complete a multi-step request from a faithful delegation (a), while the frontend can execute a sequence of direct calls (b). The failures involve an alphanumeric argument substitution (c) and a spoken plan without any executed call (d). 
+
+\section{Additional Related Work}
+\label{app:related}
+
+\paragraph{Tool use and optimization.}
+Text-based tool use spans self-supervised API learning \citep{schick2023toolformer}, interleaved reasoning and acting \citep{yao2023react}, and instruction tuning \citep{qin2024toolllm}.
+BFCL \citep{patil2025bfcl} and $\tau$-bench \citep{yao2024taubench} evaluate function calls and interactive task completion.
+GRPO retains PPO's clipped objective \citep{schulman2017ppo} while replacing its value model with group-relative advantages \citep{shao2024deepseekmath}.
+Dr.~GRPO removes response-length and reward-standard-deviation normalizations \citep{liu2025drgrpo}; DAPO uses dynamic sampling to exclude groups with identical rewards \citep{yu2026dapo}.
+Duopra applies this optimization framework to streaming sessions, with rewards for timely action, grounded arguments and task completion.
+
+\paragraph{Spoken agents and evaluation.}
+Alongside FDB v3 \citep{lin2026fdbv3}, benchmarks assess spoken tool calls \citep{voiceagentbench2025,audio2tool2026} and end-to-end voice-agent performance \citep{ray2026tauvoice,bogavelli2026evabench}.
+Related systems delegate reasoning and tool use to background models \citep{thinkingmachines2026interactionmodels,orantqing2026gander} or retrieve knowledge asynchronously \citep{chien2026moshirag}.
+Our analysis separates frontend action initiation from subsequent tool execution using the resulting call traces.
+
+\paragraph{Sufficiency and dialogue state.}
+Information sufficiency connects our setting to slot filling in schema-guided dialogue \citep{rastogi2020sgd} and missing-information tests for tool use \citep{patil2025bfcl,lu2025toolsandbox}.
+Our formulation (Section~\ref{sec:problem}) tracks the latest spoken values and corrections; delegated requests must also carry required dependencies. The same sufficiency rule applies to both routes.

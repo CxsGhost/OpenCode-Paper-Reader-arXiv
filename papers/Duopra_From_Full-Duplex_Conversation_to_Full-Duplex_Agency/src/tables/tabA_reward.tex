@@ -1,0 +1,67 @@
+\begin{table*}[tp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.14}
+\newcommand{\duoprarewardsep}{%
+  \arrayrulecolor{black!22}%
+  \specialrule{0.32pt}{3pt}{3pt}%
+  \arrayrulecolor{black}%
+}
+\begin{tabular}{@{}
+  >{\raggedright\arraybackslash\bfseries}p{0.19\textwidth}
+  @{\hspace{10pt}}
+  >{\raggedright\arraybackslash}p{0.765\textwidth}
+@{}}
+\toprule
+\rowcolor{tablehead} Component & Reward rule \\
+\midrule
+Action decision &
+Information is sufficient and the frontend acts within 3 units after the user finishes: $+0.1$.
+Information is sufficient but the frontend does not act: staying silent $-1$; speaking without acting $-0.8$; asking an unnecessary question $-0.6$; each of the three additionally incurs $-0.3$ for the missing call. \\
+\duoprarewardsep
+Sufficiency &
+A required argument is missing and the frontend asks only for the missing items: $+0.3$.
+Asking for optional or already given information: $-0.15$ per item.
+Acting although a required argument is missing: $-0.3$.
+Inventing a value for the user: $-0.6$. \\
+\duoprarewardsep
+Step coverage &
+$+0.2\,c$, where $c$ is the fraction of requested steps that are executed correctly.
+Including a task the user abandoned: $-0.3$. \\
+\duoprarewardsep
+Argument fidelity &
+$+0.3\,c$; a step counts toward $c$ only if all its values are correct.
+Each value from before a correction: $-0.6$. \\
+\duoprarewardsep
+End-to-end &
+The executed calls (direct and backend) match $\Cgold$ exactly in tools and arguments: $+0.2$. \\
+\duoprarewardsep
+Result readout &
+Complete readout $+0.4$; partial readout $+0.2$.
+Reporting a result before its observation arrives is marked as fabrication;
+the applicable cap and outcome mapping are specified separately for
+each task family in Appendix~\ref{app:reward}. \\
+\duoprarewardsep
+Backend status &
+After \textsf{need\_info}, a brief follow-up question to the user and a new \tool{query}: $+0.1$.
+After \textsf{error}, a successful retry: $+0.2$.
+Claiming full completion when only part was completed: $-0.8$. \\
+\duoprarewardsep
+Response timing &
+Speaking within 3 units after the user finishes: no penalty; after 4--6 units: $-0.2$; after more than 6 units or never: $-1$.
+Taking the turn during a mid-utterance pause of ${\ge}0.7$\,s: $-0.3$. \\
+\duoprarewardsep
+Interruption control &
+Stopping within 2 units after the user starts speaking: no penalty; within 3--4 units: $-0.3$; within 5--6 units: $-0.6$; later: $-1$.
+After a backchannel or noise: pausing for more than 1 unit $-0.5$; ending the content $-1$. \\
+\duoprarewardsep
+Routing and duplication &
+Delegating the same request twice, or both calling directly and delegating it: $-0.2$.
+Delegating a single-step task whose tool is visible, when the delegation succeeds: $-0.05$ (latency cost). \\
+\bottomrule
+\end{tabular}
+\caption{Reward components and checks.
+Times are measured in 1-s audio units from each rule's stated anchor. Step coverage $c$ counts correctly executed steps from either the frontend or the backend. Stage-2a task families use $R_{\mathrm A}$; the five new Stage-2b families use the outcome mapping $R_{\mathrm B}$ in Appendix~\ref{app:reward}.}
+\label{tab:reward}
+\end{table*}

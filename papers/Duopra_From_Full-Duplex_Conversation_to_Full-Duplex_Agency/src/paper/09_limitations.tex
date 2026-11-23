@@ -1,0 +1,14 @@
+\section*{Limitations}
+
+\paragraph{Comparability of published results.}
+We include published results for commercial systems and several open-source baselines as reference points.
+Differences in evaluation setups, judges and scoring protocols limit direct comparisons with our own results.
+
+\paragraph{Model and data coverage.}
+Duopra is built on a single full-duplex interaction model and post-trained on synthetic speech from a limited set of voices.
+Further evaluation is needed to determine whether the gains extend to other base models and more diverse speech conditions.
+
+\paragraph{Future work.}
+Our tool-use evaluation on FDB v3 uses prerecorded user requests and simulated APIs.
+The fixed user input does not capture follow-up requests that arise from the agent's responses or tool results.
+Future work could therefore evaluate Duopra in multi-turn tool-use tasks, assessing its ability to maintain task state and adapt subsequent actions as users clarify or revise their goals.

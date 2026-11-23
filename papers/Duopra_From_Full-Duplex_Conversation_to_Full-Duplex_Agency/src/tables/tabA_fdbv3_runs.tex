@@ -1,0 +1,24 @@
+\begin{table*}[tp]
+\centering\footnotesize
+\setlength{\tabcolsep}{2.3pt}
+\begin{tabular}{@{}lllcccccccccc@{}}
+\toprule
+\rowcolor{tablehead}& & & & \multicolumn{4}{c}{Outcome (sessions)} & \multicolumn{2}{c}{No call} & \multicolumn{3}{c}{Passes by calls$\!\uparrow$}\\
+\cmidrule(lr){5-8}\cmidrule(lr){9-10}\cmidrule(l){11-13}
+\rowcolor{tablehead}Frontend & Exposure & Backend LLM & Pass@1$\!\uparrow$ & Pass$\!\uparrow$ & Wrong arg. & Missing & Extra & Spoke & Silent & 1 & 2 & 3\\
+\midrule
+RV-Audio + Harness & FE--BE  & Qwen3-8B & 4.7\,$\pm$\,1.2  & 14  & 9  & 7  & 1  & 144 & 125 & 11  & 1  & 2\\
+Duopra-SFT         & Direct  & none     & 26.0\,$\pm$\,3.6 & 78  & 17 & 38 & 1  & 118 & 48  & 76  & 2  & 0\\
+\dmid              & Direct  & none     & 26.7\,$\pm$\,0.6 & 80  & 17 & 72 & 0  & 85  & 46  & 80  & 0  & 0\\
+\dmid              & Both    & Qwen3-8B & 24.3\,$\pm$\,1.5 & 73  & 17 & 60 & 0  & 94  & 56  & 73  & 0  & 0\\
+\dmid              & Backend & Qwen3-8B & 20.0\,$\pm$\,1.0 & 60  & 27 & 5  & 9  & 119 & 80  & 48  & 11 & 1\\
+\rowcolor{oursfill}Duopra             & Direct  & none     & 47.7\,$\pm$\,3.5 & 143 & 58 & 40 & 3  & 39  & 17  & \textbf{115} & 13 & \textbf{15}\\
+\rowcolor{oursfill}Duopra             & Backend & Qwen3-8B & 44.7\,$\pm$\,5.7 & 134 & 85 & 25 & 16 & \multicolumn{2}{c}{40} & 114 & 11 & 9\\
+\rowcolor{oursfill}Duopra             & Both    & Qwen3-8B & 44.3\,$\pm$\,0.6 & 133 & 53 & 39 & 3  & \multicolumn{2}{c}{72} & 105 & 16 & 12\\
+\rowcolor{oursfill}Duopra             & Backend & DeepSeek & \textbf{49.3}\,$\pm$\,3.5 & \textbf{148} & 46 & 27 & 10 & \multicolumn{2}{c}{69} & \textbf{115} & \textbf{19} & 14\\
+\rowcolor{oursfill}Duopra             & Both    & DeepSeek & 44.7\,$\pm$\,2.5 & 134 & 52 & 37 & 5  & \multicolumn{2}{c}{72} & 110 & 10 & 14\\
+\bottomrule
+\end{tabular}
+\caption{FDB v3 session outcomes (300 sessions per configuration). Pass@1: decoding-seed mean$\pm$std. Outcome classes are exclusive (Appendix~\ref{app:eval}); merged no-call cells include sessions with and without speech. Successes by required call count use 198 one-call, 54 two-call and 48 three-call sessions. FE--BE: RV-Audio's original request interface. No-call and wrong-argument outcomes reveal distinct points of failure.}
+\label{tab:fdbv3-runs}
+\end{table*}

@@ -1,0 +1,41 @@
+{
+   "sources" : [
+      {
+         "usage" : "toplevel",
+         "filename" : "main.tex"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "figures/fig1_timeline.pdf"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "figures/fig2_method.pdf"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "figures/fig3_analysis.pdf"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "figures/figA_data.pdf"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "figures/figA_decomp.pdf"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "figures/figA_profile.pdf"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "figures/figA_projector.pdf"
+      }
+   ],
+   "spec_version" : 1,
+   "texlive_version" : "2025",
+   "process" : {
+      "compiler" : "pdflatex"
+   }
+}

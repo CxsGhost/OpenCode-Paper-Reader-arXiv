@@ -1,0 +1,154 @@
+% Duopra: From Full-Duplex Conversation to Full-Duplex Agency (ACL 2027 long paper, ARR draft).
+% Overleaf: main document main.tex, compiler pdfLaTeX, bibliography references.bib (BibTeX).
+% The option [review] gives the anonymous version with line numbers; [final] is the camera-ready.
+% \draftfalse is set, so any \todo{...}, \tbd{...} or \pend stops the build. The appendix holds
+% experimenter TODOs (\exptodo, \todofig, \todocell) for data that are still to come; set \exptodofalse
+% before submission and the build stops at every one that remains.
+\documentclass[11pt]{article}
+\PassOptionsToPackage{table}{xcolor}
+\usepackage{fontawesome5}
+\PassOptionsToPackage{hyperfootnotes=false}{hyperref}
+\usepackage[preprint]{acl}
+\setlength\titlebox{12\baselineskip}
+\usepackage{tabularx}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[expansion=false]{microtype}
+\usepackage{inconsolata}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{bm}
+\usepackage{pifont}
+\usepackage{placeins}
+\usepackage{float}
+\usepackage{tikz}
+\usepackage[most]{tcolorbox}
+
+\definecolor{tablehead}{HTML}{F4EFFF}
+\definecolor{tablealt}{HTML}{FAF8FE}
+\definecolor{oursfill}{HTML}{EAF3FF}
+\definecolor{promptline}{HTML}{8877A3}
+\definecolor{promptfill}{HTML}{FBF9FE}
+\definecolor{prompthead}{HTML}{EDE2FF}
+\definecolor{todofill}{HTML}{FAECCA}
+\definecolor{todoline}{HTML}{BBA262}
+\definecolor{todoink}{HTML}{534624}
+
+\newtcolorbox{promptbox}[1]{enhanced, before upper=\raggedright, colback=promptfill, colframe=promptline,
+  boxrule=0.4pt, arc=1.5pt, left=4pt, right=4pt, top=2.5pt, bottom=2.5pt,
+  colbacktitle=prompthead, coltitle=black, fonttitle=\small\bfseries, title={#1},
+  fontupper=\footnotesize, before skip=6pt, after skip=6pt}
+
+\newif\ifexptodo \exptodofalse
+\newcommand{\exptodo}[1]{\ifexptodo{\par\smallskip\noindent\fcolorbox{todoline}{todofill}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{\footnotesize\color{todoink}\textbf{Experimenter TODO.} #1}}\par\smallskip}\else\errmessage{Unresolved experimenter TODO}\fi}
+\newcommand{\todofig}[4]{\ifexptodo{\begin{tikzpicture}
+  \node[draw=todoline, dashed, rounded corners=2pt, fill=todofill!45, text=todoink, align=left,
+    minimum width=#1, minimum height=#2, text width=\dimexpr #1-12pt\relax, inner sep=6pt, font=\footnotesize]
+    {\textbf{Experimenter TODO: #3}\\[2pt] #4};
+\end{tikzpicture}}\else\errmessage{Unresolved experimenter TODO figure}\fi}
+\newcommand{\todocell}[1][TODO]{\ifexptodo{\setlength{\fboxsep}{1pt}\colorbox{todofill}{\textcolor{todoink}{\scriptsize #1}}}\else\errmessage{Unresolved experimenter TODO cell}\fi}
+
+\newif\ifdraft \draftfalse
+\ifdraft
+  \newcommand{\todo}[1]{{\color{red!70!black}\textbf{[TODO:} #1\textbf{]}}}
+  \newcommand{\tbd}[1]{{\color{blue!60!black}\textbf{[TBD}\if\relax\detokenize{#1}\relax\else{: #1}\fi\textbf{]}}}
+\else
+  \newcommand{\todo}[1]{\errmessage{Unresolved TODO: #1}}
+  \newcommand{\tbd}[1]{\errmessage{Unresolved TBD: #1}}
+\fi
+\ifdraft\newcommand{\pend}{--}\else\newcommand{\pend}{\errmessage{Unresolved pending table cell}}\fi
+\newcommand{\na}{\textcolor{black!45}{--}}
+\newcommand{\pub}[1]{\textcolor{black!60}{#1}}
+\newcommand{\gain}[1]{\textsubscript{\,\textcolor{green!45!black}{#1}}}
+\hyphenation{Harness}
+
+\newcommand{\dmid}{Duopra-RL1}
+\newcommand{\tool}[1]{\texttt{#1}}
+\newcommand{\tok}[1]{\texttt{#1}}
+\newcommand{\Fcat}{\mathcal{F}}
+\newcommand{\FB}{\mathcal{F}_{B}}
+\newcommand{\Cgold}{C^{\ast}}
+\newcommand{\xb}[1]{\textcolor{red!75!black}{\ding{56}\,#1}}
+\newcommand{\vb}[1]{\textcolor{green!45!black}{\ding{52}\,#1}}
+\newcommand{\cnum}[1]{\raisebox{.5pt}{\textcircled{\raisebox{-.9pt}{\scriptsize #1}}}}
+\newcommand{\figbox}[3]{\IfFileExists{#1}{\includegraphics[width=#2]{#1}}%
+  {\fbox{\parbox[c][#3][c]{\dimexpr #2-2\fboxsep-2\fboxrule}{\centering\small\itshape Figure placeholder: \detokenize{#1}}}}}
+
+\title{Duopra: From Full-Duplex Conversation to Full-Duplex Agency}
+
+
+\author{
+Chiyu Chen\textsuperscript{1,2}\thanks{\;Equal contribution. Work done during Chiyu Chen’s internship at Tencent.} \quad
+Pengzhou Cheng\textsuperscript{3}\footnotemark[1] \quad
+Yuezhao Ma\textsuperscript{1} \quad
+Xiaocheng Li\textsuperscript{1} \quad
+Can Liu\textsuperscript{1} \\[1pt]
+\bfseries
+Haonan Hu\textsuperscript{2} \quad
+Yao Yao\textsuperscript{1} \quad
+Yifei Yang\textsuperscript{1} \quad
+Yijie Lu\textsuperscript{1} \quad
+Taolei Wang\textsuperscript{1} \quad
+Yansi Li\textsuperscript{1} \\[1pt]
+\bfseries
+Muhuan Wu\textsuperscript{4} \quad
+Chenglu Sun\textsuperscript{2}\thanks{\;Project lead.} \quad
+Gongshen Liu\textsuperscript{1}\footnotemark[3] \quad
+Zhuosheng Zhang\textsuperscript{1}\thanks{\;Corresponding authors.} \\[3pt]
+\normalfont
+\textsuperscript{1}Shanghai Jiao Tong University \quad
+\textsuperscript{2}Tencent \quad
+\textsuperscript{3}Shanghai University \quad
+\textsuperscript{4}University of Bristol \\[2pt]
+\texttt{\{chenchiyu,\,ma\_yuezhao,\,orangeade,\,liucan1013,\,yaoyao27,\,yifeiyang,}\\
+\texttt{\,luyj16,\,sjtuwtl,\,yansi\_li,\,zhangzs,\,lgshen\}@sjtu.edu.cn}\\
+\texttt{\{chiyuuuchen,\,rubenhnhu,\,clivesun\}@tencent.com} \quad
+\texttt{chengpz@shu.edu.cn}\\[3pt]
+\normalfont\small
+\href{https://cychen2003.github.io/duopra/}{%
+  \textcolor{black}{\faGlobe\ Project Page}%
+}
+\quad \textcolor{black!40}{$\vert$} \quad
+\href{https://github.com/cyChen2003/duopra}{%
+  \textcolor{black}{\faGithub\ GitHub}%
+}
+\quad \textcolor{black!40}{$\vert$} \quad
+\href{https://huggingface.co/Chechen123/Duopra}{%
+  \textcolor{black}{%
+    \raisebox{-0.15\height}{%
+      \includegraphics[height=1em]{figures/hf-logo.png}%
+    }\ Hugging Face%
+  }%
+}
+}
+
+\begin{document}
+\maketitle
+\input{paper/00_abstract}
+\input{paper/01_introduction}
+\input{paper/02_related_work}
+\input{paper/03_problem}
+\input{paper/04_method}
+\input{paper/05_experiments}
+\input{paper/08_conclusion}
+
+\input{paper/09_limitations}
+
+\bibliography{references}
+
+\appendix
+\raggedbottom  %
+\renewcommand{\topfraction}{0.95}\renewcommand{\dbltopfraction}{0.95}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.7}\renewcommand{\dblfloatpagefraction}{0.7}
+\setcounter{topnumber}{4}\setcounter{dbltopnumber}{4}\setcounter{totalnumber}{6}
+\input{paper/appendix}
+
+\end{document}

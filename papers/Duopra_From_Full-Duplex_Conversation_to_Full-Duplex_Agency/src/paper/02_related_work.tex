@@ -1,0 +1,32 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Full-duplex interaction systems.}
+Full-duplex models listen while speaking, requiring continuous decisions about when to respond, yield or remain silent \citep{skantze2021turntaking}.
+dGSLM models textless two-channel dialogue \citep{nguyen-etal-2023-generative}, while Moshi adds an inner text monologue to parallel audio streams \citep{defossez2024moshi} and SyncLLM synchronizes generation with a real-world clock \citep{veluri-etal-2024-beyond}.
+Other systems adapt pretrained LLMs to duplex speech \citep{wang2024freezeomni,hu2025salmduplex,yu2025salmonnomni,yao2025flmaudio,chen2025funaudiochat,fang2026baylingduplex,cui2026minicpmo45}.
+The FDB series evaluates pauses, backchannels, turn-taking, interruptions, overlap and multi-turn dialogue \citep{lin2025fullduplexbench,lin2025fdbv15,lin2026fdbv2}, with v3 extending evaluation to tool use on real, disfluent speech \citep{lin2026fdbv3}.
+
+\paragraph{Frontend--backend agents.}
+Delegation separates ongoing conversation from asynchronous task execution.
+Realtime-Venus executes each \tok{<delegate>} request in its asynchronous Harness runtime \citep{venus2026realtimevenus}, JoyAI-VL-Interaction chooses every second among speaking, silence and delegation \citep{joyai2026vlinteraction}, and DuplexOmni connects the frontend to a pluggable thinking layer \citep{huang2026duplexomni}.
+\citet{hu2026frontendbackend} train a speech frontend to emit a delegation token and forward streaming ASR transcripts to a text backend.
+SALMONN-duo learns when to answer directly or invoke an asynchronous backend, using cost-aware RL to balance performance and backend use \citep{yu2026salmonnduo}, while DuplexAgent-RSI improves the delegation harness from interaction traces \citep{shen2026duplexagentrsi}.
+Task success in this setting depends on both the frontend's requests and the backend's execution.
+
+\paragraph{Direct tool use and hybrid routing.}
+Speech frontends can call tools directly, extending their role beyond conversation and delegation.
+GPT-Realtime supports asynchronous function calling \citep{openai2025gptrealtime}; NemotronLabs VoiceChat and Qwen-Audio-3.1-Realtime also support agentic voice interaction \citep{nemotronlabs2026voicechat,bao2026qwenaudio31}.
+DuplexSLA coordinates speech, language and action \citep{zhang2026duplexsla}, while SHANKS initiates tool calls during user speech \citep{chiang2025shanks}.
+Qwen-Audio-Agent provides a harness supporting direct tool calls and \tool{spawn\_thinking} delegation \citep{deng2026qwenaudioagent}.
+Duopra studies how the full-duplex frontend learns to initiate faithful execution, through either native calls or delegation, and analyzes the resulting task failures.
+
+\paragraph{Post-training for spoken agents.}
+Speech post-training targets semantic quality through user interactions and AI feedback \citep{wu2025aligning,lin2025alignslm}, and conversational behavior through preference optimization \citep{fang2026baylingduplex} and RL \citep{ohashi2026multifaceted,hsiao2026aspirin,li2026duplexpo}.
+Qwen-Audio-3.1-Realtime uses GRPO for tool use and aligns
+whether and when to speak or act \citep{bao2026qwenaudio31}.
+Duopra trains task execution using time-anchored deadlines
+and outcome tiers.
+It then updates only the thinker--talker projector to address speech degradation, with regularization toward its original weights \citep{li2018explicit}.
+
+Appendix~\ref{app:related} reviews broader work on tool learning, spoken evaluation, asynchronous execution and information sufficiency.

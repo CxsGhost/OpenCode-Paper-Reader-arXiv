@@ -1,0 +1,10 @@
+\begin{figure*}[t]
+\centering
+\figbox{figures/fig2_method.pdf}{\textwidth}{2.7in}
+\caption{Duopra's three training stages on RV-Audio
+($h_j$: thinker hidden state at spoken-token position $j$; $P_{\phi_0}$, $P_\phi$: base and Stage-3 projectors; $c_j$: talker conditioning).
+Stage~1 trains the thinker on unit-level sessions and yields Duopra-SFT (Table~\ref{tab:sample}).
+Stage~2 trains a thinker LoRA with Dr.~GRPO in the sandbox of Section~\ref{sec:rl}; Stage~2a yields Duopra-RL1 and Stage~2b yields Duopra-RL.
+Stage~3 freezes the Duopra-RL thinker and trains only its projector, producing the final Duopra model.}
+\label{fig:method}
+\end{figure*}

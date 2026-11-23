@@ -1,0 +1,19 @@
+{
+  "title": "Duopra: From Full-Duplex Conversation to Full-Duplex Agency",
+  "arxiv_id": "2611.25773",
+  "version": "v1",
+  "submitted_at_utc": "2026-11-19T09:09:23Z",
+  "abstract_url": "https://arxiv.org/abs/2611.25773v1",
+  "source_url": "https://arxiv.org/src/2611.25773v1",
+  "source_retrieved_at_utc": "2026-11-23T03:15:30.008416+00:00",
+  "source_content_type": "application/gzip",
+  "source_archive_bytes": 766067,
+  "source_archive_sha256": "5c2c5cbc6312ab7bb7a024561ecc4989344e1149c1f357b114d30e434bec022c",
+  "source_extracted_files": 40,
+  "extraction_validation": "解压前检查所有成员路径均位于 src 目录内，并仅允许普通文件与目录。",
+  "analysis_date_local": "2026-11-23",
+  "analysis_timezone": "Asia/Shanghai",
+  "analysis_scope": "正文、附录 A-G、全部引用表格及图注；未渲染 PDF 图件，未审计作者代码或权重，未独立训练或运行模型评测。",
+  "evaluation_provenance": "报告中模型分数均为论文作者报告；区分作者同管线评测、外部转引、解码种子统计与 projector 选择集证据。",
+  "backup_scope": "报告、问答日志、元数据和未被现有 .gitignore 排除的源码文件；PDF 图件保留本地，遵循现有 *.pdf 忽略规则。"
+}

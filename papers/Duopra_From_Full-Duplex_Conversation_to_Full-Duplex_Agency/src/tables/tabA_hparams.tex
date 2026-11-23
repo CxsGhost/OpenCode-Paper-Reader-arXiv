@@ -1,0 +1,89 @@
+\begin{table*}[tp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.10}
+
+% ---------------- Left panel ----------------
+\begin{minipage}[t]{0.49\textwidth}
+\vspace{0pt}
+\begin{tabular}{@{}
+>{\raggedright\arraybackslash}p{0.28\linewidth}
+>{\raggedright\arraybackslash}p{0.68\linewidth}
+@{}}
+\toprule
+
+\rowcolor{tablealt}
+\multicolumn{2}{@{}l@{}}{\textbf{Base model: RV-Audio (9B)}} \\
+\midrule
+Thinker & LLM, hidden size 4096 \\
+Talker & 20 layers, 768 dimensions, 12 heads \\
+Audio tokens & s3tokenizer, vocabulary 6,562 \\
+Vocoder & Token2wav, 24\,kHz \\
+Projector $P$ & MLP, $4096\to768\to768$, 3,737,088 parameters \\
+
+\midrule
+\rowcolor{tablealt}
+\multicolumn{2}{@{}l@{}}{\textbf{Stage 1: Protocol SFT}} \\
+\midrule
+Trainable & Thinker transformer layers and final normalization \\
+Frozen & Input embedding, LM head, audio encoder, talker (incl.\ projector and $\mathrm{emb}_{\mathrm{text}}$), vocoder \\
+Data & 12,800-session pool; 70\% Chinese, 60\% task-oriented, 40\% retention \\
+Optimizer & AdamW; peak LR $2\times10^{-6}$, 5\% warm-up, floor $2\times10^{-7}$ \\
+Training & Batch of 32 sessions; 400 updates (12,800 sessions) \\
+
+\midrule
+\rowcolor{tablealt}
+\multicolumn{2}{@{}l@{}}{\textbf{Stage 2: Rollouts and Reward}} \\
+\midrule
+User audio & Synthesized in advance; identical across $G$ rollouts \\
+Reward judge & Qwen3.8-27B; structured proof required \\
+Backend & Frozen LLM, temperature 0; Qwen3.8-27B in Stage~2b \\
+Objective & Dr.~GRPO, Eq.~\eqref{eq:grpo} \\
+Group size $G$ & 8, sampled from the full vocabulary at temperature 1 \\
+Advantage $A_i$ & Reward centered over the scored rollouts in $I$ \\
+
+\end{tabular}
+\end{minipage}\hfill
+% ---------------- Right panel ----------------
+\begin{minipage}[t]{0.49\textwidth}
+\vspace{0pt}
+\begin{tabular}{@{}
+>{\raggedright\arraybackslash}p{0.28\linewidth}
+>{\raggedright\arraybackslash}p{0.68\linewidth}
+@{}}
+\toprule
+
+\rowcolor{tablealt}
+\multicolumn{2}{@{}l@{}}{\textbf{Stage 2: RL Optimization}} \\
+\midrule
+Normalizer $L$ & 2048, for surrogate and KL terms \\
+Clip range & $\epsilon=0.2$ \\
+KL penalty & $\beta=0.01$, k3 estimator \\
+Reference & Duopra-SFT \\
+Trainable & Thinker LoRA on attention and MLP; $r=32$, $\alpha=32$ \\
+Learning rate & 5 warm-up steps to $3\times10^{-6}$; cosine decay to $1\times10^{-6}$ \\
+Optimizer & Adam; state reset at the start of each phase \\
+Groups per step & 32; at least 4 of 8 rollouts scored, with nonzero reward variance; otherwise resampled \\
+Task mix (2b) & 45\% new families; 55\% Stage-2a tasks, 30\% of the latter with \tool{query} \\
+
+\midrule
+\rowcolor{tablealt}
+\multicolumn{2}{@{}l@{}}{\textbf{Stage 3: Projector-Only Talker Repair}} \\
+\midrule
+Trainable & Projector $P_\phi$ \\
+Frozen & Thinker, talker body, $\mathrm{emb}_{\mathrm{text}}$, vocoder \\
+Loss & Cosine + L2-SP, Eq.~\eqref{eq:projector}, $\lambda=0.01$ \\
+Training data & Cached Stage-2b thinker features; 931 sessions, 35,154 spoken-token positions \\
+Optimization & 450 steps; 8,192 tokens per batch; LR $1\times10^{-4}$ \\
+
+\end{tabular}
+\end{minipage}
+
+\par\vspace{3pt}
+\noindent\rule{\textwidth}{\heavyrulewidth}
+
+\caption{Model configuration and training settings.
+Evaluation settings are given in Appendix~\ref{app:eval}.}
+\label{tab:hparams}
+\end{table*}

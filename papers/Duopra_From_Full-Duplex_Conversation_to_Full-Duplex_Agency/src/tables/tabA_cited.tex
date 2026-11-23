@@ -1,0 +1,21 @@
+\begin{table*}[tp]
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.45\textwidth}@{}}
+\toprule
+\rowcolor{tablehead}Cited system & Source & Evaluation protocol \\
+\midrule
+GPT-Realtime, Gemini Live 2.5 and 3.1, Grok, Ultravox, Cascaded & \citet{lin2026fdbv3}, Table~2 & GPT-4o judge. GPT-Realtime is gpt-realtime-1.5 and Ultravox v0.7; Cascaded is Whisper \citep{radford2023whisper}, GPT-4o and OpenAI TTS in sequence. \\
+MOSS-Live & \citet{mosi2026mosslive}, developer report, accessed 12 November 2026 & The developer report gives a tool-call success rate of 51.0\%. \\
+Gander, GPT-5.6 as the back brain & \citet{orantqing2026gander}, Table~3 & The benchmark's scoring scripts with GPT-4o as the judge. \\
+NemotronLabs VoiceChat & \citet{nemotronlabs2026voicechat}, Table~4 & Tool-selection F1, argument accuracy and Pass@1. \\
+RV-Audio, offline & \citet{venus2026realtimevenus}, Table~7 (arXiv v3) & Offline inference with the tool definitions in the prompt; judge not named. We evaluate RV-Audio + Harness in our streaming pipeline separately (Appendix~\ref{app:eval}). \\
+\citeauthor{hu2026frontendbackend}, Qwen3-235B-A22B backend & \citet{hu2026frontendbackend}, Table~2 (arXiv v2) & Tool-selection accuracy, not F1; GPT-4o judges the agent's text, transcribed by an external ASR system. \\
+DuplexAgent-RSI on VoiceChat and on Qwen-Realtime; the Realtime-Venus system on Realtime-Omni-9B & \citet{shen2026duplexagentrsi}, Table~4 & Arguments are compared by exact string matching; Pass@1 is 47.0\% and 49.0\% for DuplexAgent-RSI and 1.0\% for the Realtime-Venus system. \\
+MiniCPM-o~4.5, FDB v1.0 & \citet{adaptduplex2026}, Table~1 &  The three takeover rates compared in Table~\ref{tab:calibration}. \\
+\bottomrule
+\end{tabular}
+\caption{Sources and evaluation protocols for published results. FDB v3 results appear in Table~\ref{tab:main}; MiniCPM-o~4.5 provides the FDB v1.0 reference in Table~\ref{tab:calibration}. Each result uses its source's evaluation setup and scoring protocol.}
+\label{tab:cited}
+\end{table*}

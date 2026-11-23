@@ -1,0 +1,45 @@
+\begin{table*}[tp]
+\centering\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lcccc>{\columncolor{oursfill}}c@{}}
+\toprule
+\rowcolor{tablehead}Metric & MiniCPM-o 4.5 & RV-Audio & Duopra-SFT & \dmid & Duopra\\
+\midrule
+\rowcolor{tablealt}\multicolumn{6}{@{}l}{\textit{(a) FDB v1.0}}\\
+Turn-taking TOR$^{c}\!\uparrow$            & \textbf{86.3}\,$\pm$\,4.0 & 59.1\,$\pm$\,2.6 & 75.1\,$\pm$\,0.5 & 75.6\,$\pm$\,0.8 & 75.6\,$\pm$\,3.0\\
+Pause TOR, real$^{c}\!\downarrow$          & 38.7\,$\pm$\,1.8 & 18.1\,$\pm$\,2.3 & 9.3\,$\pm$\,0.9 & 5.6\,$\pm$\,2.1 & \textbf{5.4}\,$\pm$\,0.3\\
+Interruption TOR$^{c}\!\uparrow$           & \textbf{99.2}\,$\pm$\,1.4 & 79.5\,$\pm$\,3.0 & 97.0\,$\pm$\,1.5 & 96.5\,$\pm$\,0.9 & 91.3\,$\pm$\,0.6\\
+Pause TOR, synthetic$\downarrow$           & 10.5\,$\pm$\,1.1 & 10.5\,$\pm$\,1.8 & 5.4\,$\pm$\,1.1 & 3.2\,$\pm$\,1.1 & 2.4\,$\pm$\,1.1\\
+Turn-taking latency (s)$\downarrow$        & 2.23\,$\pm$\,0.08 & 2.27\,$\pm$\,0.15 & 2.64\,$\pm$\,0.04 & 2.75\,$\pm$\,0.07 & 2.75\,$\pm$\,0.05\\
+Interruption latency (s)$\downarrow$       & 1.92\,$\pm$\,0.09 & 2.58\,$\pm$\,0.05 & 1.99\,$\pm$\,0.05 & 2.18\,$\pm$\,0.02 & 2.28\,$\pm$\,0.03\\
+Interruption quality$^{\ddagger}$ (0--5)$\uparrow$ & 4.14\,$\pm$\,0.05 & 3.65\,$\pm$\,0.04 & 4.30\,$\pm$\,0.13 & 4.21\,$\pm$\,0.06 & 4.38\,$\pm$\,0.13\\
+Backchannel TOR$\downarrow$                & 58.8\,$\pm$\,6.4 & 60.0\,$\pm$\,4.8 & 0.0$^{b}$ & 0.0$^{b}$ & 0.0$^{b}$\\
+Backchannel frequency (/s)                 & 0.063\,$\pm$\,0.006 & 0.106\,$\pm$\,0.030 & 0$^{b}$ & 0$^{b}$ & 0$^{b}$\\
+Backchannel JSD$\downarrow$                & 0.794\,$\pm$\,0.014 & 0.789\,$\pm$\,0.032 & 1.000$^{b}$ & 1.000$^{b}$ & 1.000$^{b}$\\
+\midrule
+\rowcolor{tablealt}\multicolumn{6}{@{}l}{\textit{(b) FDB v1.5$^{\ddagger}$}}\\
+Response after an interruption$\uparrow$   & 47.5\,$\pm$\,2.6 & 35.2\,$\pm$\,2.1 & 69.5\,$\pm$\,2.3 & 67.0\,$\pm$\,2.3 & 66.0\,$\pm$\,1.0\\
+Resumption after a backchannel$\uparrow$   & 87.8\,$\pm$\,5.7 & 36.1\,$\pm$\,5.2 & 95.9\,$\pm$\,2.7 & 96.6\,$\pm$\,0.6 & 96.3\,$\pm$\,0.6\\
+Resumption, user talks to others$\uparrow$ & 56.7\,$\pm$\,2.1 & 43.3\,$\pm$\,8.6 & 45.3\,$\pm$\,2.3 & 56.3\,$\pm$\,3.2 & 52.0\,$\pm$\,3.5\\
+Resumption, background speech$\uparrow$    & 59.0\,$\pm$\,3.6 & 43.7\,$\pm$\,1.5 & 68.3\,$\pm$\,3.2 & 70.7\,$\pm$\,2.1 & 71.0\,$\pm$\,2.0\\
+\midrule
+\rowcolor{tablealt}\multicolumn{6}{@{}l}{\textit{(c) VoiceBench$^{\ddagger}$ (all $\uparrow$)}}\\
+Mean of nine categories                    & 64.9\,$\pm$\,0.2 & 37.9\,$\pm$\,0.4 & 52.5\,$\pm$\,0.1 & 52.9\,$\pm$\,0.2 & 55.9\,$\pm$\,0.2\\
+MMSU                                       & 57.4\,$\pm$\,0.2 & 26.6\,$\pm$\,0.7 & 54.7\,$\pm$\,0.4 & 56.4\,$\pm$\,0.6 & 62.5\,$\pm$\,0.1\\
+OpenBookQA                                 & 73.1\,$\pm$\,1.3 & 24.6\,$\pm$\,1.4 & 69.2\,$\pm$\,1.5 & 70.8\,$\pm$\,1.0 & 77.4\,$\pm$\,1.3\\
+BBH                                        & 63.7\,$\pm$\,1.7 & 50.6\,$\pm$\,1.9 & 59.7\,$\pm$\,0.8 & 61.0\,$\pm$\,1.0 & 60.0\,$\pm$\,0.4\\
+IFEval                                     & 55.0\,$\pm$\,2.0 & 24.9\,$\pm$\,1.4 & 33.2\,$\pm$\,0.9 & 34.1\,$\pm$\,1.6 & 39.2\,$\pm$\,0.9\\
+SD-QA                                      & 48.5\,$\pm$\,1.7 & 31.5\,$\pm$\,1.9 & 27.0\,$\pm$\,0.9 & 24.4\,$\pm$\,1.3 & 27.7\,$\pm$\,1.3\\
+AlpacaEval                                 & 72.4\,$\pm$\,1.1 & 41.6\,$\pm$\,1.1 & 54.6\,$\pm$\,0.1 & 54.9\,$\pm$\,0.2 & 57.7\,$\pm$\,0.3\\
+CommonEval                                 & 64.3\,$\pm$\,0.3 & 41.0\,$\pm$\,0.8 & 45.0\,$\pm$\,0.5 & 44.3\,$\pm$\,1.1 & 49.5\,$\pm$\,0.4\\
+WildVoice                                  & 58.3\,$\pm$\,0.2 & 34.5\,$\pm$\,0.5 & 41.0\,$\pm$\,0.4 & 40.0\,$\pm$\,0.4 & 42.2\,$\pm$\,0.4\\
+AdvBench (refusal rate)                    & 91.2\,$\pm$\,1.3 & 65.6\,$\pm$\,1.3 & 88.4\,$\pm$\,1.2 & 90.6\,$\pm$\,1.0 & 87.1\,$\pm$\,1.8\\
+\bottomrule
+\end{tabular}
+\caption{Conversational behavior and general ability in our streaming pipeline (three seeds, mean\,$\pm$\,std; rates and scores in \% unless stated otherwise). TOR: takeover rate; RV-Audio: Realtime-Venus-Audio. $^{c}$Takeover rates used in the main-text comparison, calibrated on MiniCPM-o~4.5 (Table~\ref{tab:calibration}); bold marks the best value on each calibrated row. $^{\ddagger}$Judged wholly or partly by Qwen3.8-27B. $^{b}$No backchannels are produced by any of the three post-trained
+checkpoints on the 55 FDB v1.0 backchannel items; the reported frequency
+and TOR are zero, and JSD is 1.000.
+These rows show a selective cost of task training and measure a different behavior from resumption
+after a user's backchannel in FDB v1.5. Model configurations and VoiceBench parsing limitations appear in Appendix~\ref{app:eval}. $\uparrow$/$\downarrow$: higher/lower is better.}
+\label{tab:retention}
+\end{table*}

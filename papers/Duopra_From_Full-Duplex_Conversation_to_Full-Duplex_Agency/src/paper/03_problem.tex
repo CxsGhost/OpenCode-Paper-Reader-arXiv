@@ -1,0 +1,43 @@
+\section{Full-Duplex Agency}
+\label{sec:problem}
+
+Section~\ref{sec:intro} asks what limits task success in frontend--backend agents and how a full-duplex interaction model can acquire reliable task agency.
+To make this question precise, we model the frontend as one streaming policy whose actions depend on the tools it can call.
+Backend delegation and direct tool calling then become settings of one model, and information sufficiency and task success are defined independently of which component executes a call.
+
+\paragraph{One policy for speech and action.}
+User audio arrives in units $x_1,x_2,\ldots$ of length $\Delta$.
+At unit~$t$, the frontend reads $x_t$ and the observations $e_t$ injected by then, which hold the schemas of the tools it can call and the results of its earlier calls, and emits $y_t=(m_t,w_t,a_t)$: a turn state $m_t\in\{\textsf{listen},\textsf{speak}\}$, text tokens $w_t$, which are voiced, and a possibly empty private action $a_t$, which is never voiced.
+The policy is causal:
+\begin{equation}
+  \pi_\theta\left(y_t \mid x_{\le t},\, e_{\le t},\, y_{<t}\right).
+  \label{eq:policy}
+\end{equation}
+
+Conversational agency decides $m_t$ and $w_t$: when to listen, speak, stop or resume through pauses, backchannels and interruptions.
+Task agency decides $a_t$, which tool to call with which arguments, and the part of $w_t$ that serves the request: asking for a missing value and reporting what a call returned.
+\emph{Full-duplex agency} is making both decisions well in one causal policy.
+
+\paragraph{Tools and exposures.}
+Each domain tool $f\in\Fcat$ has a JSON schema with required and optional arguments, and the backend agent $B$ is one more tool, \tool{query}$(\textit{task})$, whose argument is a self-contained natural-language task that $B$ executes with its own tools $\FB$ (Appendix~\ref{app:prompts}).
+The frontend calls a tool $f$ from its set $\mathcal{T}\subseteq\Fcat\cup\{\tool{query}\}$ through one action, \tool{call}$(f,\textit{args})$; an auxiliary \tool{select} action retrieves further schemas in $\mathcal{T}$.
+Request-based delegation, through which frontend--backend agents such as Realtime-Venus hand the backend a request, exposes only the backend ($\mathcal{T}=\{\tool{query}\}$, with the domain tools in $\FB$); direct calling exposes the domain tools ($\mathcal{T}=\Fcat$); and their union exposes both.
+We call these three tool exposures \emph{Backend}, \emph{Direct} and \emph{Both}.
+Under Both, the model chooses the route through this interface, without a separate dispatcher; execution is checked against the same required domain calls (Section~\ref{sec:diagnosis}).
+
+\paragraph{Information sufficiency.}
+A call is justified only if each of its required arguments has a source: the user's speech, in which the last correction is final (in Figure~\ref{fig:timeline}, one tablet rather than two laptops); the result of an earlier call; or the session context with the defaults it specifies.
+If a required value has no source, the frontend should ask for the missing items only and act once they are given; missing optional arguments take their defaults.
+The criterion is the same for both routes. A delegated task must preserve the latest known values and required steps, while identifying any values to be supplied by earlier tool results. The frontend uses the backend descriptions actually exposed in its context (Appendix~\ref{app:prompts}).
+
+\paragraph{Success criteria.}
+Each request has gold calls $\Cgold$, possibly dependent on earlier results or conditions.
+\emph{Task success} requires (i)~\emph{calls}: the calls executed by the frontend or backend match $\Cgold$, with all normalized arguments correct and no call missing or extra; (ii)~\emph{grounding}: the spoken answer rests only on returned observations and covers the request; and (iii)~\emph{timeliness}: if information is sufficient, the frontend acts within $k_{\mathrm{act}}$ units after the request ends, and otherwise asks only for missing items.
+\emph{Conversational control} requires (iv) that the frontend take the turn when the user finishes but not in pauses, stop within $k_{\mathrm{stop}}$ units of an interruption's onset, and continue through backchannels and background speech.
+
+\paragraph{Initiation, execution and control.}
+On FDB v3, every session holds one request that needs at least one call.
+Under request-based delegation, a domain tool runs only after the frontend calls \tool{query}, so Pass@1 factors into the share of sessions with such a hand-off, which the frontend alone decides, and the pass rate of these sessions, which depends on both the \textit{task} the frontend writes and the backend that executes it.
+However strong the backend, Pass@1 cannot exceed the hand-off share, which we call the \emph{hand-off ceiling}: no backend can execute a request that was never sent.
+Learning to act may also affect conversation: one policy decides $(m_t,w_t)$ and $a_t$, so training it to act can change its conversational control (iv) and, because its speech is voiced from its internal states, the intelligibility of that speech.
+Duopra (Section~\ref{sec:method}) implements this policy with domain tools and \tool{query} in the same action space, and Section~\ref{sec:experiments} evaluates its task success together with these conversational and speech effects.

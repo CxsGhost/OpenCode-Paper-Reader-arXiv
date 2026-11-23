@@ -1,0 +1,40 @@
+\section{Introduction}
+\label{sec:intro}
+
+Full-duplex interaction models handle pauses, backchannels, turn-taking and interruptions, exhibiting \emph{conversational agency}: deciding when to listen, speak, stop or resume \citep{defossez2024moshi,cui2026minicpmo45,lin2025fullduplexbench,lin2025fdbv15}.
+Tool use adds \emph{task agency}: deciding when to act, preserving the user's latest intent and completing the requested steps \citep{yao2024taubench,lin2026fdbv3}.
+\emph{Full-duplex agency} requires coordinating these decisions as speech and execution results arrive.
+Frontend--backend agents address task agency through a conversational frontend that sends natural-language requests to a tool-using backend \citep{venus2026realtimevenus,huang2026duplexomni,hu2026frontendbackend}.
+We ask: \emph{What limits task success in frontend--backend agents, and how can a full-duplex interaction model acquire reliable task agency?}
+
+\input{figures/fig1_timeline_layout}
+
+In this architecture, the frontend must still turn an evolving request into an executable task.
+It must determine whether information is sufficient, incorporate corrections, and initiate a request that preserves the required values and steps.
+Failures at this stage can prevent an otherwise capable backend from acting.
+When tool schemas are available only to the backend, the frontend must also convey the request without direct access to the tools' argument requirements, potentially introducing additional clarification and execution delays.
+Figure~\ref{fig:timeline} illustrates these demands with a real scenario from Full-Duplex-Bench v3 \citep[FDB v3;][]{lin2026fdbv3}: the user changes both the product and quantity, while adding the item requires a result from the preceding search.
+
+
+We investigate this issue on FDB v3.
+In our streaming pipeline, Realtime-Venus-Audio (RV-Audio) with its Harness, denoted RV-Audio~+ Harness, hands off requests to the backend in 11.0\% of sessions and passes 4.7\%.
+Holding those hand-offs fixed caps success at this 11.0\% hand-off ceiling, even with perfect backend execution (Section~\ref{sec:diagnosis}).
+The result identifies limited initiation in this configuration, rather than a general limit on delegation.
+
+The frontend therefore needs task agency: \emph{execution can be offloaded, but initiating a faithful request remains a frontend responsibility}.
+Learning this competence requires coordinating conversation with execution: the frontend must act when information is sufficient, incorporate corrections, and complete dependent steps.
+Moreover, updating the language model (the \emph{thinker}) can alter the hidden states that condition the speech generator (the \emph{talker}) and degrade intelligibility.
+
+We introduce \textbf{Duopra}, a full-duplex interaction model built on RV-Audio that controls conversation and emits private tool actions. It represents the backend as \tool{query}$(\textit{task})$, a tool with a self-contained natural-language argument, so direct calls and delegation share an action interface and execution criteria.
+Its training proceeds in three stages: protocol supervised fine-tuning (SFT) teaches schema-based calling and clarification; full-duplex reinforcement learning (RL) rewards timely, complete and grounded execution; and projector-only repair realigns talker conditioning after thinker updates.
+
+Duopra improves task completion through both direct execution and backend delegation; with the same Qwen3-8B backend, it raises Pass@1 from 4.7\% to 44.7\%.
+Its takeover rates for turn-taking, pauses and interruptions on FDB v1.0 \citep{lin2025fullduplexbench} all improve over the base model, showing that task learning can coexist with turn-taking control, although spontaneous backchanneling is not retained.
+
+% \paragraph{Contributions.}
+Our main contributions are:
+\begin{enumerate}
+    \item We formalize full-duplex agency as joint conversational and task decisions, and analyze frontend initiation, argument fidelity and task completion.
+    \item We introduce Duopra, a full-duplex interaction model that learns direct tool use and represents backend delegation as a natural-language-argument tool in the same action interface.
+    \item We develop a three-stage procedure combining protocol SFT, execution-based full-duplex RL and projector-only repair, and evaluate task gains together with conversational and speech changes.
+\end{enumerate}
