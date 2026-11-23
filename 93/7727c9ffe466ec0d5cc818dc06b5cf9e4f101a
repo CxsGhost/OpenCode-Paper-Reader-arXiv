@@ -1,0 +1,97 @@
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/source_metadata.json
+  s_9177df15211bc0::t_86d7263826493f 1-19
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/analysis_report/summary.md
+  s_9177df15211bc0::t_5144adf13ec689 94-101
+  s_9177df15211bc0::t_f5d5d11e37ac64 1-5,7-12
+  s_9177df15211bc0::t_0520d92de6a2e7 27-36
+  s_9177df15211bc0::t_57efbda31cd910 102-130
+  s_9177df15211bc0::t_08f7898839080d 13-26
+  s_9177df15211bc0::t_073249a738bb42 56-70
+  s_9177df15211bc0::t_44694806df7c72 71-93
+  s_9177df15211bc0::t_86d7263826493f 6
+  s_9177df15211bc0::t_261e46dd01d11e 37-55
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/analysis_report/discussion_log.md
+  s_9177df15211bc0::t_86d7263826493f 1-13
+  s_9177df15211bc0::t_05c266c29e9bb0 33-38
+  s_9177df15211bc0::t_9cd5f73e83e986 14-32
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/00README.json
+  s_9177df15211bc0::t_1a76e999b0f476 1-41
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/acl.sty
+  s_9177df15211bc0::t_e32b4cf53df587 1-312
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/acl_natbib.bst
+  s_9177df15211bc0::t_b4ea3d6c7f248f 1-1951
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/figures/fig1_timeline_layout.tex
+  s_9177df15211bc0::t_07e5cd040dff8e 1-22
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/figures/fig2_method_layout.tex
+  s_9177df15211bc0::t_573dd3073b6c92 1-10
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/figures/fig3_analysis_layout.tex
+  s_9177df15211bc0::t_a6700e7c48dfc0 1-6
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/main.tex
+  s_9177df15211bc0::t_f7565820be8f4b 1-154
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/paper/00_abstract.tex
+  s_9177df15211bc0::t_d822147ede8307 1-4
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/paper/01_introduction.tex
+  s_9177df15211bc0::t_27dd9451e3671d 1-40
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/paper/02_related_work.tex
+  s_9177df15211bc0::t_3eac4ef0b8db21 1-32
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/paper/03_problem.tex
+  s_9177df15211bc0::t_fe1c5098618cc5 1-43
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/paper/04_method.tex
+  s_9177df15211bc0::t_5a5eb85b306b3e 1-96
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/paper/05_experiments.tex
+  s_9177df15211bc0::t_b9ed79f7f8bc1e 1-112
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/paper/08_conclusion.tex
+  s_9177df15211bc0::t_737bc4b6aee320 1-7
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/paper/09_limitations.tex
+  s_9177df15211bc0::t_d28979c0094a14 1-14
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/paper/appendix.tex
+  s_9177df15211bc0::t_71fc2240c885a6 1-398
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/references.bib
+  s_9177df15211bc0::t_78189fbfe3fb76 1-797
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tab1_main.tex
+  s_9177df15211bc0::t_7fe256ca9745ba 1-48
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_ablation.tex
+  s_9177df15211bc0::t_3d9ee8dfd3028a 1-67
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_calibration.tex
+  s_9177df15211bc0::t_a8d067eeec713d 1-35
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_cases.tex
+  s_9177df15211bc0::t_2ab9982fcb7dcc 1-76
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_cited.tex
+  s_9177df15211bc0::t_6ae74c63e891b7 1-21
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_datacard.tex
+  s_9177df15211bc0::t_fcb31895b674f2 1-34
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_families.tex
+  s_9177df15211bc0::t_4f7492a4f6d79c 1-71
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_fdbv3_runs.tex
+  s_9177df15211bc0::t_bad9e241fd387e 1-24
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_hparams.tex
+  s_9177df15211bc0::t_9dfe50287c0a7b 1-89
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_judge.tex
+  s_9177df15211bc0::t_ef2ad55f76fb36 1-24
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_prompts.tex
+  s_9177df15211bc0::t_cb9cb08eebb995 1-48
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_retention.tex
+  s_9177df15211bc0::t_53f70a814b1b20 1-45
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_reward.tex
+  s_9177df15211bc0::t_dbad9e77f9a77d 1-67
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_sample.tex
+  s_9177df15211bc0::t_9e1f536ad883dc 1-142
+papers/Duopra_From_Full-Duplex_Conversation_to_Full-Duplex_Agency/src/tables/tabA_stage3.tex
+  s_9177df15211bc0::t_deaf6a07a68b35 1-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "937727c9ffe466ec0d5cc818dc06b5cf9e4f101a",
+  "prompts": {},
+  "sessions": {
+    "s_9177df15211bc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a20666-0301-70e0-89e2-136e53e1957b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "weilingxiao <weilingxiao@U-GXQK9LL6-0607.local>"
+    }
+  }
+}
